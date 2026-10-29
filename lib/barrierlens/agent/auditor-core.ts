@@ -2,8 +2,11 @@ import { chromium, Browser, BrowserContext, Page } from 'playwright';
 import { FocusGraphEngine } from '../engines/focus-graph';
 import { AnnouncementGapDetector } from '../engines/announcement-gap';
 import { AccNameProvenanceEngine } from '../engines/accname-provenance';
+import { TemporalModelChecker } from '../engines/temporal-model-checker';
 import { ConformalImpactModel } from '../ml/conformal-impact';
 import { LabelQualityClassifier } from '../ml/label-quality';
+import { CognitiveEntropyModel } from '../ml/cognitive-entropy';
+import { VisualAffordanceEngine } from '../ml/visual-affordance';
 import { LLMRouter } from './llm-router';
 import { INJECTED_OBSERVER_SCRIPT } from '../cdp/observer-script';
 import { EXTRACT_AX_NODES_SCRIPT, serializeAXTree, SerializedAXNode } from '../cdp/ax-serializer';
@@ -15,8 +18,11 @@ export class AuditorCore {
   private focusGraph = new FocusGraphEngine();
   private gapDetector = new AnnouncementGapDetector();
   private accNameEngine = new AccNameProvenanceEngine();
+  private temporalChecker = new TemporalModelChecker();
   private impactModel = new ConformalImpactModel();
   private labelClassifier = new LabelQualityClassifier();
+  private cognitiveModel = new CognitiveEntropyModel();
+  private affordanceEngine = new VisualAffordanceEngine();
 
   /**
    * Execute an autonomous task-conditioned accessibility audit run
@@ -103,7 +109,7 @@ export class AuditorCore {
         });
       }
 
-      // Check Accessible Name Quality on all interactive nodes
+        // Check Accessible Name Quality on all interactive nodes
       for (const node of initialNodes) {
         const nameEval = this.accNameEngine.evaluateName(node.selector, node.role, node.name);
         if (!nameEval.isAdequate) {
@@ -125,6 +131,30 @@ export class AuditorCore {
               role: node.role,
               computedName: nameEval.computedName,
               reason: nameEval.reason
+            }
+          });
+        }
+
+        // Visual-Semantic Affordance Check (SigLIP / ViT heuristic)
+        const affordance = this.affordanceEngine.evaluateIconAffordance(node.selector, node.name, node.role);
+        if (affordance.hasSemanticContradiction) {
+          const impact = this.impactModel.scoreFinding('misleading_accessible_name', persona, false, 0);
+          findings.push({
+            id: crypto.randomUUID(),
+            runId,
+            stepIdx: 0,
+            kind: 'misleading_accessible_name',
+            trustTier: 'proven',
+            wcagRules: ['WCAG 4.1.2 Name, Role, Value', 'WCAG 1.1.1 Non-text Content'],
+            severity: impact.severity,
+            severityScore: impact.score,
+            severityInterval: impact.interval,
+            title: 'Visual-Semantic Affordance Mismatch',
+            summary: affordance.explanation,
+            evidence: {
+              selector: node.selector,
+              detectedIcon: affordance.detectedIconType,
+              accessibleName: node.name
             }
           });
         }
@@ -250,6 +280,37 @@ export class AuditorCore {
               announcementsReceivedCount: observerData.announcements.length
             }
           });
+        }
+
+        // 8. ATL* Temporal Logic Verification on Active Modals/Dialogs
+        const activeModalSel = await page.evaluate(() => {
+          const m = document.querySelector('[role="dialog"], #trap-modal, [aria-modal="true"]');
+          return m ? (m.id ? '#' + m.id : '[role="dialog"]') : null;
+        });
+
+        if (activeModalSel && !findings.some(f => f.kind === 'keyboard_trap')) {
+          const escapeProof = await this.temporalChecker.verifyEscapeStrategy(page, activeModalSel);
+          if (!escapeProof.holds) {
+            const impact = this.impactModel.scoreFinding('keyboard_trap', persona, true, stepIdx);
+            findings.push({
+              id: crypto.randomUUID(),
+              runId,
+              stepIdx,
+              kind: 'keyboard_trap',
+              trustTier: 'proven',
+              wcagRules: ['WCAG 2.1.2 No Keyboard Trap (Level A)'],
+              severity: impact.severity,
+              severityScore: impact.score,
+              severityInterval: impact.interval,
+              title: 'ATL* Temporal Violation: Escape Strategy Deficit',
+              summary: escapeProof.proofExplanation,
+              evidence: {
+                property: escapeProof.property,
+                counterexampleTrace: escapeProof.counterexampleTrace,
+                violationState: escapeProof.violationState
+              }
+            });
+          }
         }
 
         // Capture step record
