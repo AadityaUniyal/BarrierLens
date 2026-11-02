@@ -4,6 +4,20 @@
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
+
+const __filename = fileURLToPath(import.meta.url);
+
+// Transparently ensure execution under tsx loader when invoked directly with `node`
+if (!process.env.RUNNING_UNDER_TSX) {
+  const result = spawnSync('npx', ['tsx', __filename, ...process.argv.slice(2)], {
+    stdio: 'inherit',
+    env: { ...process.env, RUNNING_UNDER_TSX: '1' },
+    shell: true
+  });
+  process.exit(result.status ?? 0);
+}
 
 // Check environment
 const envPath = path.resolve(process.cwd(), '.env.local');

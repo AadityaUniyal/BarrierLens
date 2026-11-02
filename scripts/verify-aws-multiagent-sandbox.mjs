@@ -1,9 +1,24 @@
 import assert from 'node:assert/strict';
-import { AWSBedrockClient } from '../lib/barrierlens/aws/bedrock-client.ts';
-import { AWSEventMesh } from '../lib/barrierlens/aws/event-mesh.ts';
-import { AWSS3ArtifactStore } from '../lib/barrierlens/aws/s3-artifact-store.ts';
-import { IsolatedExecutionSandbox } from '../lib/barrierlens/sandbox/isolated-sandbox.ts';
-import { MultiAgentMeshOrchestrator } from '../lib/barrierlens/multiagent/mesh-orchestrator.ts';
+import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
+
+const __filename = fileURLToPath(import.meta.url);
+
+// Transparently ensure execution under tsx loader when invoked directly with `node`
+if (!process.env.RUNNING_UNDER_TSX) {
+  const result = spawnSync('npx', ['tsx', __filename, ...process.argv.slice(2)], {
+    stdio: 'inherit',
+    env: { ...process.env, RUNNING_UNDER_TSX: '1' },
+    shell: true
+  });
+  process.exit(result.status ?? 0);
+}
+
+const { AWSBedrockClient } = await import('../lib/barrierlens/aws/bedrock-client.ts');
+const { AWSEventMesh } = await import('../lib/barrierlens/aws/event-mesh.ts');
+const { AWSS3ArtifactStore } = await import('../lib/barrierlens/aws/s3-artifact-store.ts');
+const { IsolatedExecutionSandbox } = await import('../lib/barrierlens/sandbox/isolated-sandbox.ts');
+const { MultiAgentMeshOrchestrator } = await import('../lib/barrierlens/multiagent/mesh-orchestrator.ts');
 
 console.log('🧪 Starting Verification: AWS Strands, Sandbox & Multi-Agent Mesh...\n');
 
@@ -152,7 +167,9 @@ async function runTests() {
   console.log('========================================================================\n');
 }
 
-runTests().catch(err => {
+runTests().then(() => {
+  process.exit(0);
+}).catch(err => {
   console.error('❌ Verification Failed:', err);
   process.exit(1);
 });
