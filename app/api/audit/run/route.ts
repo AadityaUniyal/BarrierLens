@@ -1,26 +1,19 @@
 import { NextResponse } from 'next/server';
-import { AuditorCore } from '@/lib/barrierlens/agent/auditor-core';
+import { runGuardedAudit, publicErrorResponse } from '@/lib/barrierlens/security/public-audit';
 
-export const maxDuration = 60; // Allow up to 60s for full browser exploration
+export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const targetUrl = body.targetUrl || 'http://localhost:3000/benchmark';
-    const goal = body.goal || 'Complete newsletter sign up and confirm subscription';
-    const persona = body.persona || 'keyboard';
-    const maxSteps = body.maxSteps || 10;
-
-    const auditor = new AuditorCore();
-    const result = await auditor.runAudit(targetUrl, goal, persona, maxSteps);
-
+    const body = await req.json().catch(() => ({}));
+    const result = await runGuardedAudit(req, body);
     return NextResponse.json(result);
   } catch (err: any) {
-    console.error('[API Audit Run Error]:', err);
-    return NextResponse.json(
-      { error: err.message, stack: err.stack },
-      { status: 500 }
-    );
+    const mapped = publicErrorResponse(err);
+    return NextResponse.json(mapped.body, {
+      status: mapped.status,
+      headers: mapped.status === 429 ? { 'Retry-After': String((mapped.body.retryAfterSec as number) || 60) } : undefined,
+    });
   }
 }

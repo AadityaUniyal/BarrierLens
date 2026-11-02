@@ -11,18 +11,43 @@ import { ScreenReaderTranscript } from '@/components/apple/ScreenReaderTranscrip
 import { TrendsView } from '@/components/apple/TrendsView';
 import { ReviewQueueView } from '@/components/apple/ReviewQueueView';
 import { PublicScorecardView } from '@/components/apple/PublicScorecardView';
+import { BarrierGenomeViz } from '@/components/apple/BarrierGenomeViz';
+import { CausalDiffView } from '@/components/apple/CausalDiffView';
+import { StressTestDashboard } from '@/components/apple/StressTestDashboard';
+import { MultiAgentMeshView } from '@/components/apple/MultiAgentMeshView';
+import { AWSBridgeConsole } from '@/components/apple/AWSBridgeConsole';
+import { LiveMissionControl } from '@/components/apple/LiveMissionControl';
+import { VisualTwinSimulator } from '@/components/apple/VisualTwinSimulator';
+import { LandingStory } from '@/components/apple/LandingStory';
+import { AppleAuthModal, UserSession } from '@/components/apple/AppleAuthModal';
 import { AuditRun, BarrierFinding, PersonaType, VerifiedFixResult } from '@/lib/barrierlens/types';
+import { transcriptItemsFromRun } from '@/lib/barrierlens/engines/transcript-from-run';
 
 export default function Home() {
-  const [activeScreen, setActiveScreen] = useState<ScreenId>('studio');
+  const [activeScreen, setActiveScreen] = useState<ScreenId>('story');
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [userSession, setUserSession] = useState<UserSession | null>({
+    id: 'usr_apple_9841',
+    name: 'Sarah Chen',
+    email: 'sarah.chen@apple-id.corp',
+    authMethod: 'apple_passkey',
+    organization: 'Cupertino Design Systems',
+    role: 'Staff Frontend Engineer',
+    awsRegion: 'us-east-1 (N. Virginia)',
+    bedrockQuota: '1,000,000 tokens/hr (Enterprise Tier)',
+    verifiedAt: '10:45 AM'
+  });
 
   // Audit parameters
-  const [targetUrl, setTargetUrl] = useState('http://localhost:3000/benchmark');
+  const [targetUrl, setTargetUrl] = useState('/benchmark');
+  const [shareUrl, setShareUrl] = useState('');
   const [goal, setGoal] = useState('Subscribe to newsletter and test confirmation modal');
   const [persona, setPersona] = useState<PersonaType>('keyboard');
   const [maxSteps, setMaxSteps] = useState(8);
   const [isAuditing, setIsAuditing] = useState(false);
+  const [streamingStatus, setStreamingStatus] = useState<string>('');
+  const [streamingStep, setStreamingStep] = useState<number>(0);
 
   // Active run & verification state
   const [auditResult, setAuditResult] = useState<AuditRun | null>(null);
@@ -33,14 +58,21 @@ export default function Home() {
   const [runsHistory, setRunsHistory] = useState<any[]>([]);
   const [servicesHealth, setServicesHealth] = useState({ operational: 7, total: 7 });
 
+  useEffect(() => {
+    if (typeof window !== 'undefined' && targetUrl === '/benchmark') {
+      setTargetUrl(`${window.location.origin}/benchmark`);
+    }
+  }, [targetUrl]);
+
   // Initial data load
   useEffect(() => {
-    fetch('/api/health')
-      .then(res => res.json())
-      .then(data => {
-        const total = data.services?.length || 7;
-        const op = data.services?.filter((s: any) => s.status === 'operational').length || total;
-        setServicesHealth({ operational: op, total });
+    fetch('/api/status')
+      .then((res) => res.json())
+      .then((data) => {
+        setServicesHealth({
+          operational: data.audit?.available ? 1 : 0,
+          total: 1,
+        });
       })
       .catch(() => {});
 
@@ -52,23 +84,121 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
-  // Run Task Audit
+  // Run Task Audit with SSE Live Streaming (/api/audit/stream)
   const handleRunAudit = async () => {
     setIsAuditing(true);
+    setStreamingStatus('Initializing Chromium CDP session and Accessibility domain...');
+    setStreamingStep(0);
+
     try {
-      const res = await fetch('/api/audit/run', {
+      const response = await fetch('/api/audit/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targetUrl, goal, persona, maxSteps })
       });
-      const data = await res.json();
-      setAuditResult(data);
-      // Refresh run history
+
+      if (!response.body) {
+        throw new Error('ReadableStream not supported by browser');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      const accumulatedSteps: any[] = [];
+      const accumulatedFindings: any[] = [];
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split('\n\n');
+        buffer = events.pop() || '';
+
+        for (const rawEvent of events) {
+          if (!rawEvent.trim()) continue;
+          const lines = rawEvent.split('\n');
+          let eventType = 'message';
+          let eventData = '';
+
+          for (const line of lines) {
+            if (line.startsWith('event: ')) {
+              eventType = line.slice(7).trim();
+            } else if (line.startsWith('data: ')) {
+              eventData = line.slice(6).trim();
+            }
+          }
+
+          if (eventData) {
+            try {
+              const parsed = JSON.parse(eventData);
+              if (eventType === 'status') {
+                setStreamingStatus(parsed.message || 'Auditing in progress...');
+              } else if (eventType === 'step') {
+                accumulatedSteps.push(parsed);
+                setStreamingStep(parsed.idx);
+                setStreamingStatus(`Step ${parsed.idx}: Dispatched [${parsed.key || parsed.actionType}] → ${parsed.activeElementAfter || 'control'}`);
+                setAuditResult(prev => ({
+                  id: prev?.id || 'live-stream',
+                  targetUrl,
+                  goal,
+                  persona,
+                  status: 'running',
+                  startedAt: prev?.startedAt || new Date().toISOString(),
+                  finishedAt: new Date().toISOString(),
+                  taskSuccess: false,
+                  effortRatio: 1.0,
+                  steps: [...accumulatedSteps],
+                  findings: [...accumulatedFindings],
+                  tierMix: prev?.tierMix || { tier0Rules: 0, tier1Ranker: 0, tier2Groq: 0, tier3Gemini: 0 }
+                }));
+              } else if (eventType === 'finding') {
+                accumulatedFindings.push(parsed);
+                setAuditResult(prev => prev ? ({ ...prev, findings: [...accumulatedFindings] }) : null);
+              } else if (eventType === 'complete') {
+                setAuditResult(parsed);
+                if (parsed?.id && typeof window !== 'undefined') {
+                  setShareUrl(`${window.location.origin}/r/${parsed.id}`);
+                }
+                setStreamingStatus('Audit complete. Share the report link below.');
+              } else if (eventType === 'error') {
+                setStreamingStatus(`Could not run audit: ${parsed.error || parsed.message || 'unknown error'}`);
+              }
+            } catch (pErr) {
+              console.warn('Could not parse SSE event chunk', pErr);
+            }
+          }
+        }
+      }
+
+      // Refresh runs list
       fetch('/api/runs/list')
         .then(r => r.json())
-        .then(d => setRunsHistory(d.runs || []));
+        .then(d => setRunsHistory(d.runs || []))
+        .catch(() => {});
     } catch (err) {
-      console.error('Audit run failed', err);
+      console.warn('Streaming failed, fallback to synchronous /api/audit/run', err);
+      try {
+        const res = await fetch('/api/audit/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ targetUrl, goal, persona, maxSteps })
+        });
+        const data = await res.json();
+        if (data?.error) {
+          setStreamingStatus(`Could not run audit: ${data.error}`);
+        } else {
+          setAuditResult(data);
+          if (data?.id && typeof window !== 'undefined') {
+            setShareUrl(`${window.location.origin}/r/${data.id}`);
+          }
+        }
+        fetch('/api/runs/list')
+          .then(r => r.json())
+          .then(d => setRunsHistory(d.runs || []));
+      } catch (fallbackErr) {
+        console.error('Audit run failed', fallbackErr);
+      }
     } finally {
       setIsAuditing(false);
     }
@@ -118,9 +248,20 @@ export default function Home() {
         setActiveScreen={setActiveScreen}
         openPalette={() => setIsPaletteOpen(true)}
         servicesCount={servicesHealth}
+        userSession={userSession}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
       />
 
-      {/* 2. Global Spotlight Command Palette (Cmd + K) */}
+      {/* 2. Apple Passkey & Enterprise IAM Auth Sheet */}
+      <AppleAuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        currentSession={userSession}
+        onAuthenticate={(session) => setUserSession(session)}
+        onSignOut={() => setUserSession(null)}
+      />
+
+      {/* 3. Global Spotlight Command Palette (Cmd + K) */}
       <CommandPalette
         isOpen={isPaletteOpen}
         onClose={() => setIsPaletteOpen(false)}
@@ -128,10 +269,25 @@ export default function Home() {
         onRunAudit={handleRunAudit}
       />
 
-      {/* 3. Main Screen Viewport */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10">
+      {/* 4. Main Screen Viewport */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-8">
+        {activeScreen === 'story' && (
+          <LandingStory
+            onEnterStudio={() => setActiveScreen('studio')}
+            onOpenAuth={() => setIsAuthModalOpen(true)}
+          />
+        )}
+
         {activeScreen === 'studio' && (
-          <div className="space-y-12 animate-in fade-in duration-300">
+          <div className="space-y-10 animate-in fade-in duration-300">
+            {/* Live Strands Swarm & Cupertino Mission Control Cockpit */}
+            <LiveMissionControl
+              onOpenGenome={() => setActiveScreen('barrier-genome')}
+              onOpenCausalDiff={() => setActiveScreen('causal-diff')}
+              onOpenAwsConsole={() => setActiveScreen('aws-bridge')}
+              onOpenVisualTwin={() => setActiveScreen('visual-twin')}
+            />
+
             {/* Compose Console */}
             <ComposeView
               targetUrl={targetUrl}
@@ -144,7 +300,25 @@ export default function Home() {
               setMaxSteps={setMaxSteps}
               isAuditing={isAuditing}
               onRunAudit={handleRunAudit}
+              streamingStatus={streamingStatus}
+              streamingStep={streamingStep}
             />
+
+            {shareUrl && (
+              <div className="apple-vibrancy-regular rounded-2xl p-4 border-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <p className="text-[12px] font-semibold text-[#86868b] uppercase tracking-wide">Share this run</p>
+                  <p className="text-[13px] font-mono text-[#f5f5f7] break-all">{shareUrl}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigator.clipboard.writeText(shareUrl)}
+                  className="px-4 py-2 rounded-xl bg-white/10 text-sm border-hairline hover:bg-white/16"
+                >
+                  Copy link
+                </button>
+              </div>
+            )}
 
             {/* Trace Theater (Live Replay & Keycaps) */}
             {auditResult && (
@@ -167,15 +341,40 @@ export default function Home() {
           </div>
         )}
 
+        {activeScreen === 'visual-twin' && (
+          <VisualTwinSimulator />
+        )}
+
+        {activeScreen === 'multi-agent' && (
+          <MultiAgentMeshView />
+        )}
+
+        {activeScreen === 'aws-bridge' && (
+          <AWSBridgeConsole />
+        )}
+
         {activeScreen === 'focus-map' && (
           <FocusMapView
             kendallTau={auditResult?.kendallTau}
             trapCertificate={auditResult?.findings?.find(f => f.certificate)?.certificate}
+            trapCertificates={auditResult?.findings?.filter(f => f.certificate).map(f => f.certificate!) || []}
           />
         )}
 
         {activeScreen === 'screen-reader' && (
           <ScreenReaderTranscript />
+        )}
+
+        {activeScreen === 'barrier-genome' && (
+          <BarrierGenomeViz />
+        )}
+
+        {activeScreen === 'causal-diff' && (
+          <CausalDiffView />
+        )}
+
+        {activeScreen === 'stress-test' && (
+          <StressTestDashboard />
         )}
 
         {activeScreen === 'trends' && (

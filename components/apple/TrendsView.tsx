@@ -25,17 +25,17 @@ export function TrendsView({ runs }: TrendsViewProps) {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+          <h2 className="text-[22px] font-bold tracking-[-0.017em] text-white flex items-center gap-2.5">
             <LineChart className="w-5 h-5 text-[#0a84ff]" />
             Trends & Flow Drift Sentinel
           </h2>
-          <p className="text-xs text-[#86868b] mt-0.5">
+          <p className="text-[13px] text-[#86868b] tracking-[0.005em] mt-0.5">
             CUSUM change-point detection on Effort Ratio time series & regression tracking across deployments
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-rose-500/10 text-[#ff453a] border border-rose-500/20 flex items-center gap-1.5">
+          <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-rose-500/10 text-[#ff453a] border-hairline border-rose-500/30 flex items-center gap-1.5">
             <ShieldAlert className="w-3.5 h-3.5" />
             1 Drift Alert Detected (PR #42)
           </span>
@@ -43,10 +43,10 @@ export function TrendsView({ runs }: TrendsViewProps) {
       </div>
 
       {/* Main Sparkline Card */}
-      <div className="apple-card rounded-3xl p-8 border border-white/[0.08] shadow-xl space-y-6">
+      <div className="apple-vibrancy-regular rounded-3xl p-8 border-hairline shadow-2xl space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-[#86868b] uppercase">Checkout Flow Effort Ratio History</span>
+            <span className="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider font-mono">Checkout Flow Effort Ratio History</span>
             <div className="text-3xl font-extrabold text-white mt-1 flex items-baseline gap-2">
               4.0x
               <span className="text-xs font-mono text-[#ff453a] font-normal flex items-center">
@@ -100,14 +100,14 @@ export function TrendsView({ runs }: TrendsViewProps) {
       </div>
 
       {/* Audit History Table from Neon Postgres */}
-      <div className="apple-card rounded-3xl p-6 border border-white/[0.08] shadow-xl space-y-4">
-        <h3 className="text-xs font-semibold text-[#86868b] uppercase tracking-wider">
+      <div className="apple-vibrancy-regular rounded-3xl p-6 border-hairline shadow-2xl space-y-4">
+        <h3 className="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider font-mono">
           Recorded Audit History (Neon Postgres)
         </h3>
 
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left font-mono">
-            <thead className="text-[#6e6e73] border-b border-white/[0.08]">
+            <thead className="text-[#6e6e73] border-b border-hairline">
               <tr>
                 <th className="pb-3 font-medium">Run ID</th>
                 <th className="pb-3 font-medium">Persona</th>

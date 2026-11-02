@@ -61,56 +61,58 @@ export function ReviewQueueView({ findings, onTriage }: ReviewQueueViewProps) {
 
         {/* Keyboard shortcut hints */}
         <div className="flex items-center gap-2 text-xs font-mono text-[#86868b]">
-          <span className="px-2 py-1 rounded bg-[#1c1c1e] border border-white/10 text-white">J/K</span>
+          <span className="apple-keycap px-2 py-0.5 text-xs text-white">J</span>
+          <span className="apple-keycap px-2 py-0.5 text-xs text-white">K</span>
           <span>Navigate</span>
-          <span className="px-2 py-1 rounded bg-[#1c1c1e] border border-white/10 text-[#30d158]">A</span>
+          <span className="apple-keycap px-2 py-0.5 text-xs text-[#30d158] border-emerald-500/30">A</span>
           <span>Accept</span>
-          <span className="px-2 py-1 rounded bg-[#1c1c1e] border border-white/10 text-[#ff453a]">R</span>
+          <span className="apple-keycap px-2 py-0.5 text-xs text-[#ff453a] border-rose-500/30">R</span>
           <span>Reject</span>
         </div>
       </div>
 
       {/* Triage Card */}
-      <div className="apple-card rounded-3xl p-8 border border-white/[0.08] shadow-2xl max-w-3xl mx-auto space-y-6">
+      <div className="apple-vibrancy-regular rounded-3xl p-8 border-hairline shadow-2xl max-w-3xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <span className="text-xs font-mono text-[#86868b]">
             Finding {currentIndex + 1} of {findings.length}
           </span>
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-[#0a84ff] border border-blue-500/20">
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/10 text-[#0a84ff] border-hairline border-blue-500/30 font-semibold">
             Model Margin Uncertainty: 0.18 (High Priority)
           </span>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/10 text-[#ff9f0a] border border-amber-500/20 font-bold">
+            <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-amber-500/10 text-[#ff9f0a] border-hairline border-amber-500/30 font-bold">
               {current.severity}
             </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-white">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-white">
               Trust Tier: {current.trustTier.toUpperCase()}
             </span>
           </div>
 
-          <h3 className="text-xl font-bold text-white">
+          <h3 className="text-[22px] font-bold tracking-[-0.017em] text-white">
             {current.title}
           </h3>
 
-          <p className="text-sm text-slate-300 leading-relaxed pt-1">
+          <p className="text-[15px] text-slate-300 leading-relaxed tracking-[-0.005em] pt-1">
             {current.summary}
           </p>
         </div>
 
         {/* Action Triage Buttons */}
-        <div className="pt-6 border-t border-white/[0.06] flex items-center justify-between gap-4">
+        <div className="pt-6 border-t border-hairline flex items-center justify-between gap-4">
           <button
             onClick={() => {
               onTriage(current.id, 'rejected');
               setCurrentIndex((prev) => Math.min(findings.length - 1, prev + 1));
             }}
-            className="flex-1 py-3 rounded-2xl bg-rose-950/40 hover:bg-rose-900/40 text-[#ff453a] border border-rose-500/30 text-xs font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
+            className="flex-1 py-3.5 rounded-2xl bg-rose-950/30 hover:bg-rose-900/40 text-[#ff453a] border-hairline border-rose-500/40 text-xs font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-all duration-150 ease-spring"
           >
             <X className="w-4 h-4" />
-            <span>Reject False Positive [R]</span>
+            <span>Reject False Positive</span>
+            <span className="apple-keycap px-1.5 py-0.2 text-[10px] text-white">R</span>
           </button>
 
           <button
@@ -118,10 +120,11 @@ export function ReviewQueueView({ findings, onTriage }: ReviewQueueViewProps) {
               onTriage(current.id, 'accepted');
               setCurrentIndex((prev) => Math.min(findings.length - 1, prev + 1));
             }}
-            className="flex-1 py-3 rounded-2xl bg-emerald-950/40 hover:bg-emerald-900/40 text-[#30d158] border border-emerald-500/30 text-xs font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
+            className="flex-1 py-3.5 rounded-2xl bg-emerald-950/30 hover:bg-emerald-900/40 text-[#30d158] border-hairline border-emerald-500/40 text-xs font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-all duration-150 ease-spring"
           >
             <Check className="w-4 h-4" />
-            <span>Accept Ground Truth [A]</span>
+            <span>Accept Ground Truth</span>
+            <span className="apple-keycap px-1.5 py-0.2 text-[10px] text-white">A</span>
           </button>
         </div>
       </div>

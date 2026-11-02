@@ -12,6 +12,7 @@ import { FlakinessFilter } from '../ml/flakiness-filter';
 import { LLMRouter } from './llm-router';
 import { INJECTED_OBSERVER_SCRIPT } from '../cdp/observer-script';
 import { EXTRACT_AX_NODES_SCRIPT, serializeAXTree, SerializedAXNode } from '../cdp/ax-serializer';
+import { extractCDPAXTree } from '../cdp/cdp-ax-extractor';
 import { AuditRun, BarrierFinding, ActionStep, PersonaType, FocusNode } from '../types';
 import { sql } from '../../neon/db';
 
@@ -73,8 +74,43 @@ export class AuditorCore {
       await page.addInitScript({ content: INJECTED_OBSERVER_SCRIPT });
       await page.waitForTimeout(1000);
 
-      // Extract initial interactive nodes & compute Kendall's Tau
-      const initialNodes = (await page.evaluate(EXTRACT_AX_NODES_SCRIPT)) as SerializedAXNode[];
+      // Extract initial interactive nodes via CDP Accessibility domain & compute Kendall's Tau
+      let initialNodes: SerializedAXNode[] = [];
+      try {
+        const cdpResult = await extractCDPAXTree(page, { resolveDOM: true });
+        if (cdpResult.interactiveNodes.length > 0) {
+          const boxes = await page.evaluate((selectors) => {
+            return selectors.map(sel => {
+              try {
+                const el = document.querySelector(sel);
+                if (!el) return { x: 0, y: 0, width: 0, height: 0 };
+                const r = el.getBoundingClientRect();
+                return { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height) };
+              } catch {
+                return { x: 0, y: 0, width: 0, height: 0 };
+              }
+            });
+          }, cdpResult.interactiveNodes.map(n => n.selector || 'body'));
+
+          initialNodes = cdpResult.interactiveNodes.map((n, idx) => ({
+            index: idx + 1,
+            selector: n.selector || (n.domNode?.localName ?? n.role),
+            role: n.role,
+            name: n.name || '',
+            value: n.value,
+            focusable: n.focusable,
+            disabled: n.disabled,
+            boundingBox: boxes[idx],
+            backendDOMNodeId: n.backendDOMNodeId
+          }));
+        }
+      } catch (cdpErr) {
+        console.warn('[CDP AX] Fallback to evaluator extraction:', cdpErr);
+      }
+
+      if (initialNodes.length === 0) {
+        initialNodes = (await page.evaluate(EXTRACT_AX_NODES_SCRIPT)) as SerializedAXNode[];
+      }
       
       const focusNodes: FocusNode[] = initialNodes.map(n => ({
         id: n.selector,
@@ -85,7 +121,8 @@ export class AuditorCore {
         tabIndex: 0,
         box: n.boundingBox || { x: 0, y: 0, width: 0, height: 0 },
         isModal: false,
-        isInert: false
+        isInert: false,
+        backendDOMNodeId: n.backendDOMNodeId
       }));
 
       focusNodes.forEach(n => this.focusGraph.addNode(n));
@@ -171,8 +208,43 @@ export class AuditorCore {
       let previousActiveSelector = '';
 
       for (let stepIdx = 1; stepIdx <= maxSteps; stepIdx++) {
-        // 1. Get current interactive state representation
-        const currentNodes = (await page.evaluate(EXTRACT_AX_NODES_SCRIPT)) as SerializedAXNode[];
+        // 1. Get current interactive state representation via CDP Accessibility domain
+        let currentNodes: SerializedAXNode[] = [];
+        try {
+          const stepCdp = await extractCDPAXTree(page, { resolveDOM: true });
+          if (stepCdp.interactiveNodes.length > 0) {
+            const boxes = await page.evaluate((selectors) => {
+              return selectors.map(sel => {
+                try {
+                  const el = document.querySelector(sel);
+                  if (!el) return { x: 0, y: 0, width: 0, height: 0 };
+                  const r = el.getBoundingClientRect();
+                  return { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height) };
+                } catch {
+                  return { x: 0, y: 0, width: 0, height: 0 };
+                }
+              });
+            }, stepCdp.interactiveNodes.map(n => n.selector || 'body'));
+
+            currentNodes = stepCdp.interactiveNodes.map((n, idx) => ({
+              index: idx + 1,
+              selector: n.selector || (n.domNode?.localName ?? n.role),
+              role: n.role,
+              name: n.name || '',
+              value: n.value,
+              focusable: n.focusable,
+              disabled: n.disabled,
+              boundingBox: boxes[idx],
+              backendDOMNodeId: n.backendDOMNodeId
+            }));
+          }
+        } catch {
+          // Fallback if CDP session transiently drops
+        }
+
+        if (currentNodes.length === 0) {
+          currentNodes = (await page.evaluate(EXTRACT_AX_NODES_SCRIPT)) as SerializedAXNode[];
+        }
         const compactAX = serializeAXTree(currentNodes);
 
         // 2. Cascade Router: Evaluate Tier 1 Action Ranker before invoking LLMs
@@ -191,7 +263,8 @@ export class AuditorCore {
         } else {
           // Escalate to Tier 2 (Groq LLaMA 3.3) or Tier 3 (Gemini Flash)
           decision = await this.router.decideNextAction(goal, persona, compactAX, keyHistory);
-          if (decision.tierUsed === 2) tierMix.tier2Groq++;
+          if (decision.tierUsed === 0) tierMix.tier0Rules++;
+          else if (decision.tierUsed === 2) tierMix.tier2Groq++;
           else if (decision.tierUsed === 3) tierMix.tier3Gemini++;
         }
 
@@ -271,17 +344,71 @@ export class AuditorCore {
 
         // 7. Announcement-Gap Detector (Silent State Changes)
         const domMutations = (observerData.events as any[])
-          .filter((e: any) => e.type === 'dom_added')
-          .map((e: any) => e.payload);
+          .filter((e: any) => {
+            if (e.type === 'dom_added') return true;
+            if (e.type === 'mutation') {
+              const subType = e.details?.subType || e.payload?.subType;
+              return subType === 'dom_added' || subType === 'text_change' || subType === 'attr_change';
+            }
+            return false;
+          })
+          .map((e: any) => {
+            const p = e.payload || e.details || {};
+            const subType = p.subType || e.type;
+            const textVal = p.text || p.textSnippet || (p.subType === 'attr_change' && p.elementText ? p.elementText : '');
+            return {
+              type: subType === 'dom_added' ? 'added' : (subType === 'text_change' ? 'text' : (p.becameVisible ? 'visibility' : 'attribute')),
+              tag: p.tag || p.tagName || p.parentTag || e.targetTag || '',
+              selector: p.selector || p.parentSelector || e.targetSelector || '',
+              text: textVal,
+              isLive: Boolean(p.isLive || p.isLiveRegion),
+              rect: p.rect,
+              backendNodeId: p.backendNodeId,
+              subType,
+              attributeName: p.attributeName,
+              oldValue: p.oldValue,
+              newValue: p.newValue,
+              becameVisible: p.becameVisible
+            };
+          });
+
+        // Focus movement to a valid non-body interactive target
+        const focusMoved = Boolean(
+          previousActiveSelector &&
+          currentActive &&
+          previousActiveSelector !== currentActive &&
+          currentActive !== 'body'
+        );
+
+        // Check if active element accessible name changed
+        const activeNameChanged = (observerData.events as any[]).some((e: any) =>
+          e.type === 'name_change' || e.details?.nameChanged || e.payload?.nameChanged
+        );
+
+        // Multi-channel announcement evaluation supporting both classic and enhanced detectGap signatures
+        const announcedChange = {
+          focusMoved,
+          previousActiveElement: { selector: previousActiveSelector },
+          currentActiveElement: { selector: currentActive },
+          announcements: observerData.announcements.map((a: any) => ({
+            text: a.text,
+            politeness: a.politeness || 'polite',
+            timestamp: a.timestamp || Date.now()
+          })),
+          nameChanged: activeNameChanged
+        };
 
         const silentGap = this.gapDetector.detectGap(
-          domMutations,
+          domMutations as any,
           observerData.announcements,
-          previousActiveSelector !== currentActive
+          focusMoved,
+          announcedChange as any
         );
 
         if (silentGap.detected && !findings.some(f => f.kind === 'silent_state_change')) {
           const impact = this.impactModel.scoreFinding('silent_state_change', persona, true, stepIdx);
+          const gapCertificate = (silentGap as any).certificate;
+
           findings.push({
             id: crypto.randomUUID(),
             runId,
@@ -294,9 +421,13 @@ export class AuditorCore {
             severityInterval: impact.interval,
             title: 'Silent State Change / Unannounced Error',
             summary: silentGap.evidence,
+            gapCertificate: gapCertificate,
             evidence: {
               visualDeltaText: silentGap.visualDeltaText,
-              announcementsReceivedCount: observerData.announcements.length
+              announcementsReceivedCount: observerData.announcements.length,
+              focusMoved,
+              activeNameChanged,
+              certificate: gapCertificate || null
             }
           });
         }
@@ -393,20 +524,40 @@ export class AuditorCore {
     // Persist Run & Findings to Neon Postgres
     // -------------------------------------------------------------
     try {
-      await sql`
-        INSERT INTO runs (id, persona, status, budget, started_at, finished_at, task_success, effort_ratio, tier_mix)
-        VALUES (
-          ${runId}, 
-          ${persona}, 
-          'completed', 
-          ${JSON.stringify({ maxSteps })}, 
-          ${startedAt}, 
-          ${finishedAt}, 
-          ${taskSuccess}, 
-          ${effortRatio}, 
-          ${JSON.stringify(tierMix)}
-        );
-      `;
+      try {
+        await sql`
+          INSERT INTO runs (id, persona, status, budget, started_at, finished_at, task_success, effort_ratio, tier_mix, target_url, goal_text, payload)
+          VALUES (
+            ${runId}, 
+            ${persona}, 
+            'completed', 
+            ${JSON.stringify({ maxSteps })}, 
+            ${startedAt}, 
+            ${finishedAt}, 
+            ${taskSuccess}, 
+            ${effortRatio}, 
+            ${JSON.stringify(tierMix)},
+            ${targetUrl},
+            ${goal},
+            ${JSON.stringify(auditRunResult)}
+          );
+        `;
+      } catch {
+        await sql`
+          INSERT INTO runs (id, persona, status, budget, started_at, finished_at, task_success, effort_ratio, tier_mix)
+          VALUES (
+            ${runId}, 
+            ${persona}, 
+            'completed', 
+            ${JSON.stringify({ maxSteps })}, 
+            ${startedAt}, 
+            ${finishedAt}, 
+            ${taskSuccess}, 
+            ${effortRatio}, 
+            ${JSON.stringify(tierMix)}
+          );
+        `;
+      }
 
       // Persist findings to Neon
       for (const finding of findings) {
@@ -423,7 +574,7 @@ export class AuditorCore {
             ${finding.severityInterval[0]},
             ${finding.severityInterval[1]},
             ${JSON.stringify(finding.evidence)},
-            ${finding.certificate ? JSON.stringify(finding.certificate) : null}
+            ${(finding.certificate || finding.gapCertificate) ? JSON.stringify(finding.certificate || finding.gapCertificate) : null}
           );
         `;
       }

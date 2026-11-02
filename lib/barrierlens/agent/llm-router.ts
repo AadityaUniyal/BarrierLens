@@ -5,7 +5,7 @@ export interface LLMDecision {
   text?: string;
   targetSelector?: string;
   isGoalReached: boolean;
-  tierUsed: 2 | 3; // 2=Groq, 3=Gemini
+  tierUsed: 0 | 2 | 3; // 0=rule fallback, 2=Groq, 3=Gemini
 }
 
 export class LLMRouter {
@@ -132,7 +132,7 @@ Output format:
       action: 'press_key',
       key: 'Tab',
       isGoalReached: false,
-      tierUsed: 2
+      tierUsed: 0
     };
   }
 

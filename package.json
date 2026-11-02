@@ -7,12 +7,22 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:services": "node scripts/test-services.mjs"
+    "test:services": "node scripts/test-services.mjs",
+    "test:week2": "node scripts/verify-week2-focus-engine.mjs",
+    "test:week3": "node scripts/verify-week3-accname-wcag.mjs",
+    "test:week4": "npx tsx scripts/verify-week4-announcement-gaps.mjs",
+    "test:week5": "npx tsx scripts/verify-week5-state-graph.mjs",
+    "test:differentiators": "npx tsx --env-file=.env.local scripts/verify-novel-differentiators.mjs",
+    "test:multiagent": "npx tsx --env-file=.env.local scripts/verify-aws-multiagent-sandbox.mjs",
+    "aws:status": "npx tsx scripts/aws-agent-cli.mjs status",
+    "aws:bedrock": "npx tsx scripts/aws-agent-cli.mjs bedrock",
+    "aws:audit": "npx tsx scripts/aws-agent-cli.mjs audit"
   },
   "dependencies": {
     "@neon/config": "^1.9.5",
     "@neon/env": "^1.6.6",
     "@neondatabase/serverless": "^0.10.4",
+    "@strands-agents/sdk": "^1.23.0",
     "lucide-react": "^1.16.0",
     "next": "^15.1.0",
     "playwright": "^1.64.1",
@@ -24,6 +34,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.20",
+    "axe-core": "^4.14.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2"

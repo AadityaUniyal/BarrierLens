@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BarrierLens Fixture - Silent Errors & Announcement Gaps</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 2rem; background: #0b0c10; color: #fff; }
+    .card { background: #1f2833; padding: 1.5rem; border-radius: 8px; max-width: 500px; margin-bottom: 2rem; }
+    .error-box { background: #451b1d; border-left: 4px solid #ff4d4f; padding: 0.75rem; margin-top: 1rem; color: #ffccc7; display: none; }
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #0050b3; color: white; padding: 1rem 1.5rem; border-radius: 6px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    button { background: #45a29e; color: #0b0c10; font-weight: bold; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; }
+    input { width: 100%; padding: 0.5rem; margin-top: 0.5rem; box-sizing: border-box; background: #0b0c10; border: 1px solid #45a29e; color: #fff; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Announcement Gap & Silent State Test Fixture</h1>
+
+  <!-- 1. Silent Form Error: Appears visually without focus shift or aria-live -->
+  <div class="card" id="form-card">
+    <h2>Checkout & Account</h2>
+    <form id="silent-form" onsubmit="event.preventDefault(); triggerSilentError();">
+      <label for="user-email">Email Address (Required)</label>
+      <input type="text" id="user-email" placeholder="you@domain.com">
+      <div id="inline-error" class="error-box">
+        Error: A valid email address is required to proceed with registration.
+      </div>
+      <button type="submit" id="submit-btn" style="margin-top: 1rem;">Continue to Payment</button>
+    </form>
+  </div>
+
+  <!-- 2. Silent Toast Notification -->
+  <div class="card" id="toast-card">
+    <h2>Shopping Cart</h2>
+    <button id="add-to-cart-btn" onclick="triggerSilentToast()">Add Pro Plan to Cart</button>
+  </div>
+  <div id="cart-toast" class="toast">
+    Product "BarrierLens Enterprise" successfully added to cart.
+  </div>
+
+  <!-- 3. Silent Loading Spinner -->
+  <div class="card" id="spinner-card">
+    <h2>Data Synchronization</h2>
+    <button id="sync-btn" onclick="triggerSilentSync()">Sync Repositories</button>
+    <div id="sync-status" style="margin-top: 1rem; display: none;">
+      <span class="spinner" id="sync-spinner"></span> <span id="sync-text">Synchronizing background telemetry...</span>
+    </div>
+  </div>
+
+  <!-- 4. Accessible Contrast Control (Compliant Live Region) -->
+  <div class="card" id="accessible-card">
+    <h2>Accessible Notification (Control)</h2>
+    <button id="acc-notify-btn" onclick="triggerAccessibleNotice()">Dispatch Live Alert</button>
+    <div id="acc-live-region" role="status" aria-live="polite" style="margin-top: 1rem; color: #66bb6a;"></div>
+  </div>
+
+  <script>
+    function triggerSilentError() {
+      // Injected barrier: Visually unhides error text, but moves NO focus and triggers NO aria-live!
+      const err = document.getElementById('inline-error');
+      err.style.display = 'block';
+    }
+
+    function triggerSilentToast() {
+      const toast = document.getElementById('cart-toast');
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 4000);
+    }
+
+    function triggerSilentSync() {
+      const status = document.getElementById('sync-status');
+      status.style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('sync-spinner').style.display = 'none';
+        document.getElementById('sync-text').innerText = 'Sync complete. 42 files updated.';
+      }, 1000);
+    }
+
+    function triggerAccessibleNotice() {
+      const region = document.getElementById('acc-live-region');
+      region.innerText = 'Profile preferences updated successfully.';
+    }
+  </script>
+</body>
+</html>

@@ -1,12 +1,23 @@
+import fs from 'node:fs';
 import { neon } from '@neondatabase/serverless';
+
+if (!process.env.DATABASE_URL) {
+  if (fs.existsSync('.env.local')) {
+    process.loadEnvFile('.env.local');
+  } else if (fs.existsSync('.env')) {
+    process.loadEnvFile('.env');
+  }
+}
 
 const sql = neon(process.env.DATABASE_URL);
 
 async function enableVectorAndMissingTables() {
-  console.log('1. Enabling pgvector extension...');
+  console.log('1. Enabling pgvector extension & embedding vectors...');
   try {
     await sql`CREATE EXTENSION IF NOT EXISTS vector;`;
     console.log('   ✓ pgvector enabled successfully!');
+    await sql`ALTER TABLE states ADD COLUMN IF NOT EXISTS embedding vector(384);`;
+    console.log('   ✓ states.embedding vector(384) verified!');
   } catch (err) {
     console.warn('   ! pgvector notice:', err.message);
   }
@@ -88,6 +99,7 @@ async function enableVectorAndMissingTables() {
     await sql`CREATE INDEX IF NOT EXISTS idx_findings_tier ON findings (run_id, trust_tier);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_steps_run ON steps (run_id, idx);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_states_run ON states (run_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_states_embedding ON states USING hnsw (embedding vector_cosine_ops);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_llm_calls_run ON llm_calls (run_id);`;
     console.log('   ✓ Performance indexes verified!');
   } catch (err) {

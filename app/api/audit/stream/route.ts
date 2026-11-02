@@ -1,16 +1,17 @@
-import { AuditorCore } from '@/lib/barrierlens/agent/auditor-core';
+import { runGuardedAudit, publicErrorResponse } from '@/lib/barrierlens/security/public-audit';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
-  const body = await req.json();
-  const targetUrl = body.targetUrl || 'http://localhost:3000/benchmark';
-  const goal = body.goal || 'Complete subscription flow';
-  const persona = body.persona || 'keyboard';
-  const maxSteps = body.maxSteps || 10;
-
   const encoder = new TextEncoder();
+  let body: any = {};
+  try {
+    body = await req.json();
+  } catch {
+    body = {};
+  }
+
   const customStream = new ReadableStream({
     async start(controller) {
       const sendEvent = (event: string, data: any) => {
@@ -20,20 +21,14 @@ export async function POST(req: Request) {
       try {
         sendEvent('status', { message: 'Launching Playwright Chromium & CDP session...' });
 
-        const auditor = new AuditorCore();
-        await auditor.runAudit(
-          targetUrl, 
-          goal, 
-          persona, 
-          maxSteps, 
-          (progressEvent) => {
-            sendEvent(progressEvent.type, progressEvent.data);
-          }
-        );
+        await runGuardedAudit(req, body, (progressEvent) => {
+          sendEvent(progressEvent.type, progressEvent.data);
+        });
 
         controller.close();
       } catch (err: any) {
-        sendEvent('error', { message: err.message });
+        const mapped = publicErrorResponse(err);
+        sendEvent('error', mapped.body);
         controller.close();
       }
     }

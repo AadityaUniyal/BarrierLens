@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BarrierLens Verification Fixture A — Keyboard Trap</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --card-bg: rgba(28, 28, 30, 0.85);
+      --dialog-bg: rgba(36, 36, 40, 0.95);
+      --hairline: rgba(255, 255, 255, 0.12);
+      --accent-blue: #0071e3;
+      --accent-red: #ff453a;
+      --text: #f5f5f7;
+      --text-muted: #86868b;
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 0.5px solid var(--hairline);
+    }
+
+    nav a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      margin-right: 20px;
+      font-size: 15px;
+    }
+
+    nav a:focus-visible, button:focus-visible, input:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-blue);
+      border-radius: 8px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 0.5px solid var(--hairline);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    p.desc {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 10px;
+      border: 0.5px solid var(--hairline);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-blue);
+      color: #ffffff;
+      border: none;
+    }
+
+    .btn-primary:hover { background: #0077ed; }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.12); }
+
+    .btn-danger {
+      background: rgba(255, 69, 58, 0.15);
+      color: var(--accent-red);
+      border-color: rgba(255, 69, 58, 0.3);
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    /* Modal Dialog styling */
+    dialog#promo-trap-dialog {
+      margin: auto;
+      background: var(--dialog-bg);
+      backdrop-filter: blur(40px);
+      border: 0.5px solid rgba(255, 69, 58, 0.4);
+      border-radius: 24px;
+      padding: 36px;
+      color: var(--text);
+      width: 90%;
+      max-width: 480px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 69, 58, 0.2);
+    }
+
+    dialog#promo-trap-dialog::backdrop {
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+    }
+
+    .badge-trap {
+      display: inline-block;
+      padding: 4px 10px;
+      background: rgba(255, 69, 58, 0.15);
+      color: var(--accent-red);
+      border: 0.5px solid rgba(255, 69, 58, 0.3);
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .dialog-input-group {
+      margin: 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .dialog-input-group label {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .dialog-input-group input {
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 0.5px solid var(--hairline);
+      background: rgba(0, 0, 0, 0.4);
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    .dialog-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav aria-label="Main Navigation">
+      <a href="#home" id="nav-home">Store Home</a>
+      <a href="#specials" id="nav-specials">Special Offers</a>
+      <a href="#support" id="nav-support">Customer Support</a>
+    </nav>
+    <div style="font-size: 13px; color: var(--text-muted);">BarrierLens M3 Test Fixture</div>
+  </header>
+
+  <main class="container">
+    <h1>Holiday Special Promotion</h1>
+    <p class="desc">
+      Explore seasonal accessibility hardware and studio accessories. Claim your exclusive voucher code by opening the promotion dialog below.
+    </p>
+
+    <div class="actions-row">
+      <button id="open-trap-dialog-btn" class="btn btn-primary">
+        Claim Discount Promo
+      </button>
+      <button id="continue-shopping-btn" class="btn btn-secondary">
+        Continue Browsing
+      </button>
+    </div>
+
+    <!-- 
+      Fixture A: Keyboard Trap (Sink SCC with Disabled Escape)
+      Traps Tab and Shift+Tab endlessly within [#promo-input, #promo-apply-btn, #promo-cancel-btn].
+      Intercepts 'Escape' key with e.preventDefault() and e.stopPropagation().
+      No close button provided. Zero outgoing navigation transitions.
+    -->
+    <dialog id="promo-trap-dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title" open>
+      <div class="badge-trap">Injected WCAG 2.1.2 Trap</div>
+      <h2 id="dialog-title" style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">Claim 50% Off Code</h2>
+      <p style="font-size: 14px; color: var(--text-muted); line-height: 1.4;">
+        Enter your verification code below to redeem. Notice: This dialog has intercepted keyboard dismissal to simulate a classic sink SCC keyboard trap.
+      </p>
+
+      <div class="dialog-input-group">
+        <label for="promo-input">Promotion Code</label>
+        <input type="text" id="promo-input" placeholder="e.g. BARRIERLENS50" autocomplete="off" />
+      </div>
+
+      <div class="dialog-buttons">
+        <button type="button" id="promo-apply-btn" class="btn btn-primary">Apply Code</button>
+        <button type="button" id="promo-cancel-btn" class="btn btn-danger">Cancel</button>
+      </div>
+    </dialog>
+  </main>
+
+  <script>
+    (function initKeyboardTrap() {
+      const dialog = document.getElementById('promo-trap-dialog');
+      const openBtn = document.getElementById('open-trap-dialog-btn');
+      const promoInput = document.getElementById('promo-input');
+      const applyBtn = document.getElementById('promo-apply-btn');
+      const cancelBtn = document.getElementById('promo-cancel-btn');
+
+      // Opening modal handler
+      openBtn.addEventListener('click', () => {
+        dialog.setAttribute('open', '');
+        promoInput.focus();
+      });
+
+      // Trap Tab traversal cycle:
+      // Tab order: #promo-input -> #promo-apply-btn -> #promo-cancel-btn -> back to #promo-input
+      cancelBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab' && !e.shiftKey) {
+          e.preventDefault();
+          promoInput.focus();
+        }
+      });
+
+      // Backward Shift+Tab traversal cycle:
+      // Shift+Tab order: #promo-cancel-btn -> #promo-apply-btn -> #promo-input -> back to #promo-cancel-btn
+      promoInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab' && e.shiftKey) {
+          e.preventDefault();
+          cancelBtn.focus();
+        }
+      });
+
+      // Trap 'Escape' key probe:
+      // Explicitly intercept Escape and prevent dismissal, leaving dialog open with zero escape path.
+      dialog.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          // Leave dialog open!
+        }
+      });
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && dialog.hasAttribute('open')) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }, true);
+
+      // Cancel button does NOT close the dialog (no exit mechanism)
+      cancelBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        promoInput.value = '';
+        promoInput.focus();
+      });
+
+      applyBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        promoInput.focus();
+      });
+    })();
+  </script>
+</body>
+</html>

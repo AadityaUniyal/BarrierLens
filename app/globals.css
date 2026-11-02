@@ -43,24 +43,185 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Apple-style smooth glassmorphic blur */
+/* =========================================================================
+   Apple HIG Typography Scale & Hierarchy
+   ========================================================================= */
+.apple-large-title {
+  font-size: 34px;
+  line-height: 41px;
+  letter-spacing: -0.022em;
+  font-weight: 700;
+}
+.apple-title-1 {
+  font-size: 28px;
+  line-height: 34px;
+  letter-spacing: -0.020em;
+  font-weight: 700;
+}
+.apple-title-2 {
+  font-size: 22px;
+  line-height: 28px;
+  letter-spacing: -0.017em;
+  font-weight: 700;
+}
+.apple-title-3 {
+  font-size: 20px;
+  line-height: 25px;
+  letter-spacing: -0.014em;
+  font-weight: 600;
+}
+.apple-headline {
+  font-size: 17px;
+  line-height: 22px;
+  letter-spacing: -0.015em;
+  font-weight: 600;
+}
+.apple-body {
+  font-size: 17px;
+  line-height: 22px;
+  letter-spacing: -0.015em;
+  font-weight: 400;
+}
+.apple-callout {
+  font-size: 16px;
+  line-height: 21px;
+  letter-spacing: -0.010em;
+  font-weight: 400;
+}
+.apple-subheadline {
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.005em;
+  font-weight: 400;
+}
+.apple-footnote {
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: 0.005em;
+  font-weight: 400;
+}
+.apple-caption-1 {
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.008em;
+  font-weight: 400;
+}
+.apple-caption-2 {
+  font-size: 11px;
+  line-height: 13px;
+  letter-spacing: 0.010em;
+  font-weight: 400;
+}
+
+/* =========================================================================
+   Translucent Vibrancy Materials (-webkit-backdrop-filter: blur(...) saturate(190%))
+   ========================================================================= */
+.apple-vibrancy-ultra-thin {
+  background: rgba(22, 22, 24, 0.45);
+  backdrop-filter: blur(20px) saturate(190%);
+  -webkit-backdrop-filter: blur(20px) saturate(190%);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+
+.apple-vibrancy-thin {
+  background: rgba(26, 26, 29, 0.60);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 0.5px solid rgba(255, 255, 255, 0.10);
+}
+
+.apple-vibrancy-regular {
+  background: rgba(30, 30, 34, 0.75);
+  backdrop-filter: blur(36px) saturate(190%);
+  -webkit-backdrop-filter: blur(36px) saturate(190%);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+}
+
+.apple-vibrancy-thick {
+  background: rgba(36, 36, 40, 0.88);
+  backdrop-filter: blur(48px) saturate(190%);
+  -webkit-backdrop-filter: blur(48px) saturate(190%);
+  border: 0.5px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Translucent Apple Glass & Cards */
 .apple-glass {
-  background: var(--surface-overlay);
-  backdrop-filter: blur(24px) saturate(190%);
-  -webkit-backdrop-filter: blur(24px) saturate(190%);
-  border: 0.5px solid var(--separator-strong);
+  background: rgba(26, 26, 30, 0.72);
+  backdrop-filter: blur(32px) saturate(190%);
+  -webkit-backdrop-filter: blur(32px) saturate(190%);
+  border: 0.5px solid rgba(255, 255, 255, 0.10);
 }
 
 .apple-card {
-  background: var(--surface-group);
-  border: 0.5px solid var(--separator);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.4);
+  background: rgba(22, 22, 26, 0.68);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.5), 0 2px 8px -1px rgba(0, 0, 0, 0.4);
 }
 
 .apple-card-raised {
-  background: var(--surface-raised);
-  border: 0.5px solid var(--separator-strong);
-  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.7), 0 4px 12px -2px rgba(0, 0, 0, 0.5);
+  background: rgba(30, 30, 36, 0.82);
+  backdrop-filter: blur(36px) saturate(190%);
+  -webkit-backdrop-filter: blur(36px) saturate(190%);
+  border: 0.5px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 16px 48px -8px rgba(0, 0, 0, 0.7), 0 4px 16px -2px rgba(0, 0, 0, 0.5);
+}
+
+/* =========================================================================
+   0.5px Hairline Strokes & Dividers (Retina Crisp)
+   ========================================================= */
+.hairline-border {
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+.hairline-border-strong {
+  border: 0.5px solid rgba(255, 255, 255, 0.16);
+}
+.hairline-divider {
+  height: 0.5px;
+  background-color: rgba(255, 255, 255, 0.08);
+  width: 100%;
+}
+.hairline-divider-v {
+  width: 0.5px;
+  background-color: rgba(255, 255, 255, 0.08);
+  height: 100%;
+}
+.hairline-t {
+  border-top: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+.hairline-b {
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+.hairline-l {
+  border-left: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+.hairline-r {
+  border-right: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+
+/* =========================================================================
+   Fluid Spring Physics & Micro-interactions
+   ========================================================================= */
+.ease-spring {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ease-spring-bouncy {
+  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.apple-press {
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease;
+}
+.apple-press:active {
+  transform: scale(0.98);
+}
+
+.apple-button {
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.apple-button:active {
+  transform: scale(0.98);
 }
 
 /* Apple visible 2px focus ring with offset */
@@ -69,18 +230,27 @@
   box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--accent-blue);
 }
 
-/* Smooth keycap styling */
+/* =========================================================================
+   Tactile 3D Keycaps (Physical Keyboard Sensory Delight)
+   ========================================================================= */
 .apple-keycap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-system);
   font-weight: 600;
-  background: linear-gradient(180deg, #2c2c2e 0%, #1c1c1e 100%);
-  border: 0.5px solid rgba(255, 255, 255, 0.2);
-  border-bottom: 2px solid rgba(0, 0, 0, 0.8);
+  background: linear-gradient(180deg, #2e2e32 0%, #1c1c1f 100%);
+  border: 0.5px solid rgba(255, 255, 255, 0.22);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.85);
   border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.12s ease, border-bottom-width 0.12s ease;
+  user-select: none;
+}
+.apple-keycap:active, .apple-keycap.active {
+  transform: translateY(1.5px);
+  border-bottom-width: 1px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.7), 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 /* Custom minimal scrollbar */

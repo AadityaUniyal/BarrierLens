@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BarrierLens Verification Fixture C — Focus Loss, Composite Widget & Accessible Modal</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --card-bg: rgba(28, 28, 30, 0.85);
+      --dialog-bg: rgba(36, 36, 40, 0.95);
+      --hairline: rgba(255, 255, 255, 0.12);
+      --accent-blue: #0071e3;
+      --accent-green: #30d158;
+      --accent-red: #ff453a;
+      --text: #f5f5f7;
+      --text-muted: #86868b;
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 0.5px solid var(--hairline);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 0.5px solid var(--hairline);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    p.desc {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
+
+    .section-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 0.5px solid var(--hairline);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .section-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 10px;
+      border: 0.5px solid var(--hairline);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-primary { background: var(--accent-blue); color: #fff; border: none; }
+    .btn-secondary { background: rgba(255, 255, 255, 0.08); color: var(--text); }
+    .btn-danger { background: rgba(255, 69, 58, 0.15); color: var(--accent-red); border-color: rgba(255, 69, 58, 0.3); }
+
+    .btn:focus-visible, input:focus-visible, [role="tab"]:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-blue);
+    }
+
+    /* Cart item row (Focus Loss) */
+    .cart-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 0.5px solid var(--hairline);
+      border-radius: 12px;
+    }
+
+    /* Tablist (Composite Widget) */
+    .tablist {
+      display: flex;
+      gap: 6px;
+      padding: 4px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 12px;
+      border: 0.5px solid var(--hairline);
+      width: fit-content;
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      padding: 8px 18px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn[aria-selected="true"] {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .tabpanel {
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* Modal Dialog styling */
+    dialog#accessible-modal {
+      margin: auto;
+      background: var(--dialog-bg);
+      backdrop-filter: blur(40px);
+      border: 0.5px solid rgba(48, 209, 88, 0.4);
+      border-radius: 24px;
+      padding: 32px;
+      color: var(--text);
+      width: 90%;
+      max-width: 480px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(48, 209, 88, 0.2);
+    }
+
+    dialog#accessible-modal::backdrop {
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="font-size: 18px; font-weight: 600;">System Preferences &amp; Workspace</div>
+    <div style="font-size: 13px; color: var(--text-muted);">BarrierLens M3 Test Fixture</div>
+  </header>
+
+  <main class="container">
+    <h1>Focus Loss, Composite Widgets &amp; Compliant Modals</h1>
+    <p class="desc">
+      Demonstrates three critical focus-graph behaviors: (1) focus loss fallback to <code>document.body</code> upon DOM deletion, (2) W3C ARIA composite widget roving tabindex navigation via arrow keys, and (3) an intentional accessible modal dialog that traps Tab while open, but closes on <code>Escape</code> and restores focus to its trigger button without false-positive trap flags.
+    </p>
+
+    <!-- SECTION 1: Focus Loss on Item Deletion -->
+    <section class="section-card" id="focus-loss-section">
+      <div class="section-title">1. Dynamic DOM Removal (Focus Loss)</div>
+      <p class="section-desc">
+        Clicking &quot;Delete Item&quot; removes the parent container from the DOM without calling <code>.focus()</code> on any replacement control. Focus immediately drops to <code>document.body</code>.
+      </p>
+
+      <div id="cart-item-container" class="cart-row">
+        <div>
+          <span style="font-weight: 500;">Hardware Security Key (FIDO2)</span>
+          <span style="font-size: 12px; color: var(--text-muted); margin-left: 8px;">SKU-99042</span>
+        </div>
+        <button id="delete-item-btn" class="btn btn-danger" aria-label="Delete Security Key">
+          Delete Item
+        </button>
+      </div>
+      <div id="deletion-notice" style="display: none; margin-top: 12px; font-size: 13px; color: var(--accent-red);">
+        Item container removed from DOM. Focus dropped to document.body!
+      </div>
+    </section>
+
+    <!-- SECTION 2: Composite Tablist Widget (Roving Tabindex) -->
+    <section class="section-card" id="composite-widget-section">
+      <div class="section-title">2. Composite Tablist Widget (Arrow Navigation)</div>
+      <p class="section-desc">
+        Press <code>Tab</code> to enter the active tab stop. Use <code>ArrowRight</code> and <code>ArrowLeft</code> to cycle between tabs using roving tabindex.
+      </p>
+
+      <div class="tablist" role="tablist" aria-label="Account Settings Tabs">
+        <button id="tab-1" role="tab" aria-selected="true" aria-controls="panel-1" tabindex="0" class="tab-btn">
+          General
+        </button>
+        <button id="tab-2" role="tab" aria-selected="false" aria-controls="panel-2" tabindex="-1" class="tab-btn">
+          Security
+        </button>
+        <button id="tab-3" role="tab" aria-selected="false" aria-controls="panel-3" tabindex="-1" class="tab-btn">
+          Notifications
+        </button>
+      </div>
+
+      <div id="panel-1" role="tabpanel" aria-labelledby="tab-1" class="tabpanel">
+        General account profile and regional locale settings.
+      </div>
+      <div id="panel-2" role="tabpanel" aria-labelledby="tab-2" class="tabpanel" style="display: none;">
+        Two-factor authentication credentials and session tokens.
+      </div>
+      <div id="panel-3" role="tabpanel" aria-labelledby="tab-3" class="tabpanel" style="display: none;">
+        Push notifications and email digest subscription options.
+      </div>
+    </section>
+
+    <!-- SECTION 3: Intentional Compliant Modal Dialog -->
+    <section class="section-card" id="modal-section">
+      <div class="section-title">3. Intentional Accessible Modal (WCAG 2.1.2 Compliant)</div>
+      <p class="section-desc">
+        Traps Tab internally while open, but provides an accessible Close button and closes on <code>Escape</code>, returning focus to the trigger button. Must NOT be flagged as a trap!
+      </p>
+
+      <button id="open-acc-modal-btn" class="btn btn-primary">
+        Open Preferences Modal
+      </button>
+
+      <dialog id="accessible-modal" role="dialog" aria-modal="true" aria-labelledby="acc-modal-title">
+        <div style="display: inline-block; padding: 4px 10px; background: rgba(48, 209, 88, 0.15); border: 0.5px solid rgba(48, 209, 88, 0.3); border-radius: 12px; font-size: 12px; font-weight: 600; color: var(--accent-green); text-transform: uppercase; margin-bottom: 12px;">
+          WCAG 2.1.2 Compliant Modal
+        </div>
+        <h2 id="acc-modal-title" style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">Workspace Preferences</h2>
+        <p style="font-size: 14px; color: var(--text-muted); line-height: 1.4; margin-bottom: 20px;">
+          Configure your workspace privacy settings. Press Escape or click Close to dismiss; focus will return to the trigger button.
+        </p>
+
+        <div style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px;">
+          <label for="acc-email-input" style="font-size: 13px; color: var(--text-muted); font-weight: 500;">
+            Notification Email
+          </label>
+          <input type="email" id="acc-email-input" value="user@apple.cupertino" style="padding: 12px 16px; border-radius: 10px; border: 0.5px solid var(--hairline); background: rgba(0,0,0,0.4); color: var(--text); font-size: 15px;" />
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" id="close-acc-modal-btn" class="btn btn-secondary">Close</button>
+          <button type="button" id="save-acc-btn" class="btn btn-primary">Save Changes</button>
+        </div>
+      </dialog>
+    </section>
+  </main>
+
+  <script>
+    // 1. Focus Loss Implementation: removes container upon delete without focusing anything else
+    const deleteBtn = document.getElementById('delete-item-btn');
+    const cartContainer = document.getElementById('cart-item-container');
+    const notice = document.getElementById('deletion-notice');
+
+    deleteBtn.addEventListener('click', () => {
+      cartContainer.remove();
+      if (notice) notice.style.display = 'block';
+      // Deliberately DO NOT call .focus() anywhere -> focus drops to document.body!
+    });
+
+    // 2. Composite Widget Implementation: Tablist with Roving Tabindex & Arrow Navigation
+    const tabs = [
+      document.getElementById('tab-1'),
+      document.getElementById('tab-2'),
+      document.getElementById('tab-3')
+    ];
+    const panels = [
+      document.getElementById('panel-1'),
+      document.getElementById('panel-2'),
+      document.getElementById('panel-3')
+    ];
+
+    function activateTab(index) {
+      tabs.forEach((tab, i) => {
+        const isSelected = i === index;
+        tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+        tab.setAttribute('tabindex', isSelected ? '0' : '-1');
+        panels[i].style.display = isSelected ? 'block' : 'none';
+        if (isSelected) {
+          tab.focus();
+        }
+      });
+    }
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          const nextIndex = (index + 1) % tabs.length;
+          activateTab(nextIndex);
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          const prevIndex = (index - 1 + tabs.length) % tabs.length;
+          activateTab(prevIndex);
+        } else if (e.key === 'Home') {
+          e.preventDefault();
+          activateTab(0);
+        } else if (e.key === 'End') {
+          e.preventDefault();
+          activateTab(tabs.length - 1);
+        }
+      });
+
+      tab.addEventListener('click', () => {
+        activateTab(index);
+      });
+    });
+
+    // 3. Intentional Compliant Modal Dialog Implementation
+    const modal = document.getElementById('accessible-modal');
+    const openModalBtn = document.getElementById('open-acc-modal-btn');
+    const closeModalBtn = document.getElementById('close-acc-modal-btn');
+    const saveAccBtn = document.getElementById('save-acc-btn');
+    const accEmailInput = document.getElementById('acc-email-input');
+
+    function openModal() {
+      if (modal.showModal) {
+        modal.showModal();
+      } else {
+        modal.setAttribute('open', '');
+      }
+      accEmailInput.focus();
+    }
+
+    function closeModal() {
+      if (modal.close) {
+        modal.close();
+      } else {
+        modal.removeAttribute('open');
+      }
+      // WCAG 2.1.2 requirement: restore focus to trigger button!
+      openModalBtn.focus();
+    }
+
+    openModalBtn.addEventListener('click', openModal);
+    closeModalBtn.addEventListener('click', closeModal);
+    saveAccBtn.addEventListener('click', closeModal);
+
+    // Escape Key Listener: closes dialog and restores focus
+    modal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeModal();
+      }
+
+      // Trap Tab while open between input, close, and save
+      if (e.key === 'Tab') {
+        const focusables = [accEmailInput, closeModalBtn, saveAccBtn];
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    });
+  </script>
+</body>
+</html>

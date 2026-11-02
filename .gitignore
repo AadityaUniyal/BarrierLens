@@ -24,11 +24,13 @@ dist/
 .env.*.local
 *.pdf
 
+# Agent workspace & scratch dumps
+.agents/
+pdf_text.txt
+
 # Vercel
 .vercel/
 
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
-
-.vercel

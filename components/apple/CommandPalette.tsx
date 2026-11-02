@@ -12,7 +12,13 @@ import {
   Zap,
   Play,
   Database,
-  ExternalLink
+  ExternalLink,
+  Dna,
+  GitBranch,
+  Flame,
+  Network,
+  Cloud,
+  MonitorPlay
 } from 'lucide-react';
 import { ScreenId } from './Navbar';
 
@@ -29,12 +35,18 @@ export function CommandPalette({ isOpen, onClose, onSelectScreen, onRunAudit }: 
 
   const actions = [
     { label: 'Run Autonomous Audit', icon: Play, shortcut: '↵', action: () => { onRunAudit(); onClose(); } },
+    { label: 'Interactive Visual Twin Simulator', icon: MonitorPlay, shortcut: 'V', action: () => { onSelectScreen('visual-twin'); onClose(); } },
+    { label: 'Multi-Agent Mesh (AWS Strands)', icon: Network, shortcut: 'M', action: () => { onSelectScreen('multi-agent'); onClose(); } },
+    { label: 'AWS CLI & Bedrock Sandbox Bridge', icon: Cloud, shortcut: 'A', action: () => { onSelectScreen('aws-bridge'); onClose(); } },
     { label: 'Open Studio & Trace Theater', icon: Compass, shortcut: '1', action: () => { onSelectScreen('studio'); onClose(); } },
     { label: 'Focus Map & Kendall Tau Meter', icon: Terminal, shortcut: '2', action: () => { onSelectScreen('focus-map'); onClose(); } },
     { label: 'Screen Reader Audio Transcript', icon: Volume2, shortcut: '3', action: () => { onSelectScreen('screen-reader'); onClose(); } },
     { label: 'Trends & Flow Drift Sentinel', icon: LineChart, shortcut: '4', action: () => { onSelectScreen('trends'); onClose(); } },
     { label: 'Review Queue & Active Learning', icon: CheckSquare, shortcut: '5', action: () => { onSelectScreen('triage'); onClose(); } },
     { label: 'Public Verifiable Scorecard', icon: Share2, shortcut: '6', action: () => { onSelectScreen('scorecard'); onClose(); } },
+    { label: 'Barrier Genome Vector Space', icon: Dna, shortcut: '7', action: () => { onSelectScreen('barrier-genome'); onClose(); } },
+    { label: 'Causal Counterfactual Proof', icon: GitBranch, shortcut: '8', action: () => { onSelectScreen('causal-diff'); onClose(); } },
+    { label: 'Adversarial Red-Team Stress Test', icon: Flame, shortcut: '9', action: () => { onSelectScreen('stress-test'); onClose(); } },
     { label: 'Open Synthetic Benchmark Site', icon: ExternalLink, shortcut: 'B', action: () => { window.open('/benchmark', '_blank'); onClose(); } },
   ];
 
@@ -57,22 +69,22 @@ export function CommandPalette({ isOpen, onClose, onSelectScreen, onRunAudit }: 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4 bg-black/60 backdrop-blur-xl animate-in fade-in duration-150">
       <div 
-        className="w-full max-w-xl rounded-2xl apple-card-raised overflow-hidden shadow-2xl border border-white/10"
+        className="w-full max-w-xl rounded-2xl apple-vibrancy-thick overflow-hidden shadow-2xl border-hairline"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center px-4 py-3.5 border-b border-white/[0.08]">
+        <div className="flex items-center px-4 py-3.5 border-b border-hairline">
           <Search className="w-4 h-4 text-[#86868b] mr-3" />
           <input
             type="text"
             value={query}
             onChange={(e) => { setQuery(e.target.value); setSelectedIndex(0); }}
             placeholder="Type a command or jump to screen..."
-            className="w-full bg-transparent text-sm text-[#f5f5f7] placeholder-[#6e6e73] focus:outline-none"
+            className="w-full bg-transparent text-[15px] text-[#f5f5f7] placeholder-[#6e6e73] tracking-[-0.005em] focus:outline-none"
             autoFocus
           />
-          <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-mono text-[#86868b]">ESC</kbd>
+          <span className="apple-keycap px-2 py-0.5 text-[10px] text-white">ESC</span>
         </div>
 
         <div className="max-h-80 overflow-y-auto p-2 space-y-1">
@@ -84,20 +96,20 @@ export function CommandPalette({ isOpen, onClose, onSelectScreen, onRunAudit }: 
                 key={idx}
                 onClick={item.action}
                 onMouseEnter={() => setSelectedIndex(idx)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-colors ${
-                  isSelected ? 'bg-[#0071e3] text-white' : 'text-[#f5f5f7] hover:bg-white/[0.05]'
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium active:scale-[0.98] transition-all duration-150 ease-spring ${
+                  isSelected ? 'bg-[#0071e3] text-white shadow-md shadow-blue-500/20' : 'text-[#f5f5f7] hover:bg-white/[0.06]'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
                   <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-[#86868b]'}`} />
-                  <span>{item.label}</span>
+                  <span className="text-[13px] tracking-[0.005em]">{item.label}</span>
                 </div>
                 {item.shortcut && (
-                  <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
-                    isSelected ? 'bg-white/20 text-white' : 'bg-white/5 text-[#86868b]'
+                  <span className={`apple-keycap px-2 py-0.5 text-[10px] ${
+                    isSelected ? 'text-white border-white/40' : 'text-[#86868b]'
                   }`}>
                     {item.shortcut}
-                  </kbd>
+                  </span>
                 )}
               </button>
             );

@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'BarrierLens | Agentic Accessibility Auditor & Autonomous Remediation',
-  description: 'Top 0.1% Task-Conditioned Agentic Accessibility Auditor built on Neon Postgres & Playwright CDP',
+  title: 'BarrierLens | Free task-conditioned accessibility auditor',
+  description: 'Paste a public URL and a real user task. BarrierLens walks the page as a keyboard user and proves accessibility barriers you can share.',
 };
 
 export default function RootLayout({

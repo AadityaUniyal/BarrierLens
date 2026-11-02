@@ -7,6 +7,7 @@ export interface SerializedAXNode {
   focusable: boolean;
   disabled: boolean;
   boundingBox?: { x: number; y: number; width: number; height: number };
+  backendDOMNodeId?: number;
 }
 
 /**

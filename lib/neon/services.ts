@@ -221,4 +221,101 @@ export const neonServices = {
       services: [postgres, dataApi, realtime, functions, ...infra],
     };
   },
+
+  /**
+   * Save a verified Causal Certificate into Neon Postgres
+   */
+  async saveCausalCertificate(cert: {
+    findingId: string;
+    sha256Hash: string;
+    targetUrl: string;
+    persona: string;
+    wcagRule: string;
+    interventionTarget: string;
+    interventionAction: string;
+    astPatch: string;
+    originalHtml?: string;
+    patchedHtml?: string;
+    verificationStatus?: string;
+    regressionsCount?: number;
+    sandboxMetrics?: Record<string, any>;
+  }) {
+    try {
+      return await sql`
+        INSERT INTO causal_certificates (
+          finding_id, sha256_hash, target_url, persona, wcag_rule,
+          intervention_target, intervention_action, ast_patch,
+          original_html, patched_html, verification_status,
+          regressions_count, sandbox_metrics
+        ) VALUES (
+          ${cert.findingId},
+          ${cert.sha256Hash},
+          ${cert.targetUrl},
+          ${cert.persona},
+          ${cert.wcagRule},
+          ${cert.interventionTarget},
+          ${cert.interventionAction},
+          ${cert.astPatch},
+          ${cert.originalHtml || null},
+          ${cert.patchedHtml || null},
+          ${cert.verificationStatus || 'verified'},
+          ${cert.regressionsCount ?? 0},
+          ${JSON.stringify(cert.sandboxMetrics || {})}
+        )
+        RETURNING id, sha256_hash, created_at;
+      `;
+    } catch (err: any) {
+      console.warn('[Neon DB] saveCausalCertificate fallback:', err.message);
+      return [{ id: 'mock-id', sha256_hash: cert.sha256Hash, created_at: new Date().toISOString() }];
+    }
+  },
+
+  /**
+   * Record a Strands Agent execution trace event into Neon Postgres
+   */
+  async recordAgentTrace(trace: {
+    traceId: string;
+    agentRole: string;
+    eventType: string;
+    payload: Record<string, any>;
+    bedrockModel?: string;
+    tokensUsed?: number;
+    latencyMs?: number;
+  }) {
+    try {
+      return await sql`
+        INSERT INTO agent_event_traces (
+          trace_id, agent_role, event_type, payload,
+          bedrock_model, tokens_used, latency_ms
+        ) VALUES (
+          ${trace.traceId},
+          ${trace.agentRole},
+          ${trace.eventType},
+          ${JSON.stringify(trace.payload)},
+          ${trace.bedrockModel || 'amazon.nova-micro-v1:0'},
+          ${trace.tokensUsed ?? 0},
+          ${trace.latencyMs ?? 0}
+        )
+        RETURNING id, trace_id, created_at;
+      `;
+    } catch (err: any) {
+      console.warn('[Neon DB] recordAgentTrace fallback:', err.message);
+      return [{ id: 'mock-trace', trace_id: trace.traceId, created_at: new Date().toISOString() }];
+    }
+  },
+
+  /**
+   * Fetch recent agent traces for a given trace_id
+   */
+  async getAgentTraces(traceId: string) {
+    try {
+      return await sql`
+        SELECT * FROM agent_event_traces
+        WHERE trace_id = ${traceId}
+        ORDER BY created_at ASC;
+      `;
+    } catch (err: any) {
+      return [];
+    }
+  },
 };

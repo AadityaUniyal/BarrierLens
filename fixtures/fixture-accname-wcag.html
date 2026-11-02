@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BarrierLens Verification Fixture — W3C AccName, Contrast & Target Size</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --card-bg: rgba(28, 28, 30, 0.85);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --text: #f5f5f7;
+      --text-muted: #86868b;
+      --accent-blue: #0a84ff;
+      --accent-green: #30d158;
+      --accent-red: #ff453a;
+      --accent-amber: #ff9f0a;
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      max-width: 860px;
+      margin-bottom: 32px;
+      padding-bottom: 16px;
+      border-bottom: 0.5px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .badge-tag {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: rgba(10, 132, 255, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid rgba(10, 132, 255, 0.3);
+    }
+
+    main {
+      width: 100%;
+      max-width: 860px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .section-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 0.5px solid var(--card-border);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .test-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .test-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .test-item label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .btn-fixture {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      transition: background 0.15s ease;
+    }
+
+    .btn-fixture:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-fixture:focus-visible {
+      outline: 2px solid var(--accent-blue);
+      outline-offset: 2px;
+    }
+
+    .contrast-sample {
+      padding: 16px;
+      border-radius: 12px;
+      font-family: inherit;
+    }
+
+    .mutation-badge {
+      font-size: 12px;
+      color: var(--accent-green);
+      background: rgba(48, 209, 88, 0.15);
+      border: 1px solid rgba(48, 209, 88, 0.3);
+      padding: 4px 10px;
+      border-radius: 8px;
+      display: inline-block;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1 style="font-size: 22px; font-weight: 700;">BarrierLens Test Fixture</h1>
+      <p style="font-size: 13px; color: var(--text-muted);">Week 3 Automated Verification Fixture</p>
+    </div>
+    <span class="badge-tag">Milestone 5</span>
+  </header>
+
+  <main>
+    <!-- Section 1: AccName Empty & Poor Names -->
+    <section class="section-card" id="section-accname">
+      <h2 class="section-title">1. W3C Accessible Name &amp; Diagnostics</h2>
+      <p class="section-desc">
+        Deterministic test fixtures exercising empty names, poor labels, broken IDREFs, generic links, and the Step 2A hidden element bypass exception.
+      </p>
+
+      <div class="test-grid">
+        <!-- 1.1 Unlabeled icon only -->
+        <div class="test-item">
+          <div class="test-item-label">Unlabeled Icon Only (UNLABELED_ICON_ONLY)</div>
+          <button id="btn-unlabeled-icon" class="btn-fixture">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- 1.2 Empty button no content -->
+        <div class="test-item">
+          <div class="test-item-label">Empty Button (MISSING_LABEL_NO_SOURCES)</div>
+          <button id="btn-empty-no-content" class="btn-fixture" style="width: 48px;"></button>
+        </div>
+
+        <!-- 1.3 Broken aria-labelledby -->
+        <div class="test-item">
+          <div class="test-item-label">Broken aria-labelledby (BROKEN_ARIA_LABELLEDBY)</div>
+          <button id="btn-broken-labelledby" class="btn-fixture" aria-labelledby="non-existent-id"></button>
+        </div>
+
+        <!-- 1.4 Generic text -->
+        <div class="test-item">
+          <div class="test-item-label">Generic Text (GENERIC_NON_DESCRIPTIVE)</div>
+          <button id="btn-generic-text" class="btn-fixture">click here</button>
+        </div>
+
+        <!-- 1.5 Image without alt -->
+        <div class="test-item">
+          <div class="test-item-label">Image Missing Alt (EMPTY_IMAGE_NO_ALT)</div>
+          <img id="img-no-alt" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='40'%3E%3Crect width='44' height='40' rx='8' fill='%23333'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%23888' font-size='11' dy='.3em'%3EIMG%3C/text%3E%3C/svg%3E" style="border-radius: 8px;">
+        </div>
+
+        <!-- 1.6 Valid aria-labelledby -->
+        <div class="test-item">
+          <div class="test-item-label">Valid aria-labelledby</div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span id="label-part-1" style="font-size: 13px; color: var(--accent-blue);">Add to</span>
+            <span id="label-part-2" style="font-size: 13px; color: var(--accent-blue);">Wishlist</span>
+            <button id="btn-valid-labelledby" class="btn-fixture" aria-labelledby="label-part-1 label-part-2">
+              +
+            </button>
+          </div>
+        </div>
+
+        <!-- 1.7 Step 2A hidden reference bypass -->
+        <div class="test-item">
+          <div class="test-item-label">Step 2A Hidden Ref Bypass</div>
+          <div>
+            <span id="hidden-text" style="display:none">Hidden Action Text</span>
+            <button id="btn-hidden-ref" class="btn-fixture" aria-labelledby="hidden-text">Submit</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Static WCAG 1.4.3 Contrast -->
+    <section class="section-card" id="section-contrast">
+      <h2 class="section-title">2. WCAG 1.4.3 Color Contrast (Minimum)</h2>
+      <p class="section-desc">
+        Mathematical relative luminance evaluation covering failing normal text contrast (4.47:1), passing text (21:1), and semi-transparent alpha compositing.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <!-- Failing AA contrast -->
+        <p id="contrast-failing" class="contrast-sample" style="color: #777777; background-color: #ffffff; font-size: 14px; font-weight: 400; line-height: 1.4;">
+          <strong>Failing Contrast Text (#777777 on #ffffff)</strong> — Calculated ratio ~4.47:1, which is below the WCAG 2 AA minimum threshold of 4.5:1 for normal body text.
+        </p>
+
+        <!-- Passing AAA contrast -->
+        <p id="contrast-passing" class="contrast-sample" style="color: #000000; background-color: #ffffff; font-size: 16px; font-weight: 400; line-height: 1.4;">
+          <strong>Passing Contrast Text (#000000 on #ffffff)</strong> — Calculated ratio 21.0:1, exceeding both Level AA (4.5:1) and Level AAA (7.0:1) thresholds.
+        </p>
+
+        <!-- Semi-transparent alpha compositing -->
+        <p id="contrast-alpha" class="contrast-sample" style="color: rgba(0, 0, 0, 0.7); background-color: #ffffff; font-size: 16px; font-weight: 400; line-height: 1.4;">
+          <strong>Semi-transparent Text (rgba(0,0,0,0.7) on #ffffff)</strong> — Requires Porter-Duff alpha blending to evaluate true perceived luminance.
+        </p>
+      </div>
+    </section>
+
+    <!-- Section 3: Static WCAG 2.2 2.5.8 Target Size -->
+    <section class="section-card" id="section-target-size">
+      <h2 class="section-title">3. WCAG 2.2 2.5.8 Target Size (Minimum)</h2>
+      <p class="section-desc">
+        Evaluation of the 24x24 CSS pixel minimum target size, 24px clearance circle spacing exception, and inline text link exception.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- Failing dense targets -->
+        <div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+            Dense Undersized Targets (&lt; 24px and &lt; 2px spacing, fails base size and spacing exception):
+          </div>
+          <div style="display: flex; gap: 1px; align-items: center;">
+            <button id="target-failing-dense" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px; max-width: 16px; max-height: 16px; padding: 0; margin: 0; border: none; background: #ff453a; color: #ffffff; font-size: 10px; line-height: 16px; text-align: center; cursor: pointer; display: inline-block;">
+              X
+            </button>
+            <button id="target-neighbor-dense" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px; max-width: 16px; max-height: 16px; padding: 0; margin: 0; border: none; background: #ff9f0a; color: #ffffff; font-size: 10px; line-height: 16px; text-align: center; cursor: pointer; display: inline-block;">
+              Y
+            </button>
+          </div>
+        </div>
+
+        <!-- Passing spacing exception -->
+        <div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+            Isolated Undersized Target (16x16px with &gt; 12px clearance, passes Spacing Exception):
+          </div>
+          <div style="padding: 48px; background: rgba(255, 255, 255, 0.04); border-radius: 12px; display: inline-block;">
+            <button id="target-passing-spacing" style="width: 16px; height: 16px; min-width: 16px; min-height: 16px; max-width: 16px; max-height: 16px; padding: 0; margin: 0; border: none; background: #30d158; color: #ffffff; font-size: 10px; line-height: 16px; text-align: center; cursor: pointer; display: inline-block;">
+              S
+            </button>
+          </div>
+        </div>
+
+        <!-- Passing standard size -->
+        <div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+            Standard Interactive Target (32x32px &gt;= 24x24px, passes base size):
+          </div>
+          <button id="target-passing-standard" style="width: 32px; height: 32px; min-width: 32px; min-height: 32px; padding: 0; border: none; background: #0a84ff; color: #ffffff; font-size: 12px; font-weight: 600; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">
+            32
+          </button>
+        </div>
+
+        <!-- Inline exception -->
+        <div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+            Inline Link Exception (target inside continuous prose, exempt):
+          </div>
+          <p style="font-size: 14px; line-height: 1.6; color: var(--text-muted);">
+            This paragraph demonstrates standard document flow with an <a id="target-inline-link" href="#inline" style="color: var(--accent-blue); text-decoration: underline; display: inline;">inline link target</a> embedded inside a sentence of continuous text.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: Injected Observer & ARIA Live Telemetry -->
+    <section class="section-card" id="section-observer">
+      <h2 class="section-title">4. Injected Observer &amp; ARIA Live Telemetry</h2>
+      <p class="section-desc">
+        Dynamic elements testing client-side event capture: focus movements (focusin/focusout) and DOM mutations in ARIA live regions with microsecond timestamps.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div id="live-status-region" role="status" aria-live="polite" style="padding: 14px 18px; background: rgba(255, 255, 255, 0.06); border-radius: 10px; border: 1px solid var(--card-border); font-size: 14px;">
+          System Idle: Awaiting user action
+        </div>
+
+        <div>
+          <button id="btn-trigger-mutation" class="btn-fixture" style="background: var(--accent-blue); color: white; border: none; font-weight: 600;">
+            Update Status
+          </button>
+        </div>
+
+        <div id="mutation-container"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function() {
+      var btn = document.getElementById('btn-trigger-mutation');
+      var liveRegion = document.getElementById('live-status-region');
+      var container = document.getElementById('mutation-container');
+      var count = 0;
+
+      if (btn && liveRegion && container) {
+        btn.addEventListener('click', function() {
+          count++;
+          liveRegion.innerHTML = '<span class="status-msg">Status changed: Profile updated successfully (event #' + count + ')</span>';
+          var badge = document.createElement('div');
+          badge.className = 'mutation-badge';
+          badge.textContent = 'Dynamic telemetry element #' + count + ' injected';
+          container.appendChild(badge);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

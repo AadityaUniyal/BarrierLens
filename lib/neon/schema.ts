@@ -14,11 +14,18 @@ export async function initializeDatabaseSchema() {
   console.log('[Neon DB] Initializing BarrierLens schema...');
 
   return await retry(async () => {
-    // 1. Enable uuid extension if available
+    // 1. Enable uuid and pgvector extensions if available
     try {
       await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`;
     } catch (e: any) {
       console.log('[Neon DB] uuid-ossp notice:', e.message);
+    }
+
+    try {
+      await sql`CREATE EXTENSION IF NOT EXISTS vector;`;
+      console.log('[Neon DB] pgvector extension enabled/verified.');
+    } catch (e: any) {
+      console.log('[Neon DB] pgvector notice:', e.message);
     }
 
     // 2. Core tables
@@ -78,9 +85,18 @@ export async function initializeDatabaseSchema() {
         phash BIGINT,
         url TEXT NOT NULL,
         screenshot_path TEXT,
+        embedding vector(384),
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
     `;
+
+    // Ensure embedding vector column exists and HNSW index is active
+    try {
+      await sql`ALTER TABLE states ADD COLUMN IF NOT EXISTS embedding vector(384);`;
+      await sql`CREATE INDEX IF NOT EXISTS idx_states_embedding ON states USING hnsw (embedding vector_cosine_ops);`;
+    } catch (e: any) {
+      console.log('[Neon DB] HNSW embedding index notice:', e.message);
+    }
 
     await sql`
       CREATE TABLE IF NOT EXISTS steps (
@@ -134,7 +150,94 @@ export async function initializeDatabaseSchema() {
       );
     `;
 
+    await sql`
+      CREATE TABLE IF NOT EXISTS llm_calls (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        run_id UUID REFERENCES runs(id) ON DELETE CASCADE,
+        provider TEXT,
+        model TEXT,
+        tokens_in INTEGER,
+        tokens_out INTEGER,
+        cached BOOLEAN DEFAULT FALSE,
+        ok BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+
+    // 3. Advanced Agentic & Genome Tables
+    await sql`
+      CREATE TABLE IF NOT EXISTS barrier_genomes (
+        id TEXT PRIMARY KEY,
+        finding_id TEXT NOT NULL,
+        finding_kind TEXT NOT NULL,
+        domain TEXT NOT NULL,
+        target_url TEXT NOT NULL,
+        persona TEXT NOT NULL,
+        vector vector(768),
+        vector_json JSONB,
+        magnitude FLOAT NOT NULL,
+        severity_score FLOAT NOT NULL,
+        wcag_rules JSONB NOT NULL DEFAULT '[]'::jsonb,
+        context JSONB NOT NULL DEFAULT '{}'::jsonb,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+
+    try {
+      await sql`CREATE INDEX IF NOT EXISTS idx_barrier_genomes_vector ON barrier_genomes USING hnsw (vector vector_cosine_ops);`;
+    } catch (e: any) {
+      console.log('[Neon DB] HNSW genome index notice:', e.message);
+    }
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS causal_certificates (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        finding_id TEXT NOT NULL,
+        sha256_hash TEXT NOT NULL,
+        target_url TEXT NOT NULL,
+        persona TEXT NOT NULL,
+        wcag_rule TEXT NOT NULL,
+        intervention_target TEXT NOT NULL,
+        intervention_action TEXT NOT NULL,
+        ast_patch TEXT NOT NULL,
+        original_html TEXT,
+        patched_html TEXT,
+        verification_status TEXT NOT NULL DEFAULT 'verified',
+        regressions_count INTEGER DEFAULT 0,
+        sandbox_metrics JSONB NOT NULL DEFAULT '{}'::jsonb,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS agent_event_traces (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        trace_id TEXT NOT NULL,
+        agent_role TEXT NOT NULL,
+        event_type TEXT NOT NULL,
+        payload JSONB NOT NULL,
+        bedrock_model TEXT,
+        tokens_used INTEGER DEFAULT 0,
+        latency_ms INTEGER DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+
+    try {
+      await sql`CREATE INDEX IF NOT EXISTS idx_agent_event_traces_trace ON agent_event_traces (trace_id);`;
+    } catch (e: any) {
+      console.log('[Neon DB] trace index notice:', e.message);
+    }
+
+    try {
+      await sql`ALTER TABLE runs ADD COLUMN IF NOT EXISTS target_url TEXT;`;
+      await sql`ALTER TABLE runs ADD COLUMN IF NOT EXISTS goal_text TEXT;`;
+      await sql`ALTER TABLE runs ADD COLUMN IF NOT EXISTS payload JSONB;`;
+    } catch (e: any) {
+      console.log('[Neon DB] runs public-share columns notice:', e.message);
+    }
+
     console.log('[Neon DB] Schema successfully initialized in Neon Postgres!');
-    return { success: true, message: 'All 9 core BarrierLens tables created and verified.' };
+    return { success: true, message: 'All 12 core BarrierLens tables (including barrier_genomes, causal_certificates, agent_event_traces) created and verified.' };
   });
 }
