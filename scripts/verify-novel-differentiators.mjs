@@ -1,11 +1,27 @@
 import assert from 'node:assert/strict';
-import { BarrierGenomeEncoder } from '../lib/barrierlens/genome/barrier-encoder.ts';
-import { GenomeStore } from '../lib/barrierlens/genome/genome-store.ts';
-import { CrossSiteTransfer } from '../lib/barrierlens/genome/cross-site-transfer.ts';
-import { CounterfactualEngine } from '../lib/barrierlens/causal/counterfactual-engine.ts';
-import { CausalCertificateGenerator } from '../lib/barrierlens/causal/causal-certificate.ts';
-import { ChaosInjector } from '../lib/barrierlens/adversarial/chaos-injector.ts';
-import { MotorTremorSimulator } from '../lib/barrierlens/adversarial/motor-tremor.ts';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
+
+const __filename = fileURLToPath(import.meta.url);
+
+// Transparently ensure execution under tsx loader when invoked directly with `node`
+if (!process.env.RUNNING_UNDER_TSX) {
+  const result = spawnSync('npx', ['tsx', __filename, ...process.argv.slice(2)], {
+    stdio: 'inherit',
+    env: { ...process.env, RUNNING_UNDER_TSX: '1' },
+    shell: true
+  });
+  process.exit(result.status ?? 0);
+}
+
+const { BarrierGenomeEncoder } = await import('../lib/barrierlens/genome/barrier-encoder.ts');
+const { GenomeStore } = await import('../lib/barrierlens/genome/genome-store.ts');
+const { CrossSiteTransfer } = await import('../lib/barrierlens/genome/cross-site-transfer.ts');
+const { CounterfactualEngine } = await import('../lib/barrierlens/causal/counterfactual-engine.ts');
+const { CausalCertificateGenerator } = await import('../lib/barrierlens/causal/causal-certificate.ts');
+const { ChaosInjector } = await import('../lib/barrierlens/adversarial/chaos-injector.ts');
+const { MotorTremorSimulator } = await import('../lib/barrierlens/adversarial/motor-tremor.ts');
 
 console.log('🧪 Starting Verification Suite: BarrierLens Novel Differentiators...\n');
 
