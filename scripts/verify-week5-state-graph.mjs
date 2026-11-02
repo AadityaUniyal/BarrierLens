@@ -1,8 +1,29 @@
-import { chromium } from 'playwright';
+#!/usr/bin/env node
+
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
-import { ProductionStateFingerprintEngine } from '../lib/barrierlens/engines/state-fingerprint.ts';
-import { ExplorationStateGraph } from '../lib/barrierlens/engines/exploration-graph.ts';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { spawnSync } from 'node:child_process';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Transparently ensure execution under tsx loader when invoked directly with `node`
+if (!process.env.RUNNING_UNDER_TSX) {
+  const result = spawnSync('npx', ['tsx', __filename, ...process.argv.slice(2)], {
+    stdio: 'inherit',
+    env: { ...process.env, RUNNING_UNDER_TSX: '1' },
+    shell: true
+  });
+  process.exit(result.status ?? 0);
+}
+
+import { chromium } from 'playwright';
+
+// Engine dynamic imports evaluated under tsx loader
+const fingerprintModule = await import('../lib/barrierlens/engines/state-fingerprint.ts');
+const { ProductionStateFingerprintEngine } = fingerprintModule;
+const graphModule = await import('../lib/barrierlens/engines/exploration-graph.ts');
+const { ExplorationStateGraph } = graphModule;
 
 console.log('======================================================================');
 console.log('  BarrierLens: Week 5 State Fingerprinting & Exploration Graph Test   ');

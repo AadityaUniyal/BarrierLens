@@ -1,8 +1,29 @@
-import { chromium } from 'playwright';
+#!/usr/bin/env node
+
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
-import { AnnouncementGapDetector } from '../lib/barrierlens/engines/announcement-gap.ts';
-import { INJECTED_OBSERVER_SCRIPT } from '../lib/barrierlens/cdp/observer-script.ts';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { spawnSync } from 'node:child_process';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Transparently ensure execution under tsx loader when invoked directly with `node`
+if (!process.env.RUNNING_UNDER_TSX) {
+  const result = spawnSync('npx', ['tsx', __filename, ...process.argv.slice(2)], {
+    stdio: 'inherit',
+    env: { ...process.env, RUNNING_UNDER_TSX: '1' },
+    shell: true
+  });
+  process.exit(result.status ?? 0);
+}
+
+import { chromium } from 'playwright';
+
+// Engine dynamic imports evaluated under tsx loader
+const gapModule = await import('../lib/barrierlens/engines/announcement-gap.ts');
+const { AnnouncementGapDetector } = gapModule;
+const observerModule = await import('../lib/barrierlens/cdp/observer-script.ts');
+const { INJECTED_OBSERVER_SCRIPT } = observerModule;
 
 console.log('======================================================================');
 console.log('  BarrierLens: Week 4 Announcement-Gap Detector & Transcript Test     ');
