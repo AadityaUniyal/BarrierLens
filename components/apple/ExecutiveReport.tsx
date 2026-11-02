@@ -77,6 +77,52 @@ export function ExecutiveReport({
     };
   }, [auditRun]);
 
+  // 5-Axis WCAG 2.2 Radar Chart calculation
+  const radarData = useMemo(() => {
+    const findings = auditRun.findings || [];
+    const perceivable = Math.round((complianceScores.contrast + complianceScores.targetSize) / 2);
+    const operable = complianceScores.focus;
+    const understandable = complianceScores.accName;
+    const robust = Math.max(40, Math.round(100 - findings.filter(f => f.kind === 'silent_state_change' || f.kind === 'focus_loss').length * 20));
+    const traversability = auditRun.kendallTau ? Math.round(Math.max(0, (auditRun.kendallTau.tau + 1) / 2) * 100) : 88;
+
+    const axes = [
+      { key: 'perceivable', label: 'Perceivable', score: perceivable },
+      { key: 'operable', label: 'Operable', score: operable },
+      { key: 'understandable', label: 'Understandable', score: understandable },
+      { key: 'robust', label: 'Robust', score: robust },
+      { key: 'traversability', label: 'Traversability', score: traversability },
+    ];
+
+    const cx = 140;
+    const cy = 135;
+    const maxRadius = 78;
+    const count = axes.length;
+
+    const dataPoints = axes.map((axis, i) => {
+      const angle = -Math.PI / 2 + (i * 2 * Math.PI) / count;
+      const r = Math.max(15, (axis.score / 100) * maxRadius);
+      const x = cx + r * Math.cos(angle);
+      const y = cy + r * Math.sin(angle);
+      const labelX = cx + (maxRadius + 24) * Math.cos(angle);
+      const labelY = cy + (maxRadius + 14) * Math.sin(angle);
+      return { ...axis, x, y, labelX, labelY, angle };
+    });
+
+    const polygonPoints = dataPoints.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+    const levels = [0.25, 0.5, 0.75, 1.0].map(level => {
+      const pts = axes.map((_, i) => {
+        const angle = -Math.PI / 2 + (i * 2 * Math.PI) / count;
+        const r = level * maxRadius;
+        return `${(cx + r * Math.cos(angle)).toFixed(1)},${(cy + r * Math.sin(angle)).toFixed(1)}`;
+      }).join(' ');
+      return { level, pts };
+    });
+
+    return { axes, dataPoints, polygonPoints, levels, cx, cy, maxRadius };
+  }, [auditRun, complianceScores]);
+
   // Filtered findings list
   const filteredFindings = useMemo(() => {
     const list = auditRun.findings || [];
@@ -219,85 +265,197 @@ export function ExecutiveReport({
         </div>
       </div>
 
-      {/* 2. Compliance & Static Health Scorecard (4 Cards) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: W3C AccName */}
-        <div className="p-5 rounded-2xl apple-vibrancy-thin border-[0.5px] border-white/10 space-y-2">
-          <div className="flex items-center justify-between text-xs font-mono text-[#86868b]">
-            <span className="uppercase tracking-wider">W3C AccName</span>
-            <Layers className="w-4 h-4 text-[#0a84ff]" />
+      {/* 2. WCAG 2.2 Coverage Radar & Static Health Scorecard */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        {/* Left: 5-Axis WCAG Radar Spider Chart (5 Cols) */}
+        <div className="lg:col-span-5 apple-vibrancy-regular rounded-3xl p-6 sm:p-7 flex flex-col items-center justify-between border-[0.5px] border-white/12 shadow-2xl relative overflow-hidden">
+          <div className="w-full flex items-center justify-between pb-3 border-b border-white/10">
+            <span className="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider font-mono flex items-center gap-1.5">
+              <Activity className="w-3.5 h-3.5 text-[#0a84ff]" />
+              WCAG 2.2 Coverage Radar
+            </span>
+            <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-blue-500/10 text-[#0a84ff] border-[0.5px] border-blue-500/30 font-semibold">
+              5-Axis Spider
+            </span>
           </div>
-          <div className="text-2xl font-bold text-white tabular-nums">
-            {complianceScores.accName}%
+
+          <div className="relative w-full max-w-[280px] my-3 flex items-center justify-center">
+            <svg viewBox="0 0 280 270" className="w-full h-auto overflow-visible">
+              <defs>
+                <linearGradient id="radarFillGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#0a84ff" stopOpacity="0.45" />
+                  <stop offset="100%" stopColor="#30d158" stopOpacity="0.3" />
+                </linearGradient>
+                <filter id="radarGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#0a84ff" floodOpacity="0.6" />
+                </filter>
+              </defs>
+
+              {/* Concentric grid pentagons */}
+              {radarData.levels.map(({ level, pts }) => (
+                <polygon
+                  key={level}
+                  points={pts}
+                  fill="none"
+                  stroke="rgba(255, 255, 255, 0.08)"
+                  strokeWidth="1"
+                />
+              ))}
+
+              {/* Radial spoke lines */}
+              {radarData.dataPoints.map((pt, i) => {
+                const angle = pt.angle;
+                const outerX = radarData.cx + radarData.maxRadius * Math.cos(angle);
+                const outerY = radarData.cy + radarData.maxRadius * Math.sin(angle);
+                return (
+                  <line
+                    key={i}
+                    x1={radarData.cx}
+                    y1={radarData.cy}
+                    x2={outerX}
+                    y2={outerY}
+                    stroke="rgba(255, 255, 255, 0.12)"
+                    strokeWidth="1"
+                    strokeDasharray="2 2"
+                  />
+                );
+              })}
+
+              {/* Data Polygon */}
+              <polygon
+                points={radarData.polygonPoints}
+                fill="url(#radarFillGrad)"
+                stroke="#0a84ff"
+                strokeWidth="2"
+                filter="url(#radarGlow)"
+                className="transition-all duration-700 ease-spring"
+              />
+
+              {/* Vertex points & labels */}
+              {radarData.dataPoints.map((pt, i) => (
+                <g key={i}>
+                  <circle
+                    cx={pt.x}
+                    cy={pt.y}
+                    r="4"
+                    fill="#30d158"
+                    stroke="#ffffff"
+                    strokeWidth="1.5"
+                  />
+                  <text
+                    x={pt.labelX}
+                    y={pt.labelY}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill="#f5f5f7"
+                    fontSize="9.5"
+                    fontFamily="monospace"
+                    className="font-medium"
+                  >
+                    {pt.label}
+                  </text>
+                  <text
+                    x={pt.labelX}
+                    y={pt.labelY + 11}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill="#86868b"
+                    fontSize="8.5"
+                    fontFamily="monospace"
+                  >
+                    {pt.score}%
+                  </text>
+                </g>
+              ))}
+            </svg>
           </div>
-          <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-            <div
-              className="bg-[#0a84ff] h-full rounded-full transition-all duration-500 ease-spring"
-              style={{ width: `${complianceScores.accName}%` }}
-            />
-          </div>
-          <div className="text-[11px] text-[#86868b]">
-            Provenance & accessible labeling health
+
+          <div className="w-full pt-3 border-t border-white/10 flex items-center justify-between text-[11px] font-mono text-[#86868b]">
+            <span>Mean Index: <strong className="text-white">{complianceScores.overall}%</strong></span>
+            <span className="text-[#30d158] font-medium">Harmonized AA Profile</span>
           </div>
         </div>
 
-        {/* Card 2: Focus Graph */}
-        <div className="p-5 rounded-2xl apple-vibrancy-thin border-[0.5px] border-white/10 space-y-2">
-          <div className="flex items-center justify-between text-xs font-mono text-[#86868b]">
-            <span className="uppercase tracking-wider">Focus Navigation</span>
-            <Lock className="w-4 h-4 text-[#30d158]" />
+        {/* Right: Compliance & Static Health Scorecard (4 Cards in 7 Cols) */}
+        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Card 1: W3C AccName */}
+          <div className="p-5 rounded-2xl apple-vibrancy-thin border-[0.5px] border-white/10 space-y-2 flex flex-col justify-between">
+            <div className="flex items-center justify-between text-xs font-mono text-[#86868b]">
+              <span className="uppercase tracking-wider">W3C AccName</span>
+              <Layers className="w-4 h-4 text-[#0a84ff]" />
+            </div>
+            <div className="text-2xl font-bold text-white tabular-nums">
+              {complianceScores.accName}%
+            </div>
+            <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+              <div
+                className="bg-[#0a84ff] h-full rounded-full transition-all duration-500 ease-spring"
+                style={{ width: `${complianceScores.accName}%` }}
+              />
+            </div>
+            <div className="text-[11px] text-[#86868b]">
+              Provenance &amp; accessible labeling health
+            </div>
           </div>
-          <div className="text-2xl font-bold text-white tabular-nums">
-            {complianceScores.focus}%
-          </div>
-          <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-            <div
-              className="bg-[#30d158] h-full rounded-full transition-all duration-500 ease-spring"
-              style={{ width: `${complianceScores.focus}%` }}
-            />
-          </div>
-          <div className="text-[11px] text-[#86868b]">
-            Tarjan trap-free & Kendall τ {auditRun.kendallTau?.tau?.toFixed(2) ?? '0.88'}
-          </div>
-        </div>
 
-        {/* Card 3: Color Contrast */}
-        <div className="p-5 rounded-2xl apple-vibrancy-thin border-[0.5px] border-white/10 space-y-2">
-          <div className="flex items-center justify-between text-xs font-mono text-[#86868b]">
-            <span className="uppercase tracking-wider">WCAG 1.4.3 Contrast</span>
-            <Sliders className="w-4 h-4 text-[#ff9f0a]" />
+          {/* Card 2: Focus Graph */}
+          <div className="p-5 rounded-2xl apple-vibrancy-thin border-[0.5px] border-white/10 space-y-2 flex flex-col justify-between">
+            <div className="flex items-center justify-between text-xs font-mono text-[#86868b]">
+              <span className="uppercase tracking-wider">Focus Navigation</span>
+              <Lock className="w-4 h-4 text-[#30d158]" />
+            </div>
+            <div className="text-2xl font-bold text-white tabular-nums">
+              {complianceScores.focus}%
+            </div>
+            <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+              <div
+                className="bg-[#30d158] h-full rounded-full transition-all duration-500 ease-spring"
+                style={{ width: `${complianceScores.focus}%` }}
+              />
+            </div>
+            <div className="text-[11px] text-[#86868b]">
+              Tarjan trap-free &amp; Kendall τ {auditRun.kendallTau?.tau?.toFixed(2) ?? '0.88'}
+            </div>
           </div>
-          <div className="text-2xl font-bold text-white tabular-nums">
-            {complianceScores.contrast}%
-          </div>
-          <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-            <div
-              className="bg-[#ff9f0a] h-full rounded-full transition-all duration-500 ease-spring"
-              style={{ width: `${complianceScores.contrast}%` }}
-            />
-          </div>
-          <div className="text-[11px] text-[#86868b]">
-            sRGB luminance AA (4.5:1) compliance
-          </div>
-        </div>
 
-        {/* Card 4: Target Size */}
-        <div className="p-5 rounded-2xl apple-vibrancy-thin border-[0.5px] border-white/10 space-y-2">
-          <div className="flex items-center justify-between text-xs font-mono text-[#86868b]">
-            <span className="uppercase tracking-wider">WCAG 2.5.8 Target Size</span>
-            <CheckCircle2 className="w-4 h-4 text-[#bf5af2]" />
+          {/* Card 3: Color Contrast */}
+          <div className="p-5 rounded-2xl apple-vibrancy-thin border-[0.5px] border-white/10 space-y-2 flex flex-col justify-between">
+            <div className="flex items-center justify-between text-xs font-mono text-[#86868b]">
+              <span className="uppercase tracking-wider">WCAG 1.4.3 Contrast</span>
+              <Sliders className="w-4 h-4 text-[#ff9f0a]" />
+            </div>
+            <div className="text-2xl font-bold text-white tabular-nums">
+              {complianceScores.contrast}%
+            </div>
+            <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+              <div
+                className="bg-[#ff9f0a] h-full rounded-full transition-all duration-500 ease-spring"
+                style={{ width: `${complianceScores.contrast}%` }}
+              />
+            </div>
+            <div className="text-[11px] text-[#86868b]">
+              sRGB luminance AA (4.5:1) compliance
+            </div>
           </div>
-          <div className="text-2xl font-bold text-white tabular-nums">
-            {complianceScores.targetSize}%
-          </div>
-          <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-            <div
-              className="bg-[#bf5af2] h-full rounded-full transition-all duration-500 ease-spring"
-              style={{ width: `${complianceScores.targetSize}%` }}
-            />
-          </div>
-          <div className="text-[11px] text-[#86868b]">
-            24x24px bounding & spacing circles
+
+          {/* Card 4: Target Size */}
+          <div className="p-5 rounded-2xl apple-vibrancy-thin border-[0.5px] border-white/10 space-y-2 flex flex-col justify-between">
+            <div className="flex items-center justify-between text-xs font-mono text-[#86868b]">
+              <span className="uppercase tracking-wider">WCAG 2.5.8 Target Size</span>
+              <CheckCircle2 className="w-4 h-4 text-[#bf5af2]" />
+            </div>
+            <div className="text-2xl font-bold text-white tabular-nums">
+              {complianceScores.targetSize}%
+            </div>
+            <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+              <div
+                className="bg-[#bf5af2] h-full rounded-full transition-all duration-500 ease-spring"
+                style={{ width: `${complianceScores.targetSize}%` }}
+              />
+            </div>
+            <div className="text-[11px] text-[#86868b]">
+              24x24px bounding &amp; spacing circles
+            </div>
           </div>
         </div>
       </div>

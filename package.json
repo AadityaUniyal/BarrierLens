@@ -14,6 +14,7 @@
     "test:week5": "node scripts/verify-week5-state-graph.mjs",
     "test:differentiators": "npx tsx --env-file=.env.local scripts/verify-novel-differentiators.mjs",
     "test:multiagent": "npx tsx --env-file=.env.local scripts/verify-aws-multiagent-sandbox.mjs",
+    "test:phase5": "npx tsx scripts/verify-phase5-cupertino-deploy.mjs",
     "aws:status": "npx tsx scripts/aws-agent-cli.mjs status",
     "aws:bedrock": "npx tsx scripts/aws-agent-cli.mjs bedrock",
     "aws:audit": "npx tsx scripts/aws-agent-cli.mjs audit"

@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 
 export type SimulatorPersona = 'keyboard' | 'voiceover' | 'tremor';
+export type VisionFilterMode = 'normal' | 'blur' | 'protanopia' | 'contrast';
 
 interface FocusNodeCoord {
   id: string;
@@ -46,6 +47,7 @@ export function VisualTwinSimulator() {
   const [speechEnabled, setSpeechEnabled] = useState(true);
   const [tremorIntensity, setTremorIntensity] = useState<number>(0); // 0 = off, 1 = mild, 2 = severe
   const [contrastMode, setContrastMode] = useState(false);
+  const [visionFilter, setVisionFilter] = useState<VisionFilterMode>('normal');
   const [reflow320, setReflow320] = useState(false);
 
   // Live Speech buffer & waveform state
@@ -229,8 +231,15 @@ export function VisualTwinSimulator() {
 
             {/* Application Mock Viewport Container */}
             <div
+              style={{
+                filter: visionFilter === 'blur'
+                  ? 'blur(3.5px)'
+                  : visionFilter === 'protanopia'
+                  ? 'url(#protanopia-filter)'
+                  : undefined
+              }}
               className={`relative rounded-2xl p-5 border transition-all duration-300 min-h-[440px] ${
-                contrastMode
+                contrastMode || visionFilter === 'contrast'
                   ? 'bg-black text-yellow-300 border-yellow-400'
                   : 'bg-[#18181a] text-[#f5f5f7] border-white/5'
               } ${reflow320 ? 'max-w-[320px] mx-auto' : 'w-full'}`}
@@ -382,6 +391,12 @@ export function VisualTwinSimulator() {
                   </filter>
                   <filter id="glow-emerald" x="-20%" y="-20%" width="140%" height="140%">
                     <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#10b981" floodOpacity="0.9" />
+                  </filter>
+                  <filter id="protanopia-filter" colorInterpolationFilters="sRGB">
+                    <feColorMatrix
+                      type="matrix"
+                      values="0.567 0.433 0 0 0  0.558 0.442 0 0 0  0 0.242 0.758 0 0  0 0 0 1 0"
+                    />
                   </filter>
                 </defs>
 
@@ -547,24 +562,50 @@ export function VisualTwinSimulator() {
               />
             </div>
 
-            {/* Environmental Toggles */}
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/10">
+            {/* Vision Impairment Simulation Controls */}
+            <div className="space-y-2 pt-2 border-t border-white/10">
+              <div className="flex items-center justify-between text-xs text-[#86868b]">
+                <span>Vision Impairment Simulation</span>
+                <span className="font-mono text-[#f5f5f7] capitalize">
+                  {visionFilter === 'blur' ? 'Low-Vision Blur (3.5px)' : visionFilter === 'protanopia' ? 'Protanopia (Red-Blind)' : visionFilter === 'contrast' ? 'High Contrast AA' : 'Standard'}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: 'normal', label: 'Normal Vision' },
+                  { id: 'blur', label: 'Low-Vision Blur' },
+                  { id: 'protanopia', label: 'Protanopia' },
+                  { id: 'contrast', label: 'High Contrast' },
+                ].map((mode) => (
+                  <button
+                    key={mode.id}
+                    onClick={() => {
+                      setVisionFilter(mode.id as VisionFilterMode);
+                      if (mode.id === 'contrast') setContrastMode(true);
+                      else setContrastMode(false);
+                    }}
+                    className={`p-2 rounded-xl text-xs font-medium border text-center transition-all ${
+                      visionFilter === mode.id
+                        ? 'bg-purple-600/30 text-purple-200 border-purple-500/60 shadow-sm'
+                        : 'bg-white/5 border-white/10 text-[#86868b] hover:text-white'
+                    }`}
+                  >
+                    {mode.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Environmental 320px Reflow Toggle */}
+            <div className="pt-2 border-t border-white/10 flex items-center justify-between">
+              <span className="text-xs text-[#86868b]">Mobile Reflow (WCAG 1.4.10)</span>
               <button
                 onClick={() => setReflow320(!reflow320)}
-                className={`p-2 rounded-xl text-xs font-medium border text-center transition-all ${
+                className={`px-3 py-1 rounded-xl text-xs font-medium border transition-all ${
                   reflow320 ? 'bg-purple-600/20 text-purple-300 border-purple-500/40' : 'bg-white/5 border-white/10 text-[#86868b]'
                 }`}
               >
-                320px Reflow
-              </button>
-
-              <button
-                onClick={() => setContrastMode(!contrastMode)}
-                className={`p-2 rounded-xl text-xs font-medium border text-center transition-all ${
-                  contrastMode ? 'bg-purple-600/20 text-yellow-300 border-yellow-400/40' : 'bg-white/5 border-white/10 text-[#86868b]'
-                }`}
-              >
-                High Contrast
+                {reflow320 ? '320px Active' : 'Default Viewport'}
               </button>
             </div>
           </div>

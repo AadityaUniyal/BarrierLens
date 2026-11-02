@@ -1,4 +1,3 @@
-import { sql } from '../../neon/db';
 
 export interface CUSUMResult {
   hasDrift: boolean;
@@ -63,11 +62,16 @@ export class DriftSentinelEngine {
   }
 
   async persistDriftAlert(flowId: string | null, score: number, kind = 'effort_ratio_jump') {
+    if (typeof window !== 'undefined') return;
     try {
-      await sql`
-        INSERT INTO drift_alerts (flow_id, kind, score)
-        VALUES (${flowId}, ${kind}, ${score})
-      `;
+      const modulePath = '../../neon/db';
+      const { sql } = await import(/* webpackIgnore: true */ modulePath);
+      if (sql) {
+        await sql`
+          INSERT INTO drift_alerts (flow_id, kind, score)
+          VALUES (${flowId}, ${kind}, ${score})
+        `;
+      }
     } catch (err: any) {
       console.warn('[Drift Sentinel] Error recording alert:', err.message);
     }
