@@ -19,6 +19,7 @@ import { AWSBridgeConsole } from '@/components/apple/AWSBridgeConsole';
 import { LiveMissionControl } from '@/components/apple/LiveMissionControl';
 import { VisualTwinSimulator } from '@/components/apple/VisualTwinSimulator';
 import { LandingStory } from '@/components/apple/LandingStory';
+import { TeamIntegrationsView } from '@/components/apple/TeamIntegrationsView';
 import { AppleAuthModal, UserSession } from '@/components/apple/AppleAuthModal';
 import { AuditRun, BarrierFinding, PersonaType, VerifiedFixResult } from '@/lib/barrierlens/types';
 import { transcriptItemsFromRun } from '@/lib/barrierlens/engines/transcript-from-run';
@@ -274,6 +275,13 @@ export default function Home() {
         {activeScreen === 'story' && (
           <LandingStory
             onEnterStudio={() => setActiveScreen('studio')}
+            onOpenAuth={() => setIsAuthModalOpen(true)}
+          />
+        )}
+
+        {activeScreen === 'integrations' && (
+          <TeamIntegrationsView
+            userSession={userSession}
             onOpenAuth={() => setIsAuthModalOpen(true)}
           />
         )}

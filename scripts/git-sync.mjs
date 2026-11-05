@@ -41,7 +41,7 @@ async function main() {
       name: 'Aaditya Uniyal',
       email: 'aadityauniyal@users.noreply.github.com'
     },
-    message: 'feat(phase3): implement MCTS exploration graph, Set-of-Mark visual grounding, Reflexion self-correction, and universal AST declarative patch replay'
+    message: 'feat(phase4): implement Team & CI/CD Integrations, GitHub Action workflow generator, API Key manager, signed webhooks, and Better Auth Organization UI'
   });
 
   console.log(`[Git Sync] Committed successfully: ${sha}`);

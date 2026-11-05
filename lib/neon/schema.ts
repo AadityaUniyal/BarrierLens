@@ -237,7 +237,36 @@ export async function initializeDatabaseSchema() {
       console.log('[Neon DB] runs public-share columns notice:', e.message);
     }
 
+    // 4. Integrations & Team Tables (API Keys & Webhooks)
+    await sql`
+      CREATE TABLE IF NOT EXISTS api_keys (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        key_prefix TEXT NOT NULL,
+        key_hash TEXT NOT NULL,
+        scopes TEXT[] DEFAULT '{"audits:read", "audits:write"}',
+        rate_limit_per_min INTEGER DEFAULT 60,
+        last_used_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS webhooks (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id TEXT NOT NULL,
+        url TEXT NOT NULL,
+        secret TEXT NOT NULL,
+        events TEXT[] DEFAULT '{"audit.completed", "trap.detected", "repair.verified"}',
+        active BOOLEAN DEFAULT TRUE,
+        last_status INTEGER,
+        last_dispatched_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+
     console.log('[Neon DB] Schema successfully initialized in Neon Postgres!');
-    return { success: true, message: 'All 12 core BarrierLens tables (including barrier_genomes, causal_certificates, agent_event_traces) created and verified.' };
+    return { success: true, message: 'All BarrierLens tables (including api_keys, webhooks, barrier_genomes, causal_certificates, agent_event_traces) created and verified.' };
   });
 }

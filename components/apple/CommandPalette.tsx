@@ -35,6 +35,7 @@ export function CommandPalette({ isOpen, onClose, onSelectScreen, onRunAudit }: 
 
   const actions = [
     { label: 'Run Autonomous Audit', icon: Play, shortcut: '↵', action: () => { onRunAudit(); onClose(); } },
+    { label: 'Team, CI/CD & API Keys', icon: GitBranch, shortcut: 'I', action: () => { onSelectScreen('integrations'); onClose(); } },
     { label: 'Interactive Visual Twin Simulator', icon: MonitorPlay, shortcut: 'V', action: () => { onSelectScreen('visual-twin'); onClose(); } },
     { label: 'Multi-Agent Mesh (AWS Strands)', icon: Network, shortcut: 'M', action: () => { onSelectScreen('multi-agent'); onClose(); } },
     { label: 'AWS CLI & Bedrock Sandbox Bridge', icon: Cloud, shortcut: 'A', action: () => { onSelectScreen('aws-bridge'); onClose(); } },

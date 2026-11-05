@@ -27,6 +27,7 @@ import { UserSession } from './AppleAuthModal';
 export type ScreenId = 
   | 'story'
   | 'studio' 
+  | 'integrations'
   | 'visual-twin' 
   | 'multi-agent' 
   | 'aws-bridge' 
@@ -62,6 +63,7 @@ export function Navbar({
   const primaryNavItems = [
     { id: 'story', label: 'Story', icon: Sparkles },
     { id: 'studio', label: 'Studio', icon: Compass },
+    { id: 'integrations', label: 'Integrations', icon: GitBranch },
     { id: 'visual-twin', label: 'Visual Twin', icon: MonitorPlay },
     { id: 'barrier-genome', label: 'Barrier Genome', icon: Dna },
     { id: 'aws-bridge', label: 'AWS Bedrock', icon: Cloud },
@@ -72,7 +74,7 @@ export function Navbar({
     { id: 'multi-agent', label: 'Multi-Agent Mesh', icon: Network },
     { id: 'focus-map', label: 'Focus Map & Kendall Tau', icon: Terminal },
     { id: 'screen-reader', label: 'VoiceOver Transcript', icon: Volume2 },
-    { id: 'causal-diff', label: 'Causal Proof Studio', icon: GitBranch },
+    { id: 'causal-diff', label: 'Causal Proof Studio', icon: ShieldCheck },
     { id: 'stress-test', label: 'Red-Team Stress Arena', icon: Flame },
     { id: 'scorecard', label: 'Public Scorecard', icon: Share2 },
     { id: 'trends', label: 'Trends & Drift', icon: LineChart },
