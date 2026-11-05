@@ -41,7 +41,7 @@ async function main() {
       name: 'Aaditya Uniyal',
       email: 'aadityauniyal@users.noreply.github.com'
     },
-    message: 'feat(phase4): implement Team & CI/CD Integrations, GitHub Action workflow generator, API Key manager, signed webhooks, and Better Auth Organization UI'
+    message: 'feat(phase5): polish & launch readiness, metadata SEO, robots.txt, sitemap.xml, and vercel.json serverless configurations'
   });
 
   console.log(`[Git Sync] Committed successfully: ${sha}`);
