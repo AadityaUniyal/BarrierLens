@@ -1,3 +1,7 @@
+param(
+    [string]$msg = "fix(product): streamline UX, eliminate passkey gate, and remove fixture-cheating in replay engine"
+)
+
 $code = @'
 using System;
 using System.Runtime.InteropServices;
@@ -38,7 +42,7 @@ Add-Type -TypeDefinition $code -Language CSharp
 $t = [CredReader]::Read("git:https://github.com")
 if ($t) {
     $env:GH_PUSH_TOKEN = $t
-    node scripts/git-sync.mjs "fix(backend): enforce zero-demo replay verification and real metamorphic browser fuzzing"
+    node scripts/git-sync.mjs $msg
 } else {
-    Write-Host "Token not found"
+    Write-Host "Token not found in Windows Credential Manager"
 }

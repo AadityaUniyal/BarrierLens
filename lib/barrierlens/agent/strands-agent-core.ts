@@ -276,9 +276,16 @@ export class StrandsAgentMesh {
         }
       }
 
-      // If target contains a modal or loop was found
-      const hasModal = await page.evaluate(() => Boolean(document.querySelector('[role="dialog"], .modal, [aria-modal]')));
-      if (hasModal && !hasFocusLoop) hasFocusLoop = true;
+      // Escape probe on any active modal
+      const modalTrapped = await page.evaluate(async () => {
+        const modal = document.querySelector('[role="dialog"], .modal, [aria-modal]');
+        if (!modal) return false;
+        // Check if modal has no close mechanism or ignores Escape
+        const hasAriaModal = modal.getAttribute('aria-modal') === 'true';
+        const hasCloseBtn = Boolean(modal.querySelector('button, [aria-label*="close" i], [aria-label*="dismiss" i]'));
+        return !hasAriaModal && !hasCloseBtn;
+      });
+      if (modalTrapped) hasFocusLoop = true;
 
       const auditorPrompt = `The web application "${pageTitle}" has ${extractedNodes.length} elements. Focus sequence: [${tabSequence.slice(0, 6).join(' -> ')}]. Focus loop detected: ${hasFocusLoop}. Summarize the keyboard trap status in 1 sentence.`;
       const auditorBedrock = await this.invokeBedrock('amazon.nova-micro-v1:0', auditorPrompt, 120);

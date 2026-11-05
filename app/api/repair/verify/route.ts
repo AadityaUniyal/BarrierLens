@@ -12,12 +12,23 @@ export async function POST(req: Request) {
     const findingKind = body.findingKind || 'keyboard_trap';
     const patch = body.patch || 'aria-modal="true" role="dialog"';
 
+    const targetSelector = body.selector || body.targetSelector || undefined;
+    const traceKeySequence = body.traceKeySequence || ['Tab', 'Tab', 'Enter'];
+
     // Enforce SSRF & target policy guards
     const origin = requestOriginFrom(req);
     const targetUrl = await resolvePublicTargetUrl(rawTargetUrl, origin);
 
     const repairEngine = new VerifiedRepairEngine();
-    const result = await repairEngine.verifyPatch(targetUrl, findingId, findingKind, patch);
+    const result = await repairEngine.verifyPatch(
+      targetUrl,
+      findingId,
+      findingKind,
+      patch,
+      traceKeySequence,
+      undefined,
+      targetSelector
+    );
 
     return NextResponse.json(result);
   } catch (err: any) {

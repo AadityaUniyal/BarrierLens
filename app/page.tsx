@@ -27,13 +27,23 @@ import { authClient } from '@/lib/auth-client';
 import { AuditRun, BarrierFinding, PersonaType, VerifiedFixResult } from '@/lib/barrierlens/types';
 
 export default function Home() {
-  const [activeScreen, setActiveScreen] = useState<ScreenId>('pulse');
+  const [activeScreen, setActiveScreen] = useState<ScreenId>('audits');
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-  // Authenticated User Session (Starts as null; loaded from real session or demo selection)
-  const [userSession, setUserSession] = useState<UserSession | null>(null);
-  const [isLoadingSession, setIsLoadingSession] = useState(true);
+  // Authenticated User Session (Starts as immediate active workspace; zero gatekeeping)
+  const [userSession, setUserSession] = useState<UserSession | null>({
+    id: 'auditor_local',
+    name: 'Accessibility Auditor',
+    email: 'auditor@barrierlens.local',
+    authMethod: 'sandbox_developer',
+    organization: 'Developer Workspace',
+    role: 'Lead Auditor',
+    awsRegion: 'us-east-1',
+    bedrockQuota: 'Active',
+    verifiedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  });
+  const [isLoadingSession, setIsLoadingSession] = useState(false);
 
   // Load real session on mount
   useEffect(() => {
@@ -186,6 +196,39 @@ export default function Home() {
     ];
     setHistoricalFindings(samples);
     setSelectedFindingForRemedy(samples[0]);
+
+    const mockAudit: AuditRun = {
+      id: 'run_sample_benchmark_01',
+      targetUrl: targetUrl || 'http://localhost:3000/benchmark',
+      goal,
+      persona,
+      status: 'completed',
+      startedAt: new Date(Date.now() - 45000).toISOString(),
+      finishedAt: new Date().toISOString(),
+      taskSuccess: false,
+      steps: [
+        { idx: 1, persona: 'keyboard', actionType: 'press_key', key: 'Tab', tier: 1, activeElementBefore: 'body', activeElementAfter: '#newsletter-email', reasoning: 'Advance focus to input field', timestamp: Date.now() - 5000 },
+        { idx: 2, persona: 'keyboard', actionType: 'type_text', tier: 1, activeElementBefore: '#newsletter-email', activeElementAfter: '#newsletter-email', reasoning: 'Type test email address', timestamp: Date.now() - 4000 },
+        { idx: 3, persona: 'keyboard', actionType: 'press_key', key: 'Tab', tier: 1, activeElementBefore: '#newsletter-email', activeElementAfter: '#subscribe-btn', reasoning: 'Focus subscribe button', timestamp: Date.now() - 3000 },
+        { idx: 4, persona: 'keyboard', actionType: 'press_key', key: 'Enter', tier: 2, activeElementBefore: '#subscribe-btn', activeElementAfter: '#trap-modal', reasoning: 'Trigger subscribe action and evaluate confirmation dialog', timestamp: Date.now() - 2000 },
+        { idx: 5, persona: 'keyboard', actionType: 'press_key', key: 'Tab', tier: 0, activeElementBefore: '#trap-modal', activeElementAfter: '#claim-btn', reasoning: 'Tab inside dialog container: focus loop cycle detected', timestamp: Date.now() - 1000 },
+      ],
+      findings: samples,
+      effortRatio: 3.8,
+      kendallTau: {
+        tau: 0.52,
+        focusOrder: ['#grid-btn-2', '#grid-btn-1'],
+        visualOrder: ['#grid-btn-1', '#grid-btn-2'],
+        inversionCount: 4,
+        totalPairs: 10,
+        concordantCount: 6,
+        discordantCount: 4,
+        isAcceptable: false,
+        explanation: 'Visual reading flow sequence diverges from DOM traversal order.'
+      },
+      tierMix: { tier0Rules: 1, tier1Ranker: 3, tier2Groq: 1, tier3Gemini: 0 }
+    };
+    setAuditResult(mockAudit);
   };
 
   // Run Task Audit with SSE Live Streaming (/api/audit/stream)
@@ -302,45 +345,7 @@ export default function Home() {
     }
   };
 
-  // STRICT ACCESS BARRIER: Unauthenticated users only see the Story Landing Page
-  if (!userSession) {
-    return (
-      <div className="min-h-screen bg-[#000000] text-[#f5f5f7] flex flex-col font-sans selection:bg-[#0071e3] selection:text-white">
-        <Navbar
-          activeScreen="story"
-          setActiveScreen={setActiveScreen}
-          openPalette={() => setIsPaletteOpen(true)}
-          servicesCount={servicesHealth}
-          userSession={null}
-          onOpenAuth={() => setIsAuthModalOpen(true)}
-        />
-        <AppleAuthModal
-          isOpen={isAuthModalOpen}
-          onClose={() => setIsAuthModalOpen(false)}
-          currentSession={null}
-          onAuthenticate={(session) => {
-            setUserSession(session);
-            setActiveScreen('pulse');
-          }}
-          onSignOut={() => setUserSession(null)}
-        />
-        <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8">
-          <LandingStory
-            onEnterStudio={() => setIsAuthModalOpen(true)}
-            onOpenAuth={() => setIsAuthModalOpen(true)}
-          />
-        </main>
-        <footer className="border-t border-white/[0.06] py-6 px-6 text-center text-xs text-[#6e6e73]">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-            <span>BarrierLens Inc. — Designed with Apple Precision</span>
-            <span className="font-mono text-[11px]">EAA Directive (EU) 2019/882 & WCAG 2.2 Ready</span>
-          </div>
-        </footer>
-      </div>
-    );
-  }
-
-  // PROTECTED APP WORKSPACE: Authenticated user experience
+  // Authenticated workspace experience (Zero blocking gate)
   return (
     <div className="min-h-screen bg-[#000000] text-[#f5f5f7] flex flex-col font-sans selection:bg-[#0071e3] selection:text-white">
       {/* 1. Sticky Apple Glass Navbar */}
@@ -372,7 +377,15 @@ export default function Home() {
 
       {/* 4. Main Protected Viewport */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-8">
-        {/* 1. Overview (Pulse Dashboard with Apple Watch Activity Rings) */}
+        {/* 0. Landing Story Screen */}
+        {activeScreen === 'story' && (
+          <LandingStory
+            onEnterStudio={() => setActiveScreen('audits')}
+            onOpenAuth={() => setIsAuthModalOpen(true)}
+          />
+        )}
+
+        {/* 1. Overview (Pulse Dashboard with Activity Radar) */}
         {(activeScreen === 'overview' || activeScreen === 'pulse') && (
           <PulseDashboard
             runsHistory={runsHistory}
@@ -406,13 +419,25 @@ export default function Home() {
 
         {/* 3. Audits (Autonomous Task Crawl, Keycaps & Live Replay) */}
         {(activeScreen === 'audits' || activeScreen === 'inspector') && (
-          <div className="space-y-10 animate-in fade-in duration-300">
-            <LiveMissionControl
-              onOpenGenome={() => setActiveScreen('genome')}
-              onOpenCausalDiff={() => setActiveScreen('fixes')}
-              onOpenAwsConsole={() => setActiveScreen('aws-bridge')}
-              onOpenVisualTwin={() => setActiveScreen('visual-twin')}
-            />
+          <div className="space-y-8 animate-in fade-in duration-300">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white/[0.03] border-hairline">
+              <div className="flex items-center gap-3">
+                <div className="w-2.5 h-2.5 rounded-full bg-[#30d158] animate-pulse" />
+                <div>
+                  <span className="text-xs font-semibold text-white">Chromium CDP Keyboard Sandbox Ready</span>
+                  <p className="text-[11px] text-[#86868b]">Zero simulated clicks. Actions physically emulate real keypresses.</p>
+                </div>
+              </div>
+              {!auditResult && (
+                <button
+                  type="button"
+                  onClick={handleLoadBenchmarkFindings}
+                  className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/16 text-xs font-medium text-white border-hairline transition-all"
+                >
+                  Load Benchmark Sample Findings
+                </button>
+              )}
+            </div>
 
             <ComposeView
               targetUrl={targetUrl}

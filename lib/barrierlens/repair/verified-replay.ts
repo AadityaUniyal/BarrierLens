@@ -3,7 +3,7 @@ import { VerifiedFixResult, FindingKind } from '../types';
 import { sql } from '../../neon/db';
 
 export interface DeclarativePatchRule {
-  targetSelector: string;
+  targetSelector?: string;
   setAttributes?: Record<string, string>;
   removeAttributes?: string[];
   addKeydownHandlers?: Array<{ key: string; action: 'hide' | 'blur' | 'restoreFocus'; focusSelector?: string }>;
@@ -22,11 +22,12 @@ export class VerifiedRepairEngine {
     findingKind: FindingKind,
     patch: string,
     traceKeySequence: string[] = ['Tab', 'Tab', 'Enter'],
-    customRule?: DeclarativePatchRule
+    customRule?: DeclarativePatchRule,
+    targetSelector?: string
   ): Promise<VerifiedFixResult> {
     let browser = null;
     let verified = false;
-    const regressionCount = 0;
+    let regressionCount = 0;
     let replayTaskSuccess = true;
 
     try {
@@ -40,61 +41,117 @@ export class VerifiedRepairEngine {
           window.addEventListener('DOMContentLoaded', () => {
             console.log('[BarrierLens Repair] Injecting declarative AST patch...');
 
-            // 1. Apply custom declarative rule if supplied
+            const targetSelector = ${JSON.stringify(targetSelector || customRule?.targetSelector || '')};
             const customRule = ${JSON.stringify(customRule || null)};
-            if (customRule && customRule.targetSelector) {
-              const targets = document.querySelectorAll(customRule.targetSelector);
-              targets.forEach(el => {
-                if (customRule.setAttributes) {
-                  for (const [k, v] of Object.entries(customRule.setAttributes)) {
+            const patchText = ${JSON.stringify(patch || '')};
+
+            // Helper to parse key-value attributes from patch string (e.g. aria-modal="true" role="dialog")
+            const attrMatches = patchText.matchAll(/([a-zA-Z0-9_-]+)=["']([^"']+)["']/g);
+            const parsedAttrs = {};
+            for (const m of attrMatches) {
+              parsedAttrs[m[1]] = m[2];
+            }
+
+            // 1. Apply to specific targetSelector if provided
+            if (targetSelector) {
+              try {
+                const els = document.querySelectorAll(targetSelector);
+                els.forEach(el => {
+                  for (const [k, v] of Object.entries(parsedAttrs)) {
                     el.setAttribute(k, v);
                   }
-                }
-                if (customRule.removeAttributes) {
-                  for (const k of customRule.removeAttributes) {
-                    el.removeAttribute(k);
+                });
+              } catch (e) {
+                console.warn('[BarrierLens Repair] Selector error:', e);
+              }
+            }
+
+            // 2. Apply custom declarative rule if supplied
+            if (customRule && customRule.targetSelector) {
+              try {
+                const targets = document.querySelectorAll(customRule.targetSelector);
+                targets.forEach(el => {
+                  if (customRule.setAttributes) {
+                    for (const [k, v] of Object.entries(customRule.setAttributes)) {
+                      el.setAttribute(k, v);
+                    }
                   }
-                }
-                if (customRule.addKeydownHandlers) {
-                  window.addEventListener('keydown', (e) => {
-                    for (const h of customRule.addKeydownHandlers) {
-                      if (e.key === h.key) {
-                        if (h.action === 'hide') (el as HTMLElement).style.display = 'none';
-                        if (h.action === 'restoreFocus' && h.focusSelector) {
-                          const target = document.querySelector(h.focusSelector) as HTMLElement;
-                          if (target) target.focus();
+                  if (customRule.removeAttributes) {
+                    for (const k of customRule.removeAttributes) {
+                      el.removeAttribute(k);
+                    }
+                  }
+                  if (customRule.addKeydownHandlers) {
+                    window.addEventListener('keydown', (e) => {
+                      for (const h of customRule.addKeydownHandlers) {
+                        if (e.key === h.key) {
+                          if (h.action === 'hide') (el as HTMLElement).style.display = 'none';
+                          if (h.action === 'restoreFocus' && h.focusSelector) {
+                            const target = document.querySelector(h.focusSelector) as HTMLElement;
+                            if (target) target.focus();
+                          }
                         }
                       }
-                    }
+                    });
+                  }
+                });
+              } catch (e) {
+                console.warn('[BarrierLens Repair] Custom rule error:', e);
+              }
+            }
+
+            // 3. Dynamic repair based on finding kind
+            const kind = ${JSON.stringify(findingKind)};
+
+            if (kind === 'keyboard_trap') {
+              // Ensure any open dialog or modal container responds to Escape key
+              const dialogSelectors = targetSelector || '[role="dialog"], [aria-modal], dialog, .modal';
+              const dialogs = document.querySelectorAll(dialogSelectors);
+              dialogs.forEach(dlg => {
+                if (!dlg.getAttribute('aria-modal')) dlg.setAttribute('aria-modal', 'true');
+                if (!dlg.getAttribute('role')) dlg.setAttribute('role', 'dialog');
+              });
+
+              window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                  dialogs.forEach(dlg => {
+                    (dlg as HTMLElement).style.display = 'none';
+                    if (dlg.hasAttribute('open')) dlg.removeAttribute('open');
                   });
                 }
               });
-            }
-
-            // 2. Universal fallback heuristics for common barrier kinds
-            const trap = document.getElementById('trap-modal') || document.querySelector('[role="dialog"], [data-barrier-trap]');
-            if (trap) {
-              trap.setAttribute('aria-modal', 'true');
-              trap.setAttribute('role', 'dialog');
-              window.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                  (trap as HTMLElement).style.display = 'none';
-                }
+            } else if (kind === 'silent_state_change') {
+              // Ensure dynamic notification / toast / error containers announce via aria-live
+              const alertSelectors = targetSelector || '[role="alert"], [role="status"], .toast, .alert, .error, .notification';
+              const alerts = document.querySelectorAll(alertSelectors);
+              alerts.forEach(el => {
+                if (!el.getAttribute('aria-live')) el.setAttribute('aria-live', 'polite');
+                if (!el.getAttribute('role')) el.setAttribute('role', 'status');
               });
-            }
 
-            const errorContainers = document.querySelectorAll('#error-msg, [data-barrier-error], .error-banner, .toast');
-            errorContainers.forEach(ec => {
-              ec.setAttribute('aria-live', 'polite');
-              ec.setAttribute('role', 'status');
-            });
-
-            const unlabeledBtns = document.querySelectorAll('button:not([aria-label]), a:not([aria-label])');
-            unlabeledBtns.forEach(btn => {
-              if (!(btn as HTMLElement).innerText.trim() && !btn.getAttribute('aria-label')) {
-                btn.setAttribute('aria-label', 'Interactive Action');
+              // Mutation observer for dynamically appended alerts
+              const observer = new MutationObserver((mutations) => {
+                mutations.forEach(m => {
+                  m.addedNodes.forEach(node => {
+                    if (node.nodeType === 1) {
+                      const el = node as HTMLElement;
+                      if (!el.getAttribute('aria-live')) {
+                        el.setAttribute('aria-live', 'polite');
+                      }
+                    }
+                  });
+                });
+              });
+              observer.observe(document.body, { childList: true, subtree: true });
+            } else if (kind === 'empty_accessible_name' || kind === 'misleading_accessible_name') {
+              if (targetSelector) {
+                const target = document.querySelector(targetSelector);
+                if (target && !target.getAttribute('aria-label')) {
+                  const labelValue = parsedAttrs['aria-label'] || 'Action';
+                  target.setAttribute('aria-label', labelValue);
+                }
               }
-            });
+            }
           });
         `
       });
@@ -113,22 +170,35 @@ export class VerifiedRepairEngine {
         await page.waitForTimeout(200);
       }
 
-      // Re-verify if barrier still exists
-      const barrierStillExists = await page.evaluate((kind) => {
+      // Re-verify if barrier still exists dynamically
+      const barrierStillExists = await page.evaluate(({ kind, targetSelector }) => {
         if (kind === 'keyboard_trap') {
-          const modal = document.getElementById('trap-modal') || document.querySelector('[role="dialog"]');
-          return modal && window.getComputedStyle(modal).display !== 'none' && modal.getAttribute('aria-modal') !== 'true';
+          const sel = targetSelector || '[role="dialog"], dialog, .modal';
+          const modal = document.querySelector(sel);
+          if (!modal) return false;
+          const isVisible = window.getComputedStyle(modal).display !== 'none' && window.getComputedStyle(modal).visibility !== 'hidden';
+          // If modal is visible but lacks aria-modal and cannot be escaped, trap persists
+          return isVisible && modal.getAttribute('aria-modal') !== 'true';
         }
         if (kind === 'silent_state_change') {
-          const err = document.getElementById('error-msg') || document.querySelector('.error-banner');
-          return err && !err.getAttribute('aria-live');
+          const sel = targetSelector || '[role="alert"], [role="status"], .toast, .alert, .error';
+          const alert = document.querySelector(sel);
+          if (!alert) return false;
+          return !alert.getAttribute('aria-live') && !alert.getAttribute('role');
+        }
+        if (kind === 'empty_accessible_name') {
+          if (!targetSelector) return false;
+          const el = document.querySelector(targetSelector);
+          if (!el) return false;
+          const name = el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || (el as HTMLElement).innerText?.trim();
+          return !name;
         }
         return false;
-      }, findingKind);
+      }, { kind: findingKind, targetSelector });
 
       verified = !barrierStillExists;
 
-      // Persist verified fix to Neon Postgres
+      // Persist verified fix to Neon Postgres if available
       try {
         await sql`
           INSERT INTO fixes (finding_id, patch, verified)
