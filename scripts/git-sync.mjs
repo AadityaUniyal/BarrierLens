@@ -46,8 +46,23 @@ async function main() {
 
   console.log(`[Git Sync] Committed successfully: ${sha}`);
 
-  // 3. Check push
-  console.log('[Git Sync] Ready to push to origin/main.');
+  // 3. Push if token available
+  const token = process.env.GH_PUSH_TOKEN;
+  if (token) {
+    console.log('[Git Sync] Pushing to origin/main with retrieved GitHub token...');
+    const pushResult = await git.push({
+      fs,
+      http,
+      dir,
+      remote: 'origin',
+      ref: 'main',
+      onAuth: () => ({ username: token, password: '' }),
+    });
+    console.log('[Git Sync] Push result:', pushResult);
+    console.log('[Git Sync] Successfully pushed to https://github.com/AadityaUniyal/BarrierLens.git!');
+  } else {
+    console.log('[Git Sync] Ready to push. GH_PUSH_TOKEN not supplied.');
+  }
 }
 
 main().catch(console.error);
