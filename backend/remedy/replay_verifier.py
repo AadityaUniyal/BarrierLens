@@ -24,38 +24,45 @@ class ReplayVerifier:
                 browser = p.chromium.launch(headless=True)
                 page = browser.new_page()
 
-                # Inject surgical declarative patch
-                page.add_init_script("""
-                    window.addEventListener('DOMContentLoaded', () => {
-                        console.log('[BarrierLens Remedy] Injecting patch into live DOM...');
-
-                        // Fix dialogs & keyboard traps
-                        const traps = document.querySelectorAll('[role="dialog"], #trap-modal, .modal, [data-barrier-trap]');
-                        traps.forEach(modal => {
-                            modal.setAttribute('aria-modal', 'true');
-                            modal.setAttribute('role', 'dialog');
-                            window.addEventListener('keydown', (e) => {
-                                if (e.key === 'Escape') {
-                                    modal.style.display = 'none';
-                                }
-                            });
-                        });
-
-                        // Fix unannounced error banners & live status
-                        const errorBanners = document.querySelectorAll('#error-msg, .error-banner, [data-barrier-error]');
-                        errorBanners.forEach(eb => {
-                            eb.setAttribute('aria-live', 'polite');
-                            eb.setAttribute('role', 'status');
+                patch_apply_script = """() => {
+                    const traps = document.querySelectorAll('[role="dialog"], #trap-modal, .modal, [data-barrier-trap]');
+                    traps.forEach(modal => {
+                        modal.setAttribute('aria-modal', 'true');
+                        modal.setAttribute('role', 'dialog');
+                        window.addEventListener('keydown', (e) => {
+                            if (e.key === 'Escape') {
+                                modal.style.display = 'none';
+                            }
                         });
                     });
+                    const errorBanners = document.querySelectorAll('#error-msg, .error-banner, [data-barrier-error]');
+                    errorBanners.forEach(eb => {
+                        eb.setAttribute('aria-live', 'polite');
+                        eb.setAttribute('role', 'status');
+                    });
+                }"""
+
+                # Inject surgical declarative patch
+                page.add_init_script(f"""
+                    const applyPatch = {patch_apply_script};
+                    if (document.readyState === 'loading') {{
+                        document.addEventListener('DOMContentLoaded', applyPatch);
+                    }} else {{
+                        applyPatch();
+                    }}
                 """)
 
                 try:
                     logs.append(f"Navigating to {target_url}...")
                     page.goto(target_url, wait_until="domcontentloaded", timeout=15000)
                     page.wait_for_timeout(400)
+                    page.evaluate(patch_apply_script)
                 except Exception as e:
                     logs.append(f"Target unreachable ({str(e)}). Testing patch in isolated benchmark sandbox...")
+                    try:
+                        page.goto("about:blank", timeout=5000)
+                    except Exception:
+                        pass
                     page.set_content("""<!DOCTYPE html>
                     <html><body>
                         <div id="trap-modal" role="dialog" tabindex="-1">
@@ -64,6 +71,7 @@ class ReplayVerifier:
                         </div>
                     </body></html>""")
                     page.wait_for_timeout(300)
+                    page.evaluate(patch_apply_script)
 
                 # Replay recorded key sequence
                 logs.append(f"Replaying trace key sequence: {keys}...")
@@ -88,7 +96,7 @@ class ReplayVerifier:
 
         except Exception as e:
             logs.append(f"Replay sandbox encountered error: {str(e)}")
-            verified = True  # Safe synthetic verification in test environments
+            verified = False  # Real honest error reporting; no synthetic demo pass
 
         return {
             "findingKind": finding_kind,

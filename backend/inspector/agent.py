@@ -55,32 +55,14 @@ class InspectorAgent:
             browser = p.chromium.launch(headless=True)
             page = browser.new_page(viewport={"width": 1280, "height": 800})
 
-            # Navigate to target (with resilient offline benchmark fixture fallback)
+            # Navigate to target
             try:
-                page.goto(target_url, wait_until="domcontentloaded", timeout=15000)
+                page.goto(target_url, wait_until="domcontentloaded", timeout=20000)
                 page.wait_for_timeout(800)
                 page_title = page.title() or "Target Application"
-            except Exception:
-                page_title = f"Diagnostic Target ({target_url})"
-                page.set_content("""<!DOCTYPE html>
-                <html>
-                <head><title>BarrierLens Diagnostic Fixture</title></head>
-                <body>
-                    <header>
-                        <nav><a id="nav-home" href="#home">Home</a> <a id="nav-about" href="#about">About</a></nav>
-                    </header>
-                    <main>
-                        <div id="trap-modal" role="dialog" tabindex="-1">
-                            <h2>Accessible Configuration</h2>
-                            <button id="btn-opt-1">Option 1</button>
-                            <button id="btn-opt-2">Option 2</button>
-                            <a id="btn-trap-loop" href="#loop">Cycle</a>
-                        </div>
-                        <div id="error-toast" class="toast">Profile settings saved</div>
-                    </main>
-                </body>
-                </html>""")
-                page.wait_for_timeout(400)
+            except Exception as e:
+                browser.close()
+                raise RuntimeError(f"Failed to navigate to target '{target_url}': {str(e)}")
 
             # Extract initial interactive elements for Set-of-Marks visual grounding
             raw_elements = page.evaluate("""() => {
