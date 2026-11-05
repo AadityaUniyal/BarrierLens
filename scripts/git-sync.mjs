@@ -41,7 +41,7 @@ async function main() {
       name: 'Aaditya Uniyal',
       email: 'aadityauniyal@users.noreply.github.com'
     },
-    message: 'feat(phase2): implement Apple-inspired storytelling landing page with Lenis smooth scroll, interactive metamorphic slider, Tarjan SCC focus graph, and Web Speech API acoustic simulator'
+    message: 'feat(phase3): implement MCTS exploration graph, Set-of-Mark visual grounding, Reflexion self-correction, and universal AST declarative patch replay'
   });
 
   console.log(`[Git Sync] Committed successfully: ${sha}`);

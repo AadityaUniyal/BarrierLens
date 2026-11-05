@@ -10,6 +10,12 @@ import { VisualAffordanceEngine } from '../ml/visual-affordance';
 import { ActionRanker } from '../ml/action-ranker';
 import { FlakinessFilter } from '../ml/flakiness-filter';
 import { LLMRouter } from './llm-router';
+import { ExplorationStateGraph } from '../engines/exploration-graph';
+import { ProductionStateFingerprintEngine, CompositeFingerprint } from '../engines/state-fingerprint';
+import { ReflexionEngine } from './reflexion-engine';
+import { SetOfMarksEngine } from '../cdp/set-of-marks';
+import { GenomeStore } from '../genome/genome-store';
+import { BarrierGenomeEncoder } from '../genome/barrier-encoder';
 import { INJECTED_OBSERVER_SCRIPT } from '../cdp/observer-script';
 import { EXTRACT_AX_NODES_SCRIPT, serializeAXTree, SerializedAXNode } from '../cdp/ax-serializer';
 import { extractCDPAXTree } from '../cdp/cdp-ax-extractor';
@@ -28,6 +34,12 @@ export class AuditorCore {
   private affordanceEngine = new VisualAffordanceEngine();
   private actionRanker = new ActionRanker();
   private flakinessFilter = new FlakinessFilter();
+  private explorationGraph = new ExplorationStateGraph();
+  private stateFingerprinter = new ProductionStateFingerprintEngine();
+  private reflexionEngine = new ReflexionEngine();
+  private setOfMarks = new SetOfMarksEngine();
+  private genomeStore = new GenomeStore();
+  private genomeEncoder = new BarrierGenomeEncoder();
 
   /**
    * Execute an autonomous task-conditioned accessibility audit run
@@ -69,10 +81,17 @@ export class AuditorCore {
 
       page = await context.newPage();
 
+      this.reflexionEngine.clear();
+
       // Navigate to target
       await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await page.addInitScript({ content: INJECTED_OBSERVER_SCRIPT });
       await page.waitForTimeout(1000);
+
+      // Register root state in MCTS exploration graph
+      const initialFp = await this.stateFingerprinter.captureFromPage(page);
+      this.explorationGraph.registerState(initialFp, 0, 0.5);
+      let lastFpHash = initialFp.hash;
 
       // Extract initial interactive nodes via CDP Accessibility domain & compute Kendall's Tau
       let initialNodes: SerializedAXNode[] = [];
@@ -247,11 +266,21 @@ export class AuditorCore {
         }
         const compactAX = serializeAXTree(currentNodes);
 
+        // Inject Set-of-Marks visual badges for multimodal grounding
+        try {
+          await this.setOfMarks.injectMarks(page, currentNodes);
+        } catch {
+          // Graceful fallback if transient
+        }
+
+        // Episodic self-correction memory
+        const reflexionContext = this.reflexionEngine.getReflexionPromptContext();
+
         // 2. Cascade Router: Evaluate Tier 1 Action Ranker before invoking LLMs
         const rankResult = this.actionRanker.rankNextAction(goal, currentNodes, previousActiveSelector, keyHistory);
         let decision: any;
 
-        if (rankResult.isHighConfidence) {
+        if (rankResult.isHighConfidence && !reflexionContext.includes('Δ=0')) {
           decision = {
             thought: rankResult.reasoning,
             action: rankResult.recommendedAction,
@@ -261,8 +290,8 @@ export class AuditorCore {
           };
           tierMix.tier1Ranker++;
         } else {
-          // Escalate to Tier 2 (Groq LLaMA 3.3) or Tier 3 (Gemini Flash)
-          decision = await this.router.decideNextAction(goal, persona, compactAX, keyHistory);
+          // Escalate to Tier 2 (Groq LLaMA 3.3) or Tier 3 (Gemini Flash) with Reflexion Guidance
+          decision = await this.router.decideNextAction(goal, persona, compactAX, keyHistory, reflexionContext);
           if (decision.tierUsed === 0) tierMix.tier0Rules++;
           else if (decision.tierUsed === 2) tierMix.tier2Groq++;
           else if (decision.tierUsed === 3) tierMix.tier3Gemini++;
@@ -480,6 +509,28 @@ export class AuditorCore {
         steps.push(stepRecord);
         onProgress?.({ type: 'step', data: stepRecord });
 
+        // Update MCTS exploration graph & evaluate Reflexion transition delta
+        try {
+          const stepFp = await this.stateFingerprinter.captureFromPage(page);
+          const deltaEval = this.reflexionEngine.evaluateTransition(
+            stepIdx,
+            decision.action,
+            decision.key,
+            previousActiveSelector,
+            currentActive,
+            domMutations.length,
+            observerData.announcements.length
+          );
+
+          this.explorationGraph.registerState(stepFp, stepIdx, deltaEval.isStagnant ? 0.1 : 0.6, {
+            fromNodeId: lastFpHash,
+            action: stepRecord
+          });
+          lastFpHash = stepFp.hash;
+        } catch {
+          // Graceful fallback for offline / transient states
+        }
+
         previousActiveSelector = currentActive;
 
         if (decision.isGoalReached) {
@@ -491,6 +542,9 @@ export class AuditorCore {
     } catch (err: any) {
       console.error('[BarrierLens Auditor Core] Run error:', err);
     } finally {
+      try {
+        if (page) await this.setOfMarks.clearMarks(page);
+      } catch {}
       if (context) await context.close();
       if (browser) await browser.close();
     }
@@ -559,8 +613,32 @@ export class AuditorCore {
         `;
       }
 
-      // Persist findings to Neon
+      // Persist findings to Neon & Barrier Genome Store with Cross-Site Transfer
       for (const finding of findings) {
+        try {
+          const genome = this.genomeEncoder.encode(finding, {
+            goal,
+            persona,
+            targetUrl,
+            effortRatio,
+            taskSuccess,
+            maxSteps,
+            stepCount: steps.length
+          });
+          await this.genomeStore.store(genome);
+          const transferHints = await this.genomeStore.findSimilar(genome, 1, 0.75);
+          if (transferHints.length > 0 && !finding.evidence?.crossSiteTransferAdvice) {
+            finding.evidence = {
+              ...finding.evidence,
+              crossSiteTransferAdvice: transferHints[0].remediationAdvice,
+              genomeSimilarity: transferHints[0].similarity,
+              sourceDomain: transferHints[0].domain
+            };
+          }
+        } catch {
+          // Non-blocking genome store
+        }
+
         await sql`
           INSERT INTO findings (id, run_id, step_id, kind, trust_tier, wcag, severity, severity_lo, severity_hi, evidence, certificate)
           VALUES (

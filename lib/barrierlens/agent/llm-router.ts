@@ -24,7 +24,8 @@ export class LLMRouter {
     goal: string,
     persona: string,
     compactAXTree: string,
-    history: string[]
+    history: string[],
+    reflexionContext?: string
   ): Promise<LLMDecision> {
     const prompt = `You are BarrierLens, an autonomous task-conditioned accessibility auditor.
 Goal: "${goal}"
@@ -35,14 +36,15 @@ ${compactAXTree}
 
 Recent Action History:
 ${history.slice(-5).join('\n') || 'None'}
-
+${reflexionContext || ''}
 Rules:
 1. Return ONLY valid JSON.
 2. Decide the single best next action inside the allowed keyboard persona space to advance toward the goal.
 3. If the focused element requires typing, select action "type_text" with text.
 4. If you want to move focus to the next control, select action "press_key" with key "Tab" (or "Shift+Tab").
 5. If the focused button or link should be triggered, select action "press_key" with key "Enter" or "Space".
-6. If the goal is fully accomplished, set "isGoalReached": true and action "finish_task".
+6. If stuck or in a stagnant branch, consider "Escape" or "Shift+Tab" based on episodic self-correction.
+7. If the goal is fully accomplished, set "isGoalReached": true and action "finish_task".
 
 Output format:
 {
