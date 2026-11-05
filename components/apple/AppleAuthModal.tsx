@@ -30,12 +30,12 @@ export interface UserSession {
   name: string;
   email: string;
   avatarUrl?: string;
-  authMethod: 'apple_passkey' | 'aws_iam' | 'sandbox_developer' | 'github_oauth';
+  authMethod: 'apple_passkey' | 'aws_iam' | 'sandbox_developer' | 'github_oauth' | 'session' | 'sample_mode';
   organization: string;
-  role: 'Security & Accessibility Lead' | 'Staff Frontend Engineer' | 'Compliance Officer';
-  awsRegion: string;
-  bedrockQuota: string;
-  verifiedAt: string;
+  role: string;
+  awsRegion?: string;
+  bedrockQuota?: string;
+  verifiedAt?: string;
 }
 
 interface AppleAuthModalProps {
@@ -53,7 +53,7 @@ export function AppleAuthModal({
   onAuthenticate,
   onSignOut
 }: AppleAuthModalProps) {
-  const [activeTab, setActiveTab] = useState<'passkey' | 'aws_iam' | 'github' | 'sandbox'>('passkey');
+  const [activeTab, setActiveTab] = useState<'passkey' | 'github' | 'sample'>('passkey');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authSuccess, setAuthSuccess] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
@@ -66,24 +66,24 @@ export function AppleAuthModal({
     setStatusMessage('Prompting Apple Touch ID / Face ID WebAuthn...');
 
     try {
-      // 1. Try real Better Auth WebAuthn Passkey
+      // Real Better Auth WebAuthn Passkey
       const res = await (authClient as any).signIn.passkey({
         autoFill: false,
       });
 
       if (res?.data?.user) {
         setAuthSuccess(true);
-        setStatusMessage('Biometric signature verified via Secure Enclave.');
+        setStatusMessage('Biometric signature verified.');
         setTimeout(() => {
           onAuthenticate({
-            id: res.data.user.id || 'usr_passkey_neon',
-            name: res.data.user.name || 'Verified Passkey User',
+            id: res.data.user.id,
+            name: res.data.user.name || res.data.user.email?.split('@')[0] || 'Authenticated User',
             email: res.data.user.email || 'user@barrierlens.com',
             authMethod: 'apple_passkey',
-            organization: 'Neon Enterprise Security',
-            role: 'Staff Frontend Engineer',
-            awsRegion: 'us-east-1 (N. Virginia)',
-            bedrockQuota: '1,000,000 tokens/hr (Enterprise Tier)',
+            organization: 'Personal Workspace',
+            role: 'Auditor',
+            awsRegion: 'us-east-1',
+            bedrockQuota: 'Standard Tier',
             verifiedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           });
           setIsAuthenticating(false);
@@ -91,93 +91,40 @@ export function AppleAuthModal({
           onClose();
         }, 600);
         return;
+      } else {
+        throw new Error(res?.error?.message || 'Passkey was not recognized');
       }
     } catch (err: any) {
-      console.warn('[Passkey] Native WebAuthn handshake note:', err?.message || err);
+      console.warn('[Passkey] Authentication error:', err?.message || err);
+      setIsAuthenticating(false);
+      setStatusMessage(err?.message || 'Biometric authentication was cancelled or unavailable.');
     }
-
-    // 2. Seamless local/secure fallback for environments without registered hardware passkey
-    setTimeout(() => {
-      setAuthSuccess(true);
-      setStatusMessage('Authenticated via Apple Secure Enclave Passkey.');
-      setTimeout(() => {
-        onAuthenticate({
-          id: 'usr_apple_9841',
-          name: 'Sarah Chen',
-          email: 'sarah.chen@apple-id.corp',
-          authMethod: 'apple_passkey',
-          organization: 'Cupertino Core Design Systems',
-          role: 'Staff Frontend Engineer',
-          awsRegion: 'us-east-1 (N. Virginia)',
-          bedrockQuota: '1,000,000 tokens/hr (Enterprise Tier)',
-          verifiedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        });
-        setIsAuthenticating(false);
-        setAuthSuccess(false);
-        onClose();
-      }, 600);
-    }, 900);
   };
 
   const handleGitHubAuth = async () => {
     setIsAuthenticating(true);
-    setStatusMessage('Redirecting to GitHub OAuth via Better Auth...');
+    setStatusMessage('Redirecting to GitHub OAuth...');
     try {
       await authClient.signIn.social({
         provider: 'github',
         callbackURL: window.location.href,
       });
-    } catch {
-      onAuthenticate({
-        id: 'usr_gh_dev',
-        name: 'GitHub Developer',
-        email: 'developer@github.com',
-        authMethod: 'github_oauth',
-        organization: 'Open Source Community',
-        role: 'Staff Frontend Engineer',
-        awsRegion: 'us-east-1 (Bedrock)',
-        bedrockQuota: '250,000 tokens/session',
-        verifiedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      });
+    } catch (err: any) {
       setIsAuthenticating(false);
-      onClose();
+      setStatusMessage('GitHub OAuth failed: ' + (err?.message || 'Provider unavailable'));
     }
   };
 
-  const handleSimulateAwsIamAuth = () => {
-    setIsAuthenticating(true);
-    setStatusMessage('Assuming AWS IAM Role with Bedrock Multi-Agent permissions...');
-    setTimeout(() => {
-      setIsAuthenticating(false);
-      setAuthSuccess(true);
-      setTimeout(() => {
-        onAuthenticate({
-          id: 'usr_aws_5521',
-          name: 'Alex Rivera, Lead Architect',
-          email: 'alex.rivera@enterprise.aws',
-          authMethod: 'aws_iam',
-          organization: enterpriseOrg || 'Enterprise Cloud Systems',
-          role: 'Security & Accessibility Lead',
-          awsRegion: 'us-west-2 (Oregon - Bedrock Multi-Agent Mesh)',
-          bedrockQuota: 'Unlimited (IAM Assumed Role: arn:aws:iam::8831:role/BarrierLensAuditor)',
-          verifiedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        });
-        setAuthSuccess(false);
-        onClose();
-      }, 700);
-    }, 1200);
-  };
-
-  const handleSimulateSandbox = () => {
+  const handleExploreSample = () => {
     onAuthenticate({
-      id: 'usr_guest_demo',
-      name: 'Guest Developer',
-      email: 'sandbox@barrierlens.dev',
-      authMethod: 'sandbox_developer',
-      organization: 'Local Playwright Sandbox',
-      role: 'Staff Frontend Engineer',
-      awsRegion: 'us-east-1 (Shared Bedrock Evaluation Pool)',
-      bedrockQuota: '50,000 tokens/session',
+      id: 'demo_viewer',
+      name: 'Sample Workspace',
+      email: 'sample@barrierlens.com',
+      authMethod: 'sample_mode',
+      organization: 'Sample Project (Read-Only)',
+      role: 'Viewer',
+      awsRegion: 'us-east-1',
+      bedrockQuota: 'Demo Evaluation Scope',
       verifiedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     });
     onClose();
@@ -301,26 +248,15 @@ export function AppleAuthModal({
                 GitHub
               </button>
               <button
-                onClick={() => setActiveTab('aws_iam')}
+                onClick={() => setActiveTab('sample')}
                 className={`py-1.5 rounded-xl text-[11px] font-medium transition-all flex items-center justify-center gap-1 ${
-                  activeTab === 'aws_iam'
+                  activeTab === 'sample'
                     ? 'bg-[#2c2c2e] text-white shadow-sm ring-1 ring-white/10'
                     : 'text-[#86868b] hover:text-[#f5f5f7]'
                 }`}
               >
-                <Cloud className="w-3 h-3 text-orange-400" />
-                AWS IAM
-              </button>
-              <button
-                onClick={() => setActiveTab('sandbox')}
-                className={`py-1.5 rounded-xl text-[11px] font-medium transition-all flex items-center justify-center gap-1 ${
-                  activeTab === 'sandbox'
-                    ? 'bg-[#2c2c2e] text-white shadow-sm ring-1 ring-white/10'
-                    : 'text-[#86868b] hover:text-[#f5f5f7]'
-                }`}
-              >
-                <Cpu className="w-3 h-3 text-emerald-400" />
-                Sandbox
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                Sample Mode
               </button>
             </div>
 
@@ -371,7 +307,7 @@ export function AppleAuthModal({
                   </div>
                   <div className="text-xs">
                     <p className="font-semibold text-[#f5f5f7]">Developer Sign In</p>
-                    <p className="text-[#86868b]">Instantly sync your repositories, CI workflows, and PR audit bots.</p>
+                    <p className="text-[#86868b]">Authenticate securely via GitHub OAuth.</p>
                   </div>
                 </div>
 
@@ -386,70 +322,21 @@ export function AppleAuthModal({
               </div>
             )}
 
-            {/* Tab 3: AWS IAM Identity Center */}
-            {activeTab === 'aws_iam' && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider">Enterprise Organization</label>
-                  <input
-                    type="text"
-                    value={enterpriseOrg}
-                    onChange={(e) => setEnterpriseOrg(e.target.value)}
-                    placeholder="e.g. Acme Global Logistics"
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#1c1c1e] border border-white/10 text-xs text-[#f5f5f7] focus:outline-none focus:ring-1 focus:ring-[#0071e3]"
-                  />
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-orange-500/[0.05] border border-orange-500/20 text-xs text-orange-200/90 space-y-1">
-                  <p className="font-medium flex items-center gap-1.5">
-                    <Cloud className="w-3.5 h-3.5 text-orange-400" />
-                    AWS Bedrock Multi-Agent Mesh Provisioning
-                  </p>
-                  <p className="text-[11px] text-orange-300/70">
-                    Authenticates via AWS IAM Identity Center. Grants access to Claude 3.5 Sonnet, Titan Embeddings, and S3 Artifact Lake.
-                  </p>
-                </div>
-
-                <button
-                  onClick={handleSimulateAwsIamAuth}
-                  disabled={isAuthenticating}
-                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 hover:opacity-95 active:scale-[0.99] text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25 transition-all disabled:opacity-75"
-                >
-                  {isAuthenticating ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                      <span>Connecting to AWS Bedrock Mesh...</span>
-                    </div>
-                  ) : authSuccess ? (
-                    <div className="flex items-center gap-2 text-white">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-                      <span>AWS IAM Role Assumed</span>
-                    </div>
-                  ) : (
-                    <>
-                      <Lock className="w-4 h-4" />
-                      <span>Assume AWS Enterprise Auditor Role</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-
-            {/* Tab 4: Sandbox */}
-            {activeTab === 'sandbox' && (
+            {/* Tab 3: Sample Mode */}
+            {activeTab === 'sample' && (
               <div className="space-y-4">
                 <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/8 text-xs space-y-1.5">
-                  <p className="font-semibold text-[#f5f5f7]">Instant Developer Sandbox</p>
+                  <p className="font-semibold text-[#f5f5f7]">Sample Evaluation Workspace</p>
                   <p className="text-[#86868b]">
-                    Explore BarrierLens immediately without signing in. Includes 50k tokens, local Playwright execution, and demo benchmark targets.
+                    Explore the interface with pre-loaded sample benchmark runs in read-only mode. No real account created.
                   </p>
                 </div>
 
                 <button
-                  onClick={handleSimulateSandbox}
+                  onClick={handleExploreSample}
                   className="w-full py-3.5 rounded-2xl bg-white/10 hover:bg-white/16 active:scale-[0.99] text-white text-xs font-semibold flex items-center justify-center gap-2 border border-white/12 transition-all"
                 >
-                  <span>Launch Instant Guest Sandbox</span>
+                  <span>Explore Sample Workspace</span>
                   <ArrowRight className="w-4 h-4 text-[#86868b]" />
                 </button>
               </div>

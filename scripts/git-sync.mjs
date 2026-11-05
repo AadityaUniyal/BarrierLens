@@ -41,7 +41,7 @@ async function main() {
       name: 'Aaditya Uniyal',
       email: 'aadityauniyal@users.noreply.github.com'
     },
-    message: 'feat(ios-architecture): implement complete iOS design philosophy, Apple Watch activity rings, strict auth gating, and modular feature-first Python backend'
+    message: 'feat(blueprint): eliminate fake fallbacks, enforce strict auth & SSRF guards, and implement 7-destination architecture'
   });
 
   console.log(`[Git Sync] Committed successfully: ${sha}`);

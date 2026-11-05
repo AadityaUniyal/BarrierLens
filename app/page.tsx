@@ -5,6 +5,7 @@ import { Navbar, ScreenId } from '@/components/apple/Navbar';
 import { CommandPalette } from '@/components/apple/CommandPalette';
 import { PulseDashboard } from '@/components/apple/PulseDashboard';
 import { VaultAdminView } from '@/components/apple/VaultAdminView';
+import { WebsitesManagerView } from '@/components/apple/WebsitesManagerView';
 import { ComposeView } from '@/components/apple/ComposeView';
 import { TraceTheater } from '@/components/apple/TraceTheater';
 import { ExecutiveReport } from '@/components/apple/ExecutiveReport';
@@ -22,6 +23,7 @@ import { LiveMissionControl } from '@/components/apple/LiveMissionControl';
 import { VisualTwinSimulator } from '@/components/apple/VisualTwinSimulator';
 import { LandingStory } from '@/components/apple/LandingStory';
 import { AppleAuthModal, UserSession } from '@/components/apple/AppleAuthModal';
+import { authClient } from '@/lib/auth-client';
 import { AuditRun, BarrierFinding, PersonaType, VerifiedFixResult } from '@/lib/barrierlens/types';
 
 export default function Home() {
@@ -29,18 +31,38 @@ export default function Home() {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-  // Authenticated User Session (Defaults to active Cupertino engineer session)
-  const [userSession, setUserSession] = useState<UserSession | null>({
-    id: 'usr_apple_9841',
-    name: 'Sarah Chen',
-    email: 'sarah.chen@apple-id.corp',
-    authMethod: 'apple_passkey',
-    organization: 'Cupertino Design Systems',
-    role: 'Staff Frontend Engineer',
-    awsRegion: 'us-east-1 (N. Virginia)',
-    bedrockQuota: '1,000,000 tokens/hr (Enterprise Tier)',
-    verifiedAt: '10:45 AM'
-  });
+  // Authenticated User Session (Starts as null; loaded from real session or demo selection)
+  const [userSession, setUserSession] = useState<UserSession | null>(null);
+  const [isLoadingSession, setIsLoadingSession] = useState(true);
+
+  // Load real session on mount
+  useEffect(() => {
+    async function loadActiveSession() {
+      try {
+        const sessionRes = await authClient.getSession();
+        if (sessionRes?.data?.user) {
+          const user = sessionRes.data.user;
+          setUserSession({
+            id: user.id,
+            name: user.name || user.email?.split('@')[0] || 'Authenticated User',
+            email: user.email || 'user@barrierlens.com',
+            authMethod: 'session',
+            organization: 'Personal Workspace',
+            role: 'Auditor',
+            awsRegion: 'us-east-1',
+            bedrockQuota: 'Standard Tier',
+            verifiedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          });
+          setActiveScreen('pulse');
+        }
+      } catch (err) {
+        console.warn('Session check note:', err);
+      } finally {
+        setIsLoadingSession(false);
+      }
+    }
+    loadActiveSession();
+  }, []);
 
   // Audit parameters
   const [targetUrl, setTargetUrl] = useState('/benchmark');
@@ -271,26 +293,36 @@ export default function Home() {
 
       {/* 4. Main Protected Viewport */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-8">
-        {/* Pulse: Apple Watch Circular Activity Rings & Overview */}
-        {activeScreen === 'pulse' && (
+        {/* 1. Overview (Pulse Dashboard with Apple Watch Activity Rings) */}
+        {(activeScreen === 'overview' || activeScreen === 'pulse') && (
           <PulseDashboard
             runsHistory={runsHistory}
             latestRun={auditResult}
-            onOpenInspector={() => setActiveScreen('inspector')}
-            onOpenRemedy={() => setActiveScreen('remedy')}
+            onOpenInspector={() => setActiveScreen('audits')}
+            onOpenRemedy={() => setActiveScreen('fixes')}
             onOpenGenome={() => setActiveScreen('genome')}
-            onOpenVault={() => setActiveScreen('vault')}
+            onOpenVault={() => setActiveScreen('settings')}
             onRunQuickAudit={handleRunAudit}
             isAuditing={isAuditing}
           />
         )}
 
-        {/* Inspector: Autonomous Physical Task Auditor */}
-        {activeScreen === 'inspector' && (
+        {/* 2. Websites (Websites & Environment Management) */}
+        {activeScreen === 'websites' && (
+          <WebsitesManagerView
+            onStartAuditForSite={(url) => {
+              setTargetUrl(url);
+              setActiveScreen('audits');
+            }}
+          />
+        )}
+
+        {/* 3. Audits (Autonomous Task Crawl, Keycaps & Live Replay) */}
+        {(activeScreen === 'audits' || activeScreen === 'inspector') && (
           <div className="space-y-10 animate-in fade-in duration-300">
             <LiveMissionControl
               onOpenGenome={() => setActiveScreen('genome')}
-              onOpenCausalDiff={() => setActiveScreen('remedy')}
+              onOpenCausalDiff={() => setActiveScreen('fixes')}
               onOpenAwsConsole={() => setActiveScreen('aws-bridge')}
               onOpenVisualTwin={() => setActiveScreen('visual-twin')}
             />
@@ -345,8 +377,26 @@ export default function Home() {
           </div>
         )}
 
-        {/* Remedy: Causal AST Repair & Headless Replay Verifier */}
-        {activeScreen === 'remedy' && (
+        {/* 4. Issues (Findings Intelligence & Review Queue) */}
+        {(activeScreen === 'issues' || activeScreen === 'triage') && (
+          <div className="space-y-8 animate-in fade-in duration-300">
+            <ReviewQueueView
+              findings={auditResult?.findings || []}
+              onTriage={handleTriage}
+            />
+            {auditResult && (
+              <ExecutiveReport
+                auditRun={auditResult}
+                onVerifyRepair={handleVerifyRepair}
+                verifyingFindingId={verifyingFindingId}
+                verifiedFixes={verifiedFixes}
+              />
+            )}
+          </div>
+        )}
+
+        {/* 5. Fixes (Causal AST Repair & Headless Replay Verifier) */}
+        {(activeScreen === 'fixes' || activeScreen === 'remedy') && (
           <div className="space-y-8 animate-in fade-in duration-300">
             <CausalDiffView />
             {auditResult && (
@@ -360,25 +410,46 @@ export default function Home() {
           </div>
         )}
 
-        {/* Genome: 768-dim Vector Intelligence Map */}
-        {activeScreen === 'genome' && (
-          <BarrierGenomeViz />
+        {/* 6. Reports (Executive Summary, Scorecards & Compliance Dossiers) */}
+        {(activeScreen === 'reports' || activeScreen === 'scorecard') && (
+          <div className="space-y-8 animate-in fade-in duration-300">
+            {auditResult ? (
+              <ExecutiveReport
+                auditRun={auditResult}
+                onVerifyRepair={handleVerifyRepair}
+                verifyingFindingId={verifyingFindingId}
+                verifiedFixes={verifiedFixes}
+              />
+            ) : (
+              <div className="apple-vibrancy-regular rounded-3xl p-8 border-hairline text-center space-y-3">
+                <h3 className="text-lg font-semibold text-[#f5f5f7]">No Audit Selected for Reporting</h3>
+                <p className="text-[13px] text-[#86868b] max-w-md mx-auto">
+                  Run an audit in the Audits tab or select a previous run from the Overview to generate executive and engineering compliance reports.
+                </p>
+                <button
+                  onClick={() => setActiveScreen('audits')}
+                  className="px-5 py-2.5 rounded-full bg-[#0071e3] text-white text-xs font-semibold hover:bg-[#0077ed] transition-all"
+                >
+                  Go to Audits
+                </button>
+              </div>
+            )}
+            <TrendsView runs={runsHistory} />
+            <PublicScorecardView auditRun={auditResult} />
+          </div>
         )}
 
-        {/* Arena: Red-Team Adversarial Stress Arena */}
-        {activeScreen === 'arena' && (
-          <StressTestDashboard />
-        )}
-
-        {/* Vault: Dedicated Admin & Policy Console */}
-        {activeScreen === 'vault' && (
+        {/* 7. Settings (Dedicated Admin, Team RBAC, API Keys, Webhooks) */}
+        {(activeScreen === 'settings' || activeScreen === 'vault') && (
           <VaultAdminView
             userSession={userSession}
             onOpenAuth={() => setIsAuthModalOpen(true)}
           />
         )}
 
-        {/* Secondary Deep Diagnostics */}
+        {/* Specialist Diagnostic Sub-Views */}
+        {activeScreen === 'genome' && <BarrierGenomeViz />}
+        {activeScreen === 'arena' && <StressTestDashboard />}
         {activeScreen === 'visual-twin' && <VisualTwinSimulator />}
         {activeScreen === 'multi-agent' && <MultiAgentMeshView />}
         {activeScreen === 'aws-bridge' && <AWSBridgeConsole />}
@@ -391,7 +462,6 @@ export default function Home() {
         )}
         {activeScreen === 'screen-reader' && <ScreenReaderTranscript />}
         {activeScreen === 'trends' && <TrendsView runs={runsHistory} />}
-        {activeScreen === 'scorecard' && <PublicScorecardView auditRun={auditResult} />}
       </main>
 
       {/* Footer */}
