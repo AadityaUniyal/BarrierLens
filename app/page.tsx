@@ -76,6 +76,8 @@ export default function Home() {
 
   // Active run & verification state
   const [auditResult, setAuditResult] = useState<AuditRun | null>(null);
+  const [selectedFindingForRemedy, setSelectedFindingForRemedy] = useState<BarrierFinding | null>(null);
+  const [historicalFindings, setHistoricalFindings] = useState<BarrierFinding[]>([]);
   const [verifyingFindingId, setVerifyingFindingId] = useState<string | null>(null);
   const [verifiedFixes, setVerifiedFixes] = useState<Record<string, VerifiedFixResult>>({});
 
@@ -105,9 +107,86 @@ export default function Home() {
       .then(res => res.json())
       .then(data => {
         setRunsHistory(data.runs || []);
+        if (data.findings && data.findings.length > 0) {
+          const mapped: BarrierFinding[] = data.findings.map((f: any) => ({
+            id: f.id,
+            runId: f.run_id,
+            stepIdx: 1,
+            kind: f.kind,
+            trustTier: (f.trust_tier === 'observed' || f.trust_tier === 'suspected') ? f.trust_tier : 'proven',
+            wcagRules: f.wcag || ['WCAG 2.1.2'],
+            severity: f.severity > 8 ? 'critical' : f.severity > 5 ? 'high' : 'medium',
+            severityScore: f.severity || 8.5,
+            severityInterval: [f.severity_lo || 7.0, f.severity_hi || 9.5],
+            title: `${f.kind.replace(/_/g, ' ').toUpperCase()} Detected`,
+            summary: f.certificate?.summary || `Autonomous inspector detected ${f.kind} during user journey.`,
+            evidence: f.evidence || {},
+            certificate: f.certificate || undefined
+          }));
+          setHistoricalFindings(mapped);
+          setSelectedFindingForRemedy(mapped[0]);
+        }
       })
       .catch(() => {});
   }, []);
+
+  const handleLoadBenchmarkFindings = () => {
+    const samples: BarrierFinding[] = [
+      {
+        id: 'find_sample_trap_01',
+        runId: 'run_sample_01',
+        stepIdx: 3,
+        kind: 'keyboard_trap',
+        trustTier: 'proven',
+        wcagRules: ['WCAG 2.1.2 No Keyboard Trap (Level A)'],
+        severity: 'critical',
+        severityScore: 9.8,
+        severityInterval: [9.2, 10.0],
+        title: 'Focus Sink Cycle in Dialog Container',
+        summary: 'Tab key navigation cannot escape modal overlay; Esc key handler missing.',
+        evidence: {
+          selector: '#trap-modal',
+          elementHTML: '<div id="trap-modal" class="modal-card">\n  <h2>Special Confirmation</h2>\n  <button id="claim-btn">Confirm</button>\n</div>'
+        }
+      },
+      {
+        id: 'find_sample_accname_02',
+        runId: 'run_sample_01',
+        stepIdx: 2,
+        kind: 'empty_accessible_name',
+        trustTier: 'proven',
+        wcagRules: ['WCAG 4.1.2 Name, Role, Value (Level A)'],
+        severity: 'high',
+        severityScore: 7.5,
+        severityInterval: [6.8, 8.2],
+        title: 'Unlabeled Dismiss Button in Drawer',
+        summary: 'SVG icon button has empty accessible name in CDP accessibility tree.',
+        evidence: {
+          selector: 'button.close-btn',
+          elementHTML: '<button class="close-btn">\n  <svg width="16" height="16"><path d="..."/></svg>\n</button>'
+        }
+      },
+      {
+        id: 'find_sample_tau_03',
+        runId: 'run_sample_01',
+        stepIdx: 4,
+        kind: 'low_kendall_tau',
+        trustTier: 'observed',
+        wcagRules: ['WCAG 1.3.2 Meaningful Sequence (Level A)'],
+        severity: 'medium',
+        severityScore: 6.0,
+        severityInterval: [5.2, 6.8],
+        title: 'Reading Order Inversion Detected (Kendall τ = 0.52)',
+        summary: 'Visual flow sequence diverges from DOM accessibility tree traversal order.',
+        evidence: {
+          selector: '.grid-container',
+          elementHTML: '<div class="grid-container" style="display:flex; flex-direction:row-reverse">\n  <div>Step 1</div><div>Step 2</div>\n</div>'
+        }
+      }
+    ];
+    setHistoricalFindings(samples);
+    setSelectedFindingForRemedy(samples[0]);
+  };
 
   // Run Task Audit with SSE Live Streaming (/api/audit/stream)
   const handleRunAudit = async () => {
@@ -303,6 +382,13 @@ export default function Home() {
             onOpenGenome={() => setActiveScreen('genome')}
             onOpenVault={() => setActiveScreen('settings')}
             onRunQuickAudit={handleRunAudit}
+            onSelectRun={(run) => {
+              if (run.findings) {
+                setAuditResult(run);
+                setSelectedFindingForRemedy(run.findings[0] || null);
+              }
+              setActiveScreen('audits');
+            }}
             isAuditing={isAuditing}
           />
         )}
@@ -382,8 +468,13 @@ export default function Home() {
         {(activeScreen === 'issues' || activeScreen === 'triage') && (
           <div className="space-y-8 animate-in fade-in duration-300">
             <ReviewQueueView
-              findings={auditResult?.findings || []}
+              findings={auditResult?.findings?.length ? auditResult.findings : historicalFindings}
               onTriage={handleTriage}
+              onRemediateFinding={(f) => {
+                setSelectedFindingForRemedy(f);
+                setActiveScreen('fixes');
+              }}
+              onLoadBenchmarkFindings={handleLoadBenchmarkFindings}
             />
             {auditResult && (
               <ExecutiveReport
@@ -399,7 +490,22 @@ export default function Home() {
         {/* 5. Fixes (Causal AST Repair & Headless Replay Verifier) */}
         {(activeScreen === 'fixes' || activeScreen === 'remedy') && (
           <div className="space-y-8 animate-in fade-in duration-300">
-            <CausalDiffView />
+            <CausalDiffView
+              finding={selectedFindingForRemedy || auditResult?.findings?.[0] || historicalFindings?.[0] || null}
+              allFindings={auditResult?.findings?.length ? auditResult.findings : historicalFindings}
+              onSelectFinding={(f) => setSelectedFindingForRemedy(f)}
+              targetUrl={targetUrl}
+              onFixVerified={(findingId, result) => {
+                setVerifiedFixes(prev => ({ ...prev, [findingId]: result }));
+                if (auditResult) {
+                  setAuditResult({
+                    ...auditResult,
+                    findings: auditResult.findings.map(f => f.id === findingId ? { ...f, verifiedFix: true } : f)
+                  });
+                }
+                setHistoricalFindings(prev => prev.map(f => f.id === findingId ? { ...f, verifiedFix: true } : f));
+              }}
+            />
             {auditResult && (
               <ExecutiveReport
                 auditRun={auditResult}

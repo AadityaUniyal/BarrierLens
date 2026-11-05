@@ -13,18 +13,20 @@ import {
   Key, 
   ExternalLink,
   Sparkles,
-  Play
+  Play,
+  RotateCcw
 } from 'lucide-react';
 import { AuditRun } from '@/lib/barrierlens/types';
 
 interface PulseDashboardProps {
-  runsHistory: AuditRun[];
+  runsHistory: any[];
   latestRun: AuditRun | null;
   onOpenInspector: () => void;
   onOpenRemedy: () => void;
   onOpenGenome: () => void;
   onOpenVault: () => void;
   onRunQuickAudit: () => void;
+  onSelectRun?: (run: any) => void;
   isAuditing: boolean;
 }
 
@@ -36,28 +38,50 @@ export function PulseDashboard({
   onOpenGenome,
   onOpenVault,
   onRunQuickAudit,
+  onSelectRun,
   isAuditing
 }: PulseDashboardProps) {
-  // Compute Glanceable Apple Watch 3-Ring Metrics from runs
-  const totalFindings = latestRun ? latestRun.findings.length : 1;
-  const criticalFindings = latestRun 
-    ? latestRun.findings.filter(f => f.severity === 'critical' || f.severity === 'high').length 
-    : 1;
+  // Derive active run (either live latestRun or most recent historical run)
+  const active = latestRun || (runsHistory.length > 0 ? runsHistory[0] : null);
 
-  // Ring 1 (Red / Outer): Spatial Traversal & Focus Flow (SCC cycles penalty)
-  const spatialScore = latestRun 
-    ? Math.max(20, Math.min(100, Math.round((1 - (criticalFindings / Math.max(1, totalFindings))) * 100))) 
-    : 88;
+  // Dynamic 3-Ring Computations
+  const totalFindings = active?.findings ? active.findings.length : (active?.payload?.findings?.length || 1);
+  const criticalFindings = active?.findings 
+    ? active.findings.filter((f: any) => (f.severity === 'critical' || f.severity === 'high') && !f.verifiedFix).length 
+    : (active?.task_success ? 0 : 1);
 
-  // Ring 2 (Green / Middle): Auditory Flow & Speech Parity
-  const auditoryScore = latestRun?.kendallTau 
-    ? Math.max(20, Math.min(100, Math.round((latestRun.kendallTau.tau + 1) * 50))) 
+  // Ring 1 (Red / Outer): Spatial Traversal & Focus Traps (100% when no traps or all fixed)
+  const spatialScore = Math.max(25, Math.min(100, Math.round((1 - (criticalFindings / Math.max(1, totalFindings))) * 100)));
+
+  // Ring 2 (Green / Middle): Auditory Flow & Speech Parity (Monotonic Kendall Tau)
+  const auditoryScore = active?.kendallTau?.tau !== undefined 
+    ? Math.max(30, Math.min(100, Math.round((active.kendallTau.tau + 1) * 50))) 
+    : (active?.task_success ? 94 : 78);
+
+  // Ring 3 (Blue / Inner): Cognitive Friction & Direct Action Ratio
+  const cognitiveScore = active?.effortRatio 
+    ? Math.max(30, Math.min(100, Math.round(100 / Math.max(1, active.effortRatio * 0.25)))) 
     : 92;
 
-  // Ring 3 (Blue / Inner): Cognitive Friction & Effort Ratio
-  const cognitiveScore = latestRun?.effortRatio 
-    ? Math.max(30, Math.min(100, Math.round(100 / Math.max(1, latestRun.effortRatio * 0.2)))) 
-    : 95;
+  // Table rows to display
+  const displayRuns = runsHistory.length > 0 ? runsHistory : [
+    {
+      id: 'run_sample_benchmark_01',
+      target_url: 'https://barrierlens-seven.vercel.app/benchmark',
+      persona: 'keyboard',
+      goal_text: 'Navigate accessible catalog & trigger modal dialog',
+      task_success: true,
+      started_at: '15 mins ago'
+    },
+    {
+      id: 'run_sample_checkout_02',
+      target_url: 'https://barrierlens-seven.vercel.app',
+      persona: 'screen_reader',
+      goal_text: 'Complete passkey sign-in with live voice announcement',
+      task_success: true,
+      started_at: '1 hour ago'
+    }
+  ];
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
@@ -74,7 +98,7 @@ export function PulseDashboard({
             Accessibility Overview
           </h1>
           <p className="text-[14px] text-[#86868b] mt-0.5">
-            Real-time traversability telemetry across your active web surfaces.
+            Real-time traversability telemetry across your verified web properties.
           </p>
         </div>
 
@@ -91,197 +115,205 @@ export function PulseDashboard({
               </>
             ) : (
               <>
-                <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Run Autonomous Audit</span>
+                <Play className="w-3.5 h-3.5 fill-white" />
+                <span>Run Quick Audit</span>
               </>
             )}
           </button>
         </div>
       </div>
 
-      {/* 2. Apple Watch 3-Ring Activity Rings & Quick Telemetry Grid */}
+      {/* 2. Apple Watch 3-Ring Activity Widget & Live Telemetry Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* The 3-Ring Circular Activity Widget (5 cols) */}
-        <div className="lg:col-span-5 apple-vibrancy-regular rounded-3xl p-6 border-hairline relative overflow-hidden flex flex-col justify-between">
+        {/* Apple Watch 3-Ring Widget (5 Columns) */}
+        <div className="lg:col-span-5 apple-vibrancy-regular rounded-3xl p-6 border-hairline flex flex-col justify-between shadow-2xl relative overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-[#86868b]">Digital Health Rings</p>
-              <h2 className="text-lg font-semibold text-[#f5f5f7]">Activity Telemetry</h2>
+              <span className="text-[11px] font-semibold tracking-wider uppercase text-[#86868b] block">
+                Activity Scorecard
+              </span>
+              <h2 className="text-lg font-semibold text-[#f5f5f7]">Physical Traversability</h2>
             </div>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-white/[0.06] text-[#a1a1a6] border-hairline">
-              Real-time
-            </span>
-          </div>
-
-          {/* Concentric Circular SVG Rings */}
-          <div className="flex items-center justify-center py-4">
-            <div className="relative w-56 h-56 flex items-center justify-center">
-              <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 200 200">
-                {/* Background tracks */}
-                <circle cx="100" cy="100" r="82" stroke="#ff453a" strokeWidth="12" fill="none" opacity="0.16" />
-                <circle cx="100" cy="100" r="64" stroke="#30d158" strokeWidth="12" fill="none" opacity="0.16" />
-                <circle cx="100" cy="100" r="46" stroke="#0a84ff" strokeWidth="12" fill="none" opacity="0.16" />
-
-                {/* Animated Progress Rings */}
-                {/* Ring 1 (Red): Spatial Traversal */}
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="82"
-                  stroke="#ff453a"
-                  strokeWidth="12"
-                  strokeDasharray="515.22"
-                  strokeDashoffset={515.22 * (1 - spatialScore / 100)}
-                  strokeLinecap="round"
-                  fill="none"
-                  className="transition-all duration-1000 ease-out"
-                />
-                {/* Ring 2 (Green): Auditory Flow */}
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="64"
-                  stroke="#30d158"
-                  strokeWidth="12"
-                  strokeDasharray="402.12"
-                  strokeDashoffset={402.12 * (1 - auditoryScore / 100)}
-                  strokeLinecap="round"
-                  fill="none"
-                  className="transition-all duration-1000 ease-out"
-                />
-                {/* Ring 3 (Blue): Cognitive Friction */}
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="46"
-                  stroke="#0a84ff"
-                  strokeWidth="12"
-                  strokeDasharray="289.02"
-                  strokeDashoffset={289.02 * (1 - cognitiveScore / 100)}
-                  strokeLinecap="round"
-                  fill="none"
-                  className="transition-all duration-1000 ease-out"
-                />
-              </svg>
-
-              {/* Center Metrics Readout */}
-              <div className="absolute flex flex-col items-center justify-center text-center">
-                <span className="text-3xl font-bold tracking-tight text-[#f5f5f7]">
-                  {Math.round((spatialScore + auditoryScore + cognitiveScore) / 3)}%
-                </span>
-                <span className="text-[10px] font-semibold text-[#86868b] uppercase tracking-wider">
-                  Health Index
-                </span>
-              </div>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border-hairline text-[11px] text-[#a1a1a6]">
+              <Activity className="w-3.5 h-3.5 text-[#30d158]" />
+              <span>Live Pulse</span>
             </div>
           </div>
 
-          {/* Ring Legend & Metrics */}
+          {/* 3-Ring SVG Concentric Visualizer */}
+          <div className="flex items-center justify-center my-4 relative">
+            <svg className="w-48 h-48 -rotate-90 transform" viewBox="0 0 100 100">
+              {/* Outer Ring Background (Red / Spatial) */}
+              <circle cx="50" cy="50" r="40" fill="transparent" stroke="#ff453a" strokeOpacity="0.15" strokeWidth="6" />
+              {/* Outer Ring Progress */}
+              <circle
+                cx="50"
+                cy="50"
+                r="40"
+                fill="transparent"
+                stroke="#ff453a"
+                strokeWidth="6"
+                strokeDasharray={`${2 * Math.PI * 40}`}
+                strokeDashoffset={`${2 * Math.PI * 40 * (1 - spatialScore / 100)}`}
+                strokeLinecap="round"
+                className="transition-all duration-1000 ease-out"
+              />
+
+              {/* Middle Ring Background (Green / Auditory) */}
+              <circle cx="50" cy="50" r="32" fill="transparent" stroke="#30d158" strokeOpacity="0.15" strokeWidth="6" />
+              {/* Middle Ring Progress */}
+              <circle
+                cx="50"
+                cy="50"
+                r="32"
+                fill="transparent"
+                stroke="#30d158"
+                strokeWidth="6"
+                strokeDasharray={`${2 * Math.PI * 32}`}
+                strokeDashoffset={`${2 * Math.PI * 32 * (1 - auditoryScore / 100)}`}
+                strokeLinecap="round"
+                className="transition-all duration-1000 ease-out"
+              />
+
+              {/* Inner Ring Background (Blue / Cognitive) */}
+              <circle cx="50" cy="50" r="24" fill="transparent" stroke="#0a84ff" strokeOpacity="0.15" strokeWidth="6" />
+              {/* Inner Ring Progress */}
+              <circle
+                cx="50"
+                cy="50"
+                r="24"
+                fill="transparent"
+                stroke="#0a84ff"
+                strokeWidth="6"
+                strokeDasharray={`${2 * Math.PI * 24}`}
+                strokeDashoffset={`${2 * Math.PI * 24 * (1 - cognitiveScore / 100)}`}
+                strokeLinecap="round"
+                className="transition-all duration-1000 ease-out"
+              />
+            </svg>
+
+            {/* Central Score */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-3xl font-bold tracking-tight text-[#f5f5f7]">
+                {Math.round((spatialScore + auditoryScore + cognitiveScore) / 3)}%
+              </span>
+              <span className="text-[10px] text-[#86868b] uppercase tracking-wider font-semibold">Traversable</span>
+            </div>
+          </div>
+
+          {/* Legend Metrics */}
           <div className="grid grid-cols-3 gap-2 pt-4 border-t border-white/[0.06] text-center">
-            <div>
-              <div className="flex items-center justify-center gap-1.5 mb-0.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#ff453a]" />
-                <span className="text-[11px] font-semibold text-[#f5f5f7]">{spatialScore}%</span>
+            <div className="space-y-0.5">
+              <div className="flex items-center justify-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#ff453a]" />
+                <span className="text-[11px] text-[#86868b]">Spatial</span>
               </div>
-              <p className="text-[10px] text-[#86868b]">Spatial</p>
+              <p className="text-sm font-semibold text-[#f5f5f7]">{spatialScore}%</p>
             </div>
-            <div>
-              <div className="flex items-center justify-center gap-1.5 mb-0.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#30d158]" />
-                <span className="text-[11px] font-semibold text-[#f5f5f7]">{auditoryScore}%</span>
+            <div className="space-y-0.5">
+              <div className="flex items-center justify-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#30d158]" />
+                <span className="text-[11px] text-[#86868b]">Auditory</span>
               </div>
-              <p className="text-[10px] text-[#86868b]">Auditory</p>
+              <p className="text-sm font-semibold text-[#f5f5f7]">{auditoryScore}%</p>
             </div>
-            <div>
-              <div className="flex items-center justify-center gap-1.5 mb-0.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#0a84ff]" />
-                <span className="text-[11px] font-semibold text-[#f5f5f7]">{cognitiveScore}%</span>
+            <div className="space-y-0.5">
+              <div className="flex items-center justify-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#0a84ff]" />
+                <span className="text-[11px] text-[#86868b]">Cognitive</span>
               </div>
-              <p className="text-[10px] text-[#86868b]">Friction</p>
+              <p className="text-sm font-semibold text-[#f5f5f7]">{cognitiveScore}%</p>
             </div>
           </div>
         </div>
 
-        {/* Actionable Anomaly Radar & Next Actions (7 cols) */}
-        <div className="lg:col-span-7 space-y-4 flex flex-col justify-between">
-          {/* Critical Barrier Spotlight */}
-          <div className="apple-vibrancy-regular rounded-3xl p-6 border-hairline">
-            <div className="flex items-start justify-between gap-4 mb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-red-500/10 border-hairline border-red-500/20 flex items-center justify-center">
-                  <AlertTriangle className="w-5 h-5 text-[#ff453a]" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/15 text-[#ff453a] border-hairline border-red-500/30">
-                      High Priority Barrier
-                    </span>
-                    <span className="text-[11px] font-mono text-[#86868b]">WCAG 2.1.2</span>
-                  </div>
-                  <h3 className="text-base font-semibold text-[#f5f5f7] mt-1">
-                    Deterministic Keyboard Trap in Confirmation Modal
-                  </h3>
-                </div>
+        {/* Feature Highlights & Direct Navigation (7 Columns) */}
+        <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Card 1: Inspector Autonomous Traversal */}
+          <div className="apple-vibrancy-regular rounded-3xl p-6 border-hairline flex flex-col justify-between hover:border-white/20 transition-all">
+            <div className="space-y-3">
+              <div className="w-10 h-10 rounded-2xl bg-blue-500/10 border-hairline border-blue-500/20 flex items-center justify-center text-[#0a84ff]">
+                <Compass className="w-5 h-5" />
               </div>
-
-              <button
-                onClick={onOpenRemedy}
-                className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-[12px] font-medium text-[#f5f5f7] border-hairline flex items-center gap-1.5 transition-all"
-              >
-                <span>Remedy Fix</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              <div>
+                <h3 className="text-base font-semibold text-[#f5f5f7]">Autonomous Inspector</h3>
+                <p className="text-[12px] text-[#86868b] mt-1">
+                  Evaluates interactive task flows using physical keyboard keycaps and CDP accessibility trees.
+                </p>
+              </div>
             </div>
-
-            <p className="text-[13px] text-[#a1a1a6] leading-relaxed">
-              Keyboard users navigating via Tab become trapped within the modal container. Out-degree in the focus transition graph drops to zero, blocking task completion.
-            </p>
-
-            <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-[#86868b]">
-              <span>Mathematical Proof: SHA-256 Tarjan Cycle Certified</span>
-              <span className="text-[#30d158] font-medium">Surgical Patch Synthesized</span>
-            </div>
-          </div>
-
-          {/* Quick-Access Deep Feature Launchers */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <button
               onClick={onOpenInspector}
-              className="p-4 rounded-2xl apple-vibrancy-regular border-hairline hover:bg-white/[0.06] active:scale-[0.98] transition-all text-left flex flex-col justify-between group"
+              className="mt-6 flex items-center justify-between text-[12px] text-[#0a84ff] font-medium pt-3 border-t border-white/[0.06] group"
             >
-              <div className="w-8 h-8 rounded-xl bg-blue-500/10 border-hairline border-blue-500/20 flex items-center justify-center mb-3 text-[#0a84ff] group-hover:scale-105 transition-transform">
-                <Compass className="w-4 h-4" />
+              <span>Launch Live Inspector</span>
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+            </button>
+          </div>
+
+          {/* Card 2: Remedy Causal AST Repair */}
+          <div className="apple-vibrancy-regular rounded-3xl p-6 border-hairline flex flex-col justify-between hover:border-white/20 transition-all">
+            <div className="space-y-3">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border-hairline border-emerald-500/20 flex items-center justify-center text-[#30d158]">
+                <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-[13px] font-semibold text-[#f5f5f7]">Inspector</h4>
-                <p className="text-[11px] text-[#86868b] mt-0.5">Physical task crawl</p>
+                <h3 className="text-base font-semibold text-[#f5f5f7]">Causal Remedy</h3>
+                <p className="text-[12px] text-[#86868b] mt-1">
+                  Synthesizes minimal surgical AST diffs and verifies fix stability in a headless Playwright sandbox.
+                </p>
               </div>
-            </button>
-
+            </div>
             <button
               onClick={onOpenRemedy}
-              className="p-4 rounded-2xl apple-vibrancy-regular border-hairline hover:bg-white/[0.06] active:scale-[0.98] transition-all text-left flex flex-col justify-between group"
+              className="mt-6 flex items-center justify-between text-[12px] text-[#30d158] font-medium pt-3 border-t border-white/[0.06] group"
             >
-              <div className="w-8 h-8 rounded-xl bg-green-500/10 border-hairline border-green-500/20 flex items-center justify-center mb-3 text-[#30d158] group-hover:scale-105 transition-transform">
-                <ShieldCheck className="w-4 h-4" />
+              <span>Review Surgical Fixes</span>
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+            </button>
+          </div>
+
+          {/* Card 3: Enterprise Vault & Team RBAC */}
+          <div className="apple-vibrancy-regular rounded-3xl p-6 border-hairline flex flex-col justify-between hover:border-white/20 transition-all">
+            <div className="space-y-3">
+              <div className="w-10 h-10 rounded-2xl bg-purple-500/10 border-hairline border-purple-500/20 flex items-center justify-center text-[#bf5af2]">
+                <Key className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-[13px] font-semibold text-[#f5f5f7]">Remedy</h4>
-                <p className="text-[11px] text-[#86868b] mt-0.5">AST patch replay</p>
+                <h3 className="text-base font-semibold text-[#f5f5f7]">Enterprise Vault</h3>
+                <p className="text-[12px] text-[#86868b] mt-1">
+                  Manage scoped API keys, cryptographic webhooks, and Bedrock model quotas.
+                </p>
               </div>
+            </div>
+            <button
+              onClick={onOpenVault}
+              className="mt-6 flex items-center justify-between text-[12px] text-[#bf5af2] font-medium pt-3 border-t border-white/[0.06] group"
+            >
+              <span>Manage Administration</span>
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
             </button>
+          </div>
 
+          {/* Card 4: Genome Intelligence */}
+          <div className="apple-vibrancy-regular rounded-3xl p-6 border-hairline flex flex-col justify-between hover:border-white/20 transition-all">
+            <div className="space-y-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border-hairline border-amber-500/20 flex items-center justify-center text-[#ff9f0a]">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-[#f5f5f7]">Genome Memory</h3>
+                <p className="text-[12px] text-[#86868b] mt-1">
+                  768-dimensional normalized barrier vector embeddings stored in Neon pgvector.
+                </p>
+              </div>
+            </div>
             <button
               onClick={onOpenGenome}
-              className="p-4 rounded-2xl apple-vibrancy-regular border-hairline hover:bg-white/[0.06] active:scale-[0.98] transition-all text-left flex flex-col justify-between group"
+              className="mt-6 flex items-center justify-between text-[12px] text-[#ff9f0a] font-medium pt-3 border-t border-white/[0.06] group"
             >
-              <div className="w-8 h-8 rounded-xl bg-purple-500/10 border-hairline border-purple-500/20 flex items-center justify-center mb-3 text-[#bf5af2] group-hover:scale-105 transition-transform">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-[13px] font-semibold text-[#f5f5f7]">Genome</h4>
-                <p className="text-[11px] text-[#86868b] mt-0.5">pgvector memory</p>
-              </div>
+              <span>Explore Genome Viz</span>
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
             </button>
           </div>
         </div>
@@ -316,57 +348,52 @@ export function PulseDashboard({
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.04] text-[13px]">
-              <tr className="hover:bg-white/[0.02] transition-colors">
-                <td className="py-3 px-3 font-mono text-[12px] text-[#f5f5f7]">
-                  app.barrierlens.corp/checkout
-                </td>
-                <td className="py-3 px-3">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-500/10 text-[#0a84ff] border-hairline border-blue-500/20">
-                    Keyboard-Only
-                  </span>
-                </td>
-                <td className="py-3 px-3 text-[#a1a1a6]">Complete subscription flow and test modal</td>
-                <td className="py-3 px-3">
-                  <span className="inline-flex items-center gap-1.5 text-[12px] text-[#30d158] font-medium">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Certified Trap Eradicated</span>
-                  </span>
-                </td>
-                <td className="py-3 px-3 text-right">
-                  <button
-                    onClick={onOpenInspector}
-                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] font-medium border-hairline text-[#f5f5f7]"
-                  >
-                    View Trace
-                  </button>
-                </td>
-              </tr>
-
-              <tr className="hover:bg-white/[0.02] transition-colors">
-                <td className="py-3 px-3 font-mono text-[12px] text-[#f5f5f7]">
-                  portal.internal.corp/forms
-                </td>
-                <td className="py-3 px-3">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-purple-500/10 text-[#bf5af2] border-hairline border-purple-500/20">
-                    Screen-Reader
-                  </span>
-                </td>
-                <td className="py-3 px-3 text-[#a1a1a6]">Review annual benefits statement</td>
-                <td className="py-3 px-3">
-                  <span className="inline-flex items-center gap-1.5 text-[12px] text-[#ff9f0a] font-medium">
-                    <AlertTriangle className="w-3.5 h-3.5" />
-                    <span>Kendall τ = 0.52 (Drift)</span>
-                  </span>
-                </td>
-                <td className="py-3 px-3 text-right">
-                  <button
-                    onClick={onOpenRemedy}
-                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] font-medium border-hairline text-[#f5f5f7]"
-                  >
-                    Inspect
-                  </button>
-                </td>
-              </tr>
+              {displayRuns.map((run: any) => (
+                <tr key={run.id} className="hover:bg-white/[0.02] transition-colors">
+                  <td className="py-3 px-3 font-mono text-[12px] text-[#f5f5f7] truncate max-w-[200px]">
+                    {run.target_url || run.origin || 'benchmark.local'}
+                  </td>
+                  <td className="py-3 px-3">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border-hairline ${
+                      run.persona === 'screen_reader'
+                        ? 'bg-purple-500/10 text-[#bf5af2] border-purple-500/20'
+                        : 'bg-blue-500/10 text-[#0a84ff] border-blue-500/20'
+                    }`}>
+                      {run.persona === 'screen_reader' ? 'Screen Reader' : 'Keyboard-Only'}
+                    </span>
+                  </td>
+                  <td className="py-3 px-3 text-[#a1a1a6] truncate max-w-[280px]">
+                    {run.goal_text || run.goal || 'General WCAG task evaluation'}
+                  </td>
+                  <td className="py-3 px-3">
+                    {run.task_success ? (
+                      <span className="inline-flex items-center gap-1.5 text-[12px] text-[#30d158] font-medium">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Task Completed</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 text-[12px] text-[#ff9f0a] font-medium">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        <span>Barrier Detected</span>
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-3 px-3 text-right">
+                    <button
+                      onClick={() => {
+                        if (onSelectRun) {
+                          onSelectRun(run);
+                        } else {
+                          onOpenInspector();
+                        }
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] font-medium border-hairline text-[#f5f5f7] transition-all"
+                    >
+                      Inspect Run
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
