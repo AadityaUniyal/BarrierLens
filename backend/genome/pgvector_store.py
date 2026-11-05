@@ -5,6 +5,7 @@ Persists 768-dim barrier vectors and performs cosine distance queries.
 
 import os
 import uuid
+import json
 import psycopg2
 from typing import List, Dict, Any, Optional
 from core.config import CoreConfig
@@ -41,16 +42,27 @@ class PgvectorStore:
             cur = conn.cursor()
             vec_str = "[" + ",".join(str(x) for x in vector) + "]"
             gid = str(uuid.uuid4())
+            import urllib.parse
+            domain = urllib.parse.urlparse(target_url).hostname or "target.local"
 
             cur.execute("""
-                INSERT INTO barrier_genomes (id, finding_id, finding_kind, target_domain, persona, severity_score, wcag_rules, embedding)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s::vector)
+                INSERT INTO barrier_genomes (
+                    id, finding_id, finding_kind, domain, target_url, persona, 
+                    vector, vector_json, magnitude, severity_score, wcag_rules, context
+                )
+                VALUES (
+                    %s, %s, %s, %s, %s, %s, 
+                    %s::vector, %s, %s, %s, %s, %s
+                )
                 ON CONFLICT (id) DO NOTHING;
-            """, (gid, finding_id, finding_kind, target_url, persona, severity_score, wcag_rules, vec_str))
+            """, (
+                gid, finding_id, finding_kind, domain, target_url, persona,
+                vec_str, json.dumps(vector), 1.0, severity_score, json.dumps(wcag_rules), json.dumps({"source": "backend_agent"})
+            ))
 
             conn.commit()
             cur.close()
             conn.close()
             return True
-        except Exception:
+        except Exception as e:
             return False

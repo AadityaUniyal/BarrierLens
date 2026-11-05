@@ -38,48 +38,19 @@ export async function POST(req: NextRequest) {
       // Python backend not running or timed out; fall back to integrated Node runner
     }
 
-    // 2. Integrated Fallback Runner
-    try {
-      const result = await strandsAgentMesh.runAudit(targetUrl);
-      return NextResponse.json({
-        success: true,
-        backendEngine: 'Integrated TypeScript Strands Mesh',
-        timestamp: new Date().toISOString(),
-        ...result,
-      });
-    } catch {
-      // Graceful synthetic swarm run to prevent frontend crashes
-      return NextResponse.json({
-        success: true,
-        backendEngine: 'Deterministic Bedrock Fallback',
-        traceId: `trace_strands_${Date.now()}`,
-        targetUrl,
-        totalTokens: 320,
-        totalCostUsd: 0.00018,
-        budgetRemainingUsd: 49.99982,
-        interactiveNodesFound: 14,
-        barriersFound: 1,
-        causalCertificatesSigned: 1,
-        steps: [
-          { agent: 'Milestone Planner', action: 'Nova Pro: Synthesized 3 sequential post-condition assertions', status: 'completed', tokensUsed: 120, costEstimateUsd: 0.000096, timestamp: new Date().toISOString() },
-          { agent: 'Physics-Bound Navigator', action: 'Dispatched Tab focus to #nav-search and #promo-email', status: 'completed', tokensUsed: 0, costEstimateUsd: 0, timestamp: new Date().toISOString() },
-          { agent: 'Tarjan SCC Certifier', action: 'NetworkX: Certified sink SCC trap in component {#promo-email, #promo-close}', status: 'completed', tokensUsed: 0, costEstimateUsd: 0, timestamp: new Date().toISOString() },
-          { agent: 'Causal Critic', action: 'Synthesized role="dialog" aria-modal="true" patch with differential replay proof', status: 'completed', tokensUsed: 200, costEstimateUsd: 0.000084, timestamp: new Date().toISOString() }
-        ],
-        certificateSummary: {
-          id: `cert_trap_${Date.now().toString(16)}`,
-          sha256: '9f8c1b2e3a4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f',
-          patch: 'role="dialog" aria-modal="true" onKeyDown={handleEscape}',
-          wcagRule: 'WCAG 2.1.2 No Keyboard Trap (Level A)',
-          explanation: 'Cycle detected: strongly connected component has out-degree 0 to external DOM.'
-        }
-      });
-    }
+    // 2. Integrated Multi-Agent Runner
+    const result = await strandsAgentMesh.runAudit(targetUrl);
+    return NextResponse.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      ...result,
+    });
   } catch (error: any) {
+    console.error('[Strands API Error]:', error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || 'Strands Agent Audit failed',
+        error: error.message || 'Autonomous Agent Traversal encountered an error.',
       },
       { status: 500 }
     );
