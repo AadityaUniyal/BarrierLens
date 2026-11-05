@@ -41,7 +41,7 @@ async function main() {
       name: 'Aaditya Uniyal',
       email: 'aadityauniyal@users.noreply.github.com'
     },
-    message: 'feat(backend): implement complete Python backend with AWS Strands swarm, Bedrock Nova, Playwright CDP, NetworkX Tarjan SCC, and FastAPI server'
+    message: 'feat(backend): complete ultra-resilient Python backend with HTTP server, strands swarm, and offline fixtures'
   });
 
   console.log(`[Git Sync] Committed successfully: ${sha}`);
