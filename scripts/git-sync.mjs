@@ -41,7 +41,7 @@ async function main() {
       name: 'Aaditya Uniyal',
       email: 'aadityauniyal@users.noreply.github.com'
     },
-    message: 'feat(blueprint): eliminate fake fallbacks, enforce strict auth & SSRF guards, and implement 7-destination architecture'
+    message: process.argv[2] || 'feat(websites-journeys): implement real neon persistence for websites and journeys with interactive journey architect'
   });
 
   console.log(`[Git Sync] Committed successfully: ${sha}`);

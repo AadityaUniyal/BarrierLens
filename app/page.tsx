@@ -310,8 +310,9 @@ export default function Home() {
         {/* 2. Websites (Websites & Environment Management) */}
         {activeScreen === 'websites' && (
           <WebsitesManagerView
-            onStartAuditForSite={(url) => {
+            onStartAuditForSite={(url, siteGoal) => {
               setTargetUrl(url);
+              if (siteGoal) setGoal(siteGoal);
               setActiveScreen('audits');
             }}
           />

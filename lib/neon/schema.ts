@@ -40,7 +40,7 @@ export async function initializeDatabaseSchema() {
     await sql`
       CREATE TABLE IF NOT EXISTS sites (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        user_id UUID,
         origin TEXT NOT NULL,
         ownership_verified_at TIMESTAMPTZ,
         verify_token TEXT NOT NULL,
@@ -49,14 +49,57 @@ export async function initializeDatabaseSchema() {
     `;
 
     await sql`
+      CREATE TABLE IF NOT EXISTS websites (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        origin TEXT NOT NULL,
+        environment TEXT NOT NULL DEFAULT 'production',
+        verification_token TEXT NOT NULL,
+        verified_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+
+    try {
+      await sql`CREATE INDEX IF NOT EXISTS idx_websites_user ON websites (user_id);`;
+    } catch (e: any) {
+      console.log('[Neon DB] websites user index notice:', e.message);
+    }
+
+    await sql`
       CREATE TABLE IF NOT EXISTS flows (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        site_id UUID REFERENCES sites(id) ON DELETE CASCADE,
+        site_id UUID,
         goal_text TEXT NOT NULL,
         milestones JSONB NOT NULL DEFAULT '[]'::jsonb,
         persona_set TEXT[] NOT NULL DEFAULT '{"keyboard", "screen_reader"}'
       );
     `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS journeys (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        website_id UUID REFERENCES websites(id) ON DELETE CASCADE,
+        user_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        starting_url TEXT NOT NULL,
+        steps JSONB NOT NULL DEFAULT '[]'::jsonb,
+        criticality TEXT NOT NULL DEFAULT 'high',
+        version INTEGER NOT NULL DEFAULT 1,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+
+    try {
+      await sql`CREATE INDEX IF NOT EXISTS idx_journeys_website ON journeys (website_id);`;
+      await sql`CREATE INDEX IF NOT EXISTS idx_journeys_user ON journeys (user_id);`;
+    } catch (e: any) {
+      console.log('[Neon DB] journeys index notice:', e.message);
+    }
 
     await sql`
       CREATE TABLE IF NOT EXISTS runs (
