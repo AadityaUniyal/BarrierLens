@@ -41,7 +41,7 @@ async function main() {
       name: 'Aaditya Uniyal',
       email: 'aadityauniyal@users.noreply.github.com'
     },
-    message: 'feat(phase1): implement Better Auth with Neon DB, Passkey WebAuthn, and AppleAuthModal integration'
+    message: 'feat(phase2): implement Apple-inspired storytelling landing page with Lenis smooth scroll, interactive metamorphic slider, Tarjan SCC focus graph, and Web Speech API acoustic simulator'
   });
 
   console.log(`[Git Sync] Committed successfully: ${sha}`);
