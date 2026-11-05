@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar, ScreenId } from '@/components/apple/Navbar';
 import { CommandPalette } from '@/components/apple/CommandPalette';
+import { PulseDashboard } from '@/components/apple/PulseDashboard';
+import { VaultAdminView } from '@/components/apple/VaultAdminView';
 import { ComposeView } from '@/components/apple/ComposeView';
 import { TraceTheater } from '@/components/apple/TraceTheater';
 import { ExecutiveReport } from '@/components/apple/ExecutiveReport';
@@ -19,15 +21,15 @@ import { AWSBridgeConsole } from '@/components/apple/AWSBridgeConsole';
 import { LiveMissionControl } from '@/components/apple/LiveMissionControl';
 import { VisualTwinSimulator } from '@/components/apple/VisualTwinSimulator';
 import { LandingStory } from '@/components/apple/LandingStory';
-import { TeamIntegrationsView } from '@/components/apple/TeamIntegrationsView';
 import { AppleAuthModal, UserSession } from '@/components/apple/AppleAuthModal';
 import { AuditRun, BarrierFinding, PersonaType, VerifiedFixResult } from '@/lib/barrierlens/types';
-import { transcriptItemsFromRun } from '@/lib/barrierlens/engines/transcript-from-run';
 
 export default function Home() {
-  const [activeScreen, setActiveScreen] = useState<ScreenId>('story');
+  const [activeScreen, setActiveScreen] = useState<ScreenId>('pulse');
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Authenticated User Session (Defaults to active Cupertino engineer session)
   const [userSession, setUserSession] = useState<UserSession | null>({
     id: 'usr_apple_9841',
     name: 'Sarah Chen',
@@ -118,85 +120,43 @@ export default function Home() {
 
         for (const rawEvent of events) {
           if (!rawEvent.trim()) continue;
-          const lines = rawEvent.split('\n');
-          let eventType = 'message';
-          let eventData = '';
+          const match = rawEvent.match(/^data:\s*(.+)$/m);
+          if (!match) continue;
 
-          for (const line of lines) {
-            if (line.startsWith('event: ')) {
-              eventType = line.slice(7).trim();
-            } else if (line.startsWith('data: ')) {
-              eventData = line.slice(6).trim();
-            }
-          }
+          try {
+            const data = JSON.parse(match[1]);
 
-          if (eventData) {
-            try {
-              const parsed = JSON.parse(eventData);
-              if (eventType === 'status') {
-                setStreamingStatus(parsed.message || 'Auditing in progress...');
-              } else if (eventType === 'step') {
-                accumulatedSteps.push(parsed);
-                setStreamingStep(parsed.idx);
-                setStreamingStatus(`Step ${parsed.idx}: Dispatched [${parsed.key || parsed.actionType}] → ${parsed.activeElementAfter || 'control'}`);
-                setAuditResult(prev => ({
-                  id: prev?.id || 'live-stream',
-                  targetUrl,
-                  goal,
-                  persona,
-                  status: 'running',
-                  startedAt: prev?.startedAt || new Date().toISOString(),
-                  finishedAt: new Date().toISOString(),
-                  taskSuccess: false,
-                  effortRatio: 1.0,
-                  steps: [...accumulatedSteps],
-                  findings: [...accumulatedFindings],
-                  tierMix: prev?.tierMix || { tier0Rules: 0, tier1Ranker: 0, tier2Groq: 0, tier3Gemini: 0 }
-                }));
-              } else if (eventType === 'finding') {
-                accumulatedFindings.push(parsed);
-                setAuditResult(prev => prev ? ({ ...prev, findings: [...accumulatedFindings] }) : null);
-              } else if (eventType === 'complete') {
-                setAuditResult(parsed);
-                if (parsed?.id && typeof window !== 'undefined') {
-                  setShareUrl(`${window.location.origin}/r/${parsed.id}`);
-                }
-                setStreamingStatus('Audit complete. Share the report link below.');
-              } else if (eventType === 'error') {
-                setStreamingStatus(`Could not run audit: ${parsed.error || parsed.message || 'unknown error'}`);
+            if (data.type === 'status') {
+              setStreamingStatus(data.message);
+            } else if (data.type === 'step') {
+              setStreamingStep(data.step.idx);
+              setStreamingStatus(`Step ${data.step.idx}: Persona ${data.step.persona} -> ${data.step.actionType}`);
+              accumulatedSteps.push(data.step);
+            } else if (data.type === 'finding') {
+              accumulatedFindings.push(data.finding);
+            } else if (data.type === 'complete') {
+              setAuditResult(data.auditRun);
+              setShareUrl(data.shareUrl || '');
+              if (data.auditRun?.findings) {
+                setRunsHistory(prev => [data.auditRun, ...prev]);
               }
-            } catch (pErr) {
-              console.warn('Could not parse SSE event chunk', pErr);
             }
+          } catch (parseErr) {
+            console.error('Error parsing SSE message', parseErr);
           }
         }
       }
-
-      // Refresh runs list
-      fetch('/api/runs/list')
-        .then(r => r.json())
-        .then(d => setRunsHistory(d.runs || []))
-        .catch(() => {});
     } catch (err) {
-      console.warn('Streaming failed, fallback to synchronous /api/audit/run', err);
+      console.warn('Streaming failed, attempting fallback API', err);
       try {
-        const res = await fetch('/api/audit/run', {
+        const fallbackRes = await fetch('/api/audit/run', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ targetUrl, goal, persona, maxSteps })
         });
-        const data = await res.json();
-        if (data?.error) {
-          setStreamingStatus(`Could not run audit: ${data.error}`);
-        } else {
-          setAuditResult(data);
-          if (data?.id && typeof window !== 'undefined') {
-            setShareUrl(`${window.location.origin}/r/${data.id}`);
-          }
-        }
-        fetch('/api/runs/list')
-          .then(r => r.json())
-          .then(d => setRunsHistory(d.runs || []));
+        const fallbackData = await fallbackRes.json();
+        setAuditResult(fallbackData.auditRun);
+        setShareUrl(fallbackData.shareUrl || '');
       } catch (fallbackErr) {
         console.error('Audit run failed', fallbackErr);
       }
@@ -241,6 +201,45 @@ export default function Home() {
     }
   };
 
+  // STRICT ACCESS BARRIER: Unauthenticated users only see the Story Landing Page
+  if (!userSession) {
+    return (
+      <div className="min-h-screen bg-[#000000] text-[#f5f5f7] flex flex-col font-sans selection:bg-[#0071e3] selection:text-white">
+        <Navbar
+          activeScreen="story"
+          setActiveScreen={setActiveScreen}
+          openPalette={() => setIsPaletteOpen(true)}
+          servicesCount={servicesHealth}
+          userSession={null}
+          onOpenAuth={() => setIsAuthModalOpen(true)}
+        />
+        <AppleAuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          currentSession={null}
+          onAuthenticate={(session) => {
+            setUserSession(session);
+            setActiveScreen('pulse');
+          }}
+          onSignOut={() => setUserSession(null)}
+        />
+        <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8">
+          <LandingStory
+            onEnterStudio={() => setIsAuthModalOpen(true)}
+            onOpenAuth={() => setIsAuthModalOpen(true)}
+          />
+        </main>
+        <footer className="border-t border-white/[0.06] py-6 px-6 text-center text-xs text-[#6e6e73]">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>BarrierLens Inc. — Designed with Apple Precision</span>
+            <span className="font-mono text-[11px]">EAA Directive (EU) 2019/882 & WCAG 2.2 Ready</span>
+          </div>
+        </footer>
+      </div>
+    );
+  }
+
+  // PROTECTED APP WORKSPACE: Authenticated user experience
   return (
     <div className="min-h-screen bg-[#000000] text-[#f5f5f7] flex flex-col font-sans selection:bg-[#0071e3] selection:text-white">
       {/* 1. Sticky Apple Glass Navbar */}
@@ -270,33 +269,32 @@ export default function Home() {
         onRunAudit={handleRunAudit}
       />
 
-      {/* 4. Main Screen Viewport */}
+      {/* 4. Main Protected Viewport */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-8">
-        {activeScreen === 'story' && (
-          <LandingStory
-            onEnterStudio={() => setActiveScreen('studio')}
-            onOpenAuth={() => setIsAuthModalOpen(true)}
+        {/* Pulse: Apple Watch Circular Activity Rings & Overview */}
+        {activeScreen === 'pulse' && (
+          <PulseDashboard
+            runsHistory={runsHistory}
+            latestRun={auditResult}
+            onOpenInspector={() => setActiveScreen('inspector')}
+            onOpenRemedy={() => setActiveScreen('remedy')}
+            onOpenGenome={() => setActiveScreen('genome')}
+            onOpenVault={() => setActiveScreen('vault')}
+            onRunQuickAudit={handleRunAudit}
+            isAuditing={isAuditing}
           />
         )}
 
-        {activeScreen === 'integrations' && (
-          <TeamIntegrationsView
-            userSession={userSession}
-            onOpenAuth={() => setIsAuthModalOpen(true)}
-          />
-        )}
-
-        {activeScreen === 'studio' && (
+        {/* Inspector: Autonomous Physical Task Auditor */}
+        {activeScreen === 'inspector' && (
           <div className="space-y-10 animate-in fade-in duration-300">
-            {/* Live Strands Swarm & Cupertino Mission Control Cockpit */}
             <LiveMissionControl
-              onOpenGenome={() => setActiveScreen('barrier-genome')}
-              onOpenCausalDiff={() => setActiveScreen('causal-diff')}
+              onOpenGenome={() => setActiveScreen('genome')}
+              onOpenCausalDiff={() => setActiveScreen('remedy')}
               onOpenAwsConsole={() => setActiveScreen('aws-bridge')}
               onOpenVisualTwin={() => setActiveScreen('visual-twin')}
             />
 
-            {/* Compose Console */}
             <ComposeView
               targetUrl={targetUrl}
               setTargetUrl={setTargetUrl}
@@ -328,7 +326,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* Trace Theater (Live Replay & Keycaps) */}
             {auditResult && (
               <TraceTheater
                 steps={auditResult.steps}
@@ -337,7 +334,6 @@ export default function Home() {
               />
             )}
 
-            {/* Executive Report & Barrier Inspector */}
             {auditResult && (
               <ExecutiveReport
                 auditRun={auditResult}
@@ -349,18 +345,43 @@ export default function Home() {
           </div>
         )}
 
-        {activeScreen === 'visual-twin' && (
-          <VisualTwinSimulator />
+        {/* Remedy: Causal AST Repair & Headless Replay Verifier */}
+        {activeScreen === 'remedy' && (
+          <div className="space-y-8 animate-in fade-in duration-300">
+            <CausalDiffView />
+            {auditResult && (
+              <ExecutiveReport
+                auditRun={auditResult}
+                onVerifyRepair={handleVerifyRepair}
+                verifyingFindingId={verifyingFindingId}
+                verifiedFixes={verifiedFixes}
+              />
+            )}
+          </div>
         )}
 
-        {activeScreen === 'multi-agent' && (
-          <MultiAgentMeshView />
+        {/* Genome: 768-dim Vector Intelligence Map */}
+        {activeScreen === 'genome' && (
+          <BarrierGenomeViz />
         )}
 
-        {activeScreen === 'aws-bridge' && (
-          <AWSBridgeConsole />
+        {/* Arena: Red-Team Adversarial Stress Arena */}
+        {activeScreen === 'arena' && (
+          <StressTestDashboard />
         )}
 
+        {/* Vault: Dedicated Admin & Policy Console */}
+        {activeScreen === 'vault' && (
+          <VaultAdminView
+            userSession={userSession}
+            onOpenAuth={() => setIsAuthModalOpen(true)}
+          />
+        )}
+
+        {/* Secondary Deep Diagnostics */}
+        {activeScreen === 'visual-twin' && <VisualTwinSimulator />}
+        {activeScreen === 'multi-agent' && <MultiAgentMeshView />}
+        {activeScreen === 'aws-bridge' && <AWSBridgeConsole />}
         {activeScreen === 'focus-map' && (
           <FocusMapView
             kendallTau={auditResult?.kendallTau}
@@ -368,37 +389,9 @@ export default function Home() {
             trapCertificates={auditResult?.findings?.filter(f => f.certificate).map(f => f.certificate!) || []}
           />
         )}
-
-        {activeScreen === 'screen-reader' && (
-          <ScreenReaderTranscript />
-        )}
-
-        {activeScreen === 'barrier-genome' && (
-          <BarrierGenomeViz />
-        )}
-
-        {activeScreen === 'causal-diff' && (
-          <CausalDiffView />
-        )}
-
-        {activeScreen === 'stress-test' && (
-          <StressTestDashboard />
-        )}
-
-        {activeScreen === 'trends' && (
-          <TrendsView runs={runsHistory} />
-        )}
-
-        {activeScreen === 'triage' && (
-          <ReviewQueueView
-            findings={auditResult?.findings || []}
-            onTriage={handleTriage}
-          />
-        )}
-
-        {activeScreen === 'scorecard' && (
-          <PublicScorecardView auditRun={auditResult} />
-        )}
+        {activeScreen === 'screen-reader' && <ScreenReaderTranscript />}
+        {activeScreen === 'trends' && <TrendsView runs={runsHistory} />}
+        {activeScreen === 'scorecard' && <PublicScorecardView auditRun={auditResult} />}
       </main>
 
       {/* Footer */}

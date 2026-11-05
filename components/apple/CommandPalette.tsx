@@ -18,7 +18,9 @@ import {
   Flame,
   Network,
   Cloud,
-  MonitorPlay
+  MonitorPlay,
+  Activity,
+  ShieldCheck
 } from 'lucide-react';
 import { ScreenId } from './Navbar';
 
@@ -34,20 +36,19 @@ export function CommandPalette({ isOpen, onClose, onSelectScreen, onRunAudit }: 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const actions = [
-    { label: 'Run Autonomous Audit', icon: Play, shortcut: '↵', action: () => { onRunAudit(); onClose(); } },
-    { label: 'Team, CI/CD & API Keys', icon: GitBranch, shortcut: 'I', action: () => { onSelectScreen('integrations'); onClose(); } },
-    { label: 'Interactive Visual Twin Simulator', icon: MonitorPlay, shortcut: 'V', action: () => { onSelectScreen('visual-twin'); onClose(); } },
+    { label: 'Pulse Overview & Digital Health Rings', icon: Activity, shortcut: 'P', action: () => { onSelectScreen('pulse'); onClose(); } },
+    { label: 'Run Autonomous Audit (Inspector)', icon: Play, shortcut: '↵', action: () => { onRunAudit(); onClose(); } },
+    { label: 'Vault (Team, RBAC & API Keys)', icon: ShieldCheck, shortcut: 'V', action: () => { onSelectScreen('vault'); onClose(); } },
+    { label: 'Remedy (Causal AST Repair & Sandbox)', icon: GitBranch, shortcut: 'R', action: () => { onSelectScreen('remedy'); onClose(); } },
+    { label: 'Barrier Genome Vector Map', icon: Dna, shortcut: 'G', action: () => { onSelectScreen('genome'); onClose(); } },
+    { label: 'Arena (Red-Team Adversarial Stress)', icon: Flame, shortcut: 'A', action: () => { onSelectScreen('arena'); onClose(); } },
+    { label: 'Interactive Visual Twin Simulator', icon: MonitorPlay, shortcut: 'T', action: () => { onSelectScreen('visual-twin'); onClose(); } },
     { label: 'Multi-Agent Mesh (AWS Strands)', icon: Network, shortcut: 'M', action: () => { onSelectScreen('multi-agent'); onClose(); } },
-    { label: 'AWS CLI & Bedrock Sandbox Bridge', icon: Cloud, shortcut: 'A', action: () => { onSelectScreen('aws-bridge'); onClose(); } },
-    { label: 'Open Studio & Trace Theater', icon: Compass, shortcut: '1', action: () => { onSelectScreen('studio'); onClose(); } },
-    { label: 'Focus Map & Kendall Tau Meter', icon: Terminal, shortcut: '2', action: () => { onSelectScreen('focus-map'); onClose(); } },
-    { label: 'Screen Reader Audio Transcript', icon: Volume2, shortcut: '3', action: () => { onSelectScreen('screen-reader'); onClose(); } },
-    { label: 'Trends & Flow Drift Sentinel', icon: LineChart, shortcut: '4', action: () => { onSelectScreen('trends'); onClose(); } },
-    { label: 'Review Queue & Active Learning', icon: CheckSquare, shortcut: '5', action: () => { onSelectScreen('triage'); onClose(); } },
-    { label: 'Public Verifiable Scorecard', icon: Share2, shortcut: '6', action: () => { onSelectScreen('scorecard'); onClose(); } },
-    { label: 'Barrier Genome Vector Space', icon: Dna, shortcut: '7', action: () => { onSelectScreen('barrier-genome'); onClose(); } },
-    { label: 'Causal Counterfactual Proof', icon: GitBranch, shortcut: '8', action: () => { onSelectScreen('causal-diff'); onClose(); } },
-    { label: 'Adversarial Red-Team Stress Test', icon: Flame, shortcut: '9', action: () => { onSelectScreen('stress-test'); onClose(); } },
+    { label: 'AWS CLI & Bedrock Sandbox Bridge', icon: Cloud, shortcut: 'C', action: () => { onSelectScreen('aws-bridge'); onClose(); } },
+    { label: 'Focus Map & Kendall Tau Meter', icon: Terminal, shortcut: 'F', action: () => { onSelectScreen('focus-map'); onClose(); } },
+    { label: 'VoiceOver Speech Audio Transcript', icon: Volume2, shortcut: 'S', action: () => { onSelectScreen('screen-reader'); onClose(); } },
+    { label: 'Trends & Flow Drift Sentinel', icon: LineChart, shortcut: 'D', action: () => { onSelectScreen('trends'); onClose(); } },
+    { label: 'Public Verifiable Scorecard', icon: Share2, shortcut: 'K', action: () => { onSelectScreen('scorecard'); onClose(); } },
     { label: 'Open Synthetic Benchmark Site', icon: ExternalLink, shortcut: 'B', action: () => { window.open('/benchmark', '_blank'); onClose(); } },
   ];
 

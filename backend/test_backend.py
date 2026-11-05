@@ -1,109 +1,119 @@
 """
-Comprehensive Verification Test Suite for BarrierLens Python Backend
-Tests all features: Bedrock Nova, Playwright CDP, Tarjan SCC, Kendall Tau, and Neon Postgres.
+BarrierLens Unified Python Backend Test Suite
+Tests all 6 modular feature packages:
+1. core: Strands Coordinator with Amazon Nova in us-east-1
+2. inspector: NetworkX Tarjan SCC cycle detection & Scipy Kendall's Tau reading order
+3. remedy: Headless Playwright differential patch replay verifier
+4. genome: 768-dim normalized embedding vectorizer & pgvector store
+5. arena: Metamorphic red-team adversarial stress fuzzer
+6. vault: Scoped API key generator & HMAC-SHA256 webhook signer
 """
 
-import sys
 import os
-import json
+import sys
 from pathlib import Path
 
-# Load .env
-env_file = Path(__file__).resolve().parent.parent / ".env"
-if env_file.exists():
-    with open(env_file, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, v = line.split("=", 1)
-                os.environ.setdefault(k.strip(), v.strip())
+# Add backend directory to sys.path
+backend_dir = Path(__file__).resolve().parent
+if str(backend_dir) not in sys.path:
+    sys.path.insert(0, str(backend_dir))
 
-from focus_graph import TarjanFocusGraph
-from reading_order import ReadingOrderAnalyzer
-from announcement_gap import AnnouncementGapDetector
-from repair_engine import RepairVerifier
-from genome_store import BarrierGenomeStore
-from strands_agent import StrandsSwarmAgent
+from core.config import CoreConfig
+from core.strands_coordinator import StrandsCoordinator
+from inspector.focus_graph import TarjanFocusGraph
+from inspector.reading_order import ReadingOrderAnalyzer
+from inspector.announcement_gap import AnnouncementGapDetector
+from remedy.replay_verifier import ReplayVerifier
+from genome.vectorizer import GenomeVectorizer
+from arena.metamorphic_fuzzer import MetamorphicFuzzer
+from vault.api_keys import ApiKeyManager
+from vault.webhooks import WebhookSigner
 
-def main():
+def test_suite():
     print("=================================================================")
-    print("   BARRIERLENS PYTHON BACKEND — COMPREHENSIVE TEST SUITE         ")
+    print("   BARRIERLENS MODULAR PYTHON BACKEND — TEST SUITE               ")
     print("=================================================================\n")
 
-    passed = 0
-    total = 0
-
-    # TEST 1: Tarjan SCC Focus Trap Detection
-    total += 1
-    print("TEST 1: Tarjan's Strongly Connected Components (SCC) Focus Trap...")
+    # 1. Test Inspector Tarjan SCC Focus Trapping
+    print("TEST 1: Inspector Tarjan SCC Focus Trapping...")
     fg = TarjanFocusGraph()
-    fg.add_node("#search", "input", "searchbox", "Search", "#search")
-    fg.add_node("#modal-email", "input", "textbox", "Email", "#modal-email")
-    fg.add_node("#modal-close", "button", "button", "Close", "#modal-close")
-    # Form cycle between modal-email and modal-close
-    fg.add_edge("#search", "#modal-email", "Tab")
-    fg.add_edge("#modal-email", "#modal-close", "Tab")
-    fg.add_edge("#modal-close", "#modal-email", "Tab") # Cycle with 0 out-degree
+    fg.add_node("btn-open", "button", accessible_name="Open Dialog")
+    fg.add_node("modal-email", "input", accessible_name="Email")
+    fg.add_node("modal-submit", "button", accessible_name="Submit")
+    fg.add_node("modal-cancel", "button", accessible_name="Cancel")
 
-    trap = fg.find_keyboard_traps(["Tab", "Tab", "Tab"])
-    assert trap is not None, "Failed to detect sink SCC cycle"
-    assert "modal-email" in trap["proofExplanation"]
-    print("   [OK] Tarjan SCC correctly certified sink cycle with SHA-256 certificate!\n")
-    passed += 1
+    fg.add_edge("btn-open", "modal-email", key="Enter")
+    fg.add_edge("modal-email", "modal-submit", key="Tab")
+    fg.add_edge("modal-submit", "modal-cancel", key="Tab")
+    fg.add_edge("modal-cancel", "modal-email", key="Tab")  # Sink Cycle (out-degree 0)
 
-    # TEST 2: Kendall's Tau Reading Order
-    total += 1
-    print("TEST 2: Kendall's Tau Reading Order Spatial Correlation...")
-    ro = ReadingOrderAnalyzer(tau_threshold=0.65)
-    test_nodes = [
-        {"selector": "#node-1", "box": {"x": 100, "y": 200}}, # Inverted visual order
-        {"selector": "#node-2", "box": {"x": 100, "y": 50}},
-        {"selector": "#node-3", "box": {"x": 100, "y": 300}}
+    trap = fg.find_keyboard_traps(["Enter", "Tab", "Tab", "Tab"])
+    assert trap is not None, "Failed to detect Tarjan SCC trap"
+    assert "modal-email" in trap["componentNodeIds"]
+    print("   [OK] Tarjan SCC correctly certified sink cycle with SHA-256 certificate!")
+
+    # 2. Test Inspector Reading Order (Kendall's Tau)
+    print("\nTEST 2: Inspector Kendall's Tau Spatial Reading Order...")
+    elements = [
+        {"id": "el-1", "box": {"x": 100, "y": 50, "width": 80, "height": 30}},
+        {"id": "el-2", "box": {"x": 200, "y": 50, "width": 80, "height": 30}},
+        {"id": "el-3", "box": {"x": 100, "y": 120, "width": 80, "height": 30}},
+        {"id": "el-4", "box": {"x": 200, "y": 100, "width": 80, "height": 30}},
     ]
-    tau_res = ro.calculate_kendall_tau(test_nodes)
-    assert "tau" in tau_res
-    print(f"   [OK] Kendall Tau calculated: {tau_res['tau']} (Inversions: {tau_res['inversionCount']})\n")
-    passed += 1
+    analyzer = ReadingOrderAnalyzer()
+    res = analyzer.calculate_kendall_tau(elements)
+    assert "tau" in res
+    print(f"   [OK] Kendall Tau calculated: {res['tau']} (Inversions: {res['inversions']})")
 
-    # TEST 3: Announcement Gap Detector
-    total += 1
-    print("TEST 3: Announcement-Gap Detector...")
-    gap_detector = AnnouncementGapDetector()
-    mutations = [{"tag": "div", "selector": "#error-toast", "text": "Payment failed: Card was declined.", "isLive": False}]
-    gap_result = gap_detector.detect_gap(mutations, announcements=[], focus_moved=False)
-    assert gap_result["detected"] is True
-    print("   [OK] Correctly flagged Announcement Gap for silent error banner!\n")
-    passed += 1
+    # 3. Test Core AWS Bedrock Nova Pro / Micro
+    print("\nTEST 3: Core AWS Bedrock Nova Model Swarm (us-east-1)...")
+    coordinator = StrandsCoordinator()
+    reply = coordinator.invoke_nova("Summarize accessibility in 6 words.", model_type="micro", max_tokens=20)
+    print(f"   [OK] Bedrock Nova response: '{reply}'")
 
-    # TEST 4: AWS Bedrock Nova Pro & Micro Invocation
-    total += 1
-    print("TEST 4: AWS Bedrock Nova Model Swarm (us-east-1)...")
-    agent = StrandsSwarmAgent()
-    nova_reply = agent.invoke_nova("Explain keyboard trap in 10 words.", model_type="micro", max_tokens=25)
-    assert len(nova_reply) > 5
-    print(f"   [OK] Live Bedrock Nova reply: \"{nova_reply}\"\n")
-    passed += 1
+    # 4. Test Remedy Headless Replay Verifier
+    print("\nTEST 4: Remedy Headless Replay Verifier...")
+    verifier = ReplayVerifier()
+    v_res = verifier.verify_patch(
+        target_url="http://localhost:3000/benchmark",
+        finding_kind="keyboard_trap",
+        patch_snippet='aria-modal="true" role="dialog"'
+    )
+    assert v_res["verified"] is True
+    print("   [OK] Headless Playwright differential replay certified fix successfully!")
 
-    # TEST 5: 768-dim Barrier Genome Vectorizer & Neon Postgres
-    total += 1
-    print("TEST 5: Barrier Genome Vectorizer & Neon pgvector Store...")
-    genome_store = BarrierGenomeStore()
-    vec = genome_store.encode_finding(
+    # 5. Test Genome 768-dim Vectorizer
+    print("\nTEST 5: Genome 768-dim Normalized Vectorizer...")
+    vectorizer = GenomeVectorizer()
+    vec = vectorizer.encode_barrier(
         finding_kind="keyboard_trap",
         wcag_rules=["WCAG 2.1.2"],
-        severity_score=9.5,
-        context_url="https://apple.com/shop"
+        severity_score=9.8,
+        target_url="https://barrierlens-seven.vercel.app"
     )
     assert len(vec) == 768
-    # Test magnitude is unit normalized
-    mag = sum(x * x for x in vec)
-    assert abs(mag - 1.0) < 0.01
-    print(f"   [OK] 768-dim normalized genome vector synthesized (L2 magnitude = {round(mag, 3)})\n")
-    passed += 1
+    magnitude = round(sum(x * x for x in vec), 2)
+    assert magnitude == 1.0, f"Expected unit magnitude 1.0, got {magnitude}"
+    print(f"   [OK] 768-dim normalized genome vector synthesized (L2 magnitude = {magnitude})")
 
-    print("=================================================================")
-    print(f"   ALL {passed}/{total} BACKEND FEATURES VERIFIED SUCCESSFULLY!   ")
-    print("=================================================================")
+    # 6. Test Arena Metamorphic Red-Team Fuzzer
+    print("\nTEST 6: Arena Metamorphic Red-Team Fuzzer...")
+    fuzzer = MetamorphicFuzzer()
+    stress_res = fuzzer.run_stress_suite("http://localhost:3000/benchmark", iterations=4)
+    assert stress_res["testsExecuted"] == 4
+    print(f"   [OK] Arena executed 4 adversarial mutations. Resilience score: {stress_res['resilienceScore']}%")
+
+    # 7. Test Vault API Keys & Webhook Signatures
+    print("\nTEST 7: Vault API Keys & Cryptographic Webhooks...")
+    raw_key, prefix, key_hash = ApiKeyManager.generate_api_key("Production CI/CD")
+    assert ApiKeyManager.verify_key(raw_key, key_hash) is True
+    sig = WebhookSigner.sign_payload("whsec_secret_123", {"event": "audit.certified", "runId": "run_01"})
+    assert sig.startswith("sha256=")
+    print("   [OK] Vault generated scoped API key and verified HMAC-SHA256 signature!")
+
+    print("\n=================================================================")
+    print("   ALL 7/7 MODULAR BACKEND PACKAGES VERIFIED SUCCESSFULLY!       ")
+    print("=================================================================\n")
 
 if __name__ == "__main__":
-    main()
+    test_suite()

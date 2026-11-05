@@ -41,7 +41,7 @@ async function main() {
       name: 'Aaditya Uniyal',
       email: 'aadityauniyal@users.noreply.github.com'
     },
-    message: 'feat(backend): complete ultra-resilient Python backend with HTTP server, strands swarm, and offline fixtures'
+    message: 'feat(ios-architecture): implement complete iOS design philosophy, Apple Watch activity rings, strict auth gating, and modular feature-first Python backend'
   });
 
   console.log(`[Git Sync] Committed successfully: ${sha}`);

@@ -1,11 +1,12 @@
 """
-BarrierLens Python Backend API
-Ultra-resilient multi-agent accessibility engine:
-- AWS Strands Swarm with Amazon Nova Bedrock models (Nova Pro & Nova Micro)
-- NetworkX Tarjan SCC Focus Trapping & Scipy Kendall's Tau Reading Order
-- Surgical AST Repair Verifier with Playwright Headless Replay
-- Neon Postgres pgvector Integration
-- Zero external C-extension dependencies (pure Python HTTP server, bypasses Windows AppLocker)
+BarrierLens Unified Python Backend Server
+Integrates all modular feature packages:
+- core (Config, Reactive EventBus, Strands Coordinator)
+- inspector (InspectorAgent, TarjanFocusGraph, ReadingOrderAnalyzer, AnnouncementGapDetector)
+- remedy (CausalCritic, AstSynthesizer, ReplayVerifier)
+- genome (GenomeVectorizer, PgvectorStore)
+- arena (MetamorphicFuzzer)
+- vault (RbacValidator, ApiKeyManager, WebhookSigner)
 """
 
 import os
@@ -23,20 +24,16 @@ backend_dir = Path(__file__).resolve().parent
 if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
-# Load environment variables from .env
-env_file = Path(__file__).resolve().parent.parent / ".env"
-if env_file.exists():
-    with open(env_file, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, v = line.split("=", 1)
-                os.environ.setdefault(k.strip(), v.strip())
-
-# Import Python Strands Swarm engines
-from strands_agent import StrandsSwarmAgent
-from repair_engine import RepairVerifier
-from genome_store import BarrierGenomeStore
+# Import modular feature packages
+from core.config import CoreConfig
+from core.event_bus import event_bus
+from inspector.agent import InspectorAgent
+from remedy.replay_verifier import ReplayVerifier
+from genome.vectorizer import GenomeVectorizer
+from genome.pgvector_store import PgvectorStore
+from arena.metamorphic_fuzzer import MetamorphicFuzzer
+from vault.api_keys import ApiKeyManager
+from vault.webhooks import WebhookSigner
 
 
 class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
@@ -69,19 +66,18 @@ class BarrierLensHandler(BaseHTTPRequestHandler):
         path = parsed.path
 
         if path in ("/health", "/api/status", "/"):
-            has_aws = bool(os.environ.get("AWS_ACCESS_KEY_ID") and os.environ.get("AWS_SECRET_ACCESS_KEY"))
-            has_neon = bool(os.environ.get("DATABASE_URL"))
             self._send_json(200, {
                 "status": "operational",
-                "service": "BarrierLens Python Backend",
-                "version": "2.0.0",
-                "engine": "AWS Strands Agents + Playwright CDP + NetworkX Tarjan SCC",
-                "awsBedrockConfigured": has_aws,
-                "neonPostgresConfigured": has_neon,
-                "region": os.environ.get("BEDROCK_REGION", "us-east-1"),
+                "service": "BarrierLens Unified Modular Python Backend",
+                "version": "2.1.0",
+                "architecture": "Modular iOS App Feature Packages",
+                "packages": ["core", "inspector", "remedy", "genome", "arena", "vault"],
+                "awsBedrockConfigured": CoreConfig.is_aws_configured(),
+                "neonPostgresConfigured": CoreConfig.is_neon_configured(),
+                "region": CoreConfig.BEDROCK_REGION,
                 "models": {
-                    "planning": "amazon.nova-pro-v1:0",
-                    "routine": "amazon.nova-micro-v1:0"
+                    "planning": CoreConfig.MODEL_PLANNING,
+                    "routine": CoreConfig.MODEL_ROUTINE
                 }
             })
         else:
@@ -91,7 +87,6 @@ class BarrierLensHandler(BaseHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
 
-        # Read JSON body
         content_len = int(self.headers.get("Content-Length", 0))
         body = {}
         if content_len > 0:
@@ -102,15 +97,16 @@ class BarrierLensHandler(BaseHTTPRequestHandler):
                 self._send_json(400, {"error": "Invalid JSON body", "detail": str(e)})
                 return
 
-        if path in ("/api/strands/run", "/api/audit/run"):
+        # 1. Inspector / Strands Swarm Execution
+        if path in ("/api/strands/run", "/api/audit/run", "/api/inspector/run"):
             target_url = body.get("targetUrl", "http://localhost:3000/benchmark")
             goal = body.get("goal", "Complete primary interaction flow using only keyboard")
             persona = body.get("persona", "keyboard")
             max_steps = int(body.get("maxSteps", 8))
 
             try:
-                agent = StrandsSwarmAgent()
-                result = agent.run_swarm_audit(
+                agent = InspectorAgent()
+                result = agent.run_audit(
                     target_url=target_url,
                     goal=goal,
                     persona=persona,
@@ -118,16 +114,17 @@ class BarrierLensHandler(BaseHTTPRequestHandler):
                 )
                 self._send_json(200, {"success": True, **result})
             except Exception as e:
-                self._send_json(500, {"error": "Strands Swarm failed", "detail": str(e)})
+                self._send_json(500, {"error": "Inspector Agent audit failed", "detail": str(e)})
 
-        elif path in ("/api/repair/verify", "/api/repair"):
+        # 2. Remedy / Sandbox Replay Verifier
+        elif path in ("/api/repair/verify", "/api/remedy/verify"):
             target_url = body.get("targetUrl", "http://localhost:3000/benchmark")
             finding_kind = body.get("findingKind", "keyboard_trap")
             patch_snippet = body.get("patch", 'role="dialog" aria-modal="true"')
             trace_keys = body.get("traceKeys", ["Tab", "Tab", "Tab"])
 
             try:
-                verifier = RepairVerifier()
+                verifier = ReplayVerifier()
                 result = verifier.verify_patch(
                     target_url=target_url,
                     finding_kind=finding_kind,
@@ -136,16 +133,45 @@ class BarrierLensHandler(BaseHTTPRequestHandler):
                 )
                 self._send_json(200, {"success": True, **result})
             except Exception as e:
-                self._send_json(500, {"error": "Repair verification failed", "detail": str(e)})
+                self._send_json(500, {"error": "Remedy replay failed", "detail": str(e)})
+
+        # 3. Arena / Adversarial Stress Fuzzer
+        elif path in ("/api/arena/stress", "/api/stress/run"):
+            target_url = body.get("targetUrl", "http://localhost:3000/benchmark")
+            iterations = int(body.get("iterations", 5))
+
+            try:
+                fuzzer = MetamorphicFuzzer()
+                result = fuzzer.run_stress_suite(target_url=target_url, iterations=iterations)
+                self._send_json(200, {"success": True, **result})
+            except Exception as e:
+                self._send_json(500, {"error": "Arena fuzzer failed", "detail": str(e)})
+
+        # 4. Vault / Scoped API Key Generator
+        elif path in ("/api/vault/keys/generate", "/api/keys/generate"):
+            key_name = body.get("name", "CI/CD Pipeline Runner")
+            scope = body.get("scope", "audit:run, pr:create")
+
+            try:
+                raw_key, prefix, key_hash = ApiKeyManager.generate_api_key(name=key_name, scope=scope)
+                self._send_json(200, {
+                    "success": True,
+                    "apiKey": raw_key,
+                    "prefix": prefix,
+                    "keyHash": key_hash,
+                    "scope": scope
+                })
+            except Exception as e:
+                self._send_json(500, {"error": "API Key generation failed", "detail": str(e)})
 
         else:
             self._send_json(404, {"error": "Not Found", "path": path})
 
 
-def run_server(host: str = "127.0.0.1", port: int = 8000):
+def run_server(host: str = CoreConfig.HOST, port: int = CoreConfig.PORT):
     server = ThreadingHTTPServer((host, port), BarrierLensHandler)
-    print(f"[BarrierLens Python Backend] Serving at http://{host}:{port}")
-    print(f"[BarrierLens Python Backend] Health check: http://{host}:{port}/health")
+    print(f"[BarrierLens Unified Backend] Serving at http://{host}:{port}")
+    print(f"[BarrierLens Unified Backend] Health check: http://{host}:{port}/health")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
