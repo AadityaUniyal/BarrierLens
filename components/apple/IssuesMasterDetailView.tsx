@@ -9,12 +9,9 @@ import {
   Volume2, 
   Dna, 
   GitBranch, 
-  Sparkles, 
-  Filter, 
   ChevronRight,
   ExternalLink,
-  Layers,
-  ArrowRight
+  Code2
 } from 'lucide-react';
 import { BarrierFinding, AuditRun, VerifiedFixResult } from '@/lib/barrierlens/types';
 import { FocusMapView } from './FocusMapView';
@@ -58,47 +55,33 @@ export function IssuesMasterDetailView({
 
   const activeFinding = selectedFinding || filteredFindings[0] || null;
 
-  // Synthesize dynamic VoiceOver bubbles from the active finding
-  const speechItems: SpeechTranscriptItem[] = activeFinding ? [
-    { id: '1', type: 'speech', text: 'Document loaded. Application Viewport.', tag: 'MAIN', timestamp: '0.0s' },
-    { id: '2', type: 'speech', text: `Focused control: ${activeFinding.evidence?.selector || 'Interactive Element'}.`, tag: 'FOCUS', timestamp: '1.2s' },
-    ...(activeFinding.kind === 'keyboard_trap' ? [
-      { id: '3', type: 'silent_gap' as const, text: `CRITICAL SINK CYCLE: Focus trapped in ${activeFinding.evidence?.selector || 'dialog container'}. Navigation loop cannot reach external document controls. Escape key handler missing.`, tag: 'TRAP_CYCLE', timestamp: '2.1s', category: 'state_change' as const, proofCertificate: activeFinding.certificate?.proofExplanation || 'Verified Tarjan SCC Cycle' }
-    ] : activeFinding.kind === 'empty_accessible_name' ? [
-      { id: '3', type: 'silent_gap' as const, text: `UNLABELED CONTROL: Element <button> at ${activeFinding.evidence?.selector || 'target'} has 0 accessible name in CDP accessibility tree. Assistive technology speaks only "Button" without purpose.`, tag: 'EMPTY_NAME', timestamp: '2.1s', category: 'inline_error' as const }
-    ] : [
-      { id: '3', type: 'silent_gap' as const, text: `ANNOUNCEMENT GAP: Visual DOM update occurred but 0 aria-live events were dispatched to assistive speech synthesizers.`, tag: 'SILENT_UPDATE', timestamp: '2.1s', category: 'toast' as const }
-    ]),
-    { id: '4', type: 'speech', text: 'End of active focus sequence.', tag: 'END', timestamp: '3.0s' }
-  ] : [];
-
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-6 text-[#f4f5f6]">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-3xl bg-[#121215]/90 border border-white/[0.08] shadow-2xl">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-[#141517] border border-[#23262a] shadow-xl">
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-[#ff9f0a]" />
-            <h2 className="text-xl font-bold text-white tracking-tight">
-              Issues Intelligence & Causal Evidence
+            <AlertTriangle className="w-4 h-4 text-[#f76808]" />
+            <h2 className="text-xl font-bold tracking-tight text-[#f4f5f6]">
+              Evidence & Mathematical Proofs
             </h2>
           </div>
-          <p className="text-xs text-[#86868b] mt-0.5">
-            Calibrated findings classified by mathematical certainty. Zero false accusations.
+          <p className="text-xs text-[#9ba1a6]">
+            Every barrier classified by mathematical certainty tier. Zero false accusations.
           </p>
         </div>
 
         {/* Trust Tier Filter Segmented Control */}
-        <div className="flex items-center bg-white/[0.04] p-1 rounded-full border border-white/[0.06]">
+        <div className="flex items-center bg-[#0c0d0e] p-1 rounded-lg border border-[#23262a]">
           {(['all', 'proven', 'observed', 'suspected'] as const).map((tier) => (
             <button
               key={tier}
               type="button"
               onClick={() => setFilterTier(tier)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-all ${
+              className={`px-3 py-1 rounded-md text-xs font-medium capitalize transition-all ${
                 filterTier === tier
-                  ? 'bg-[#0071e3] text-white shadow-md'
-                  : 'text-[#86868b] hover:text-white'
+                  ? 'bg-[#1f2226] text-[#f4f5f6] shadow-sm border border-[#34383e]'
+                  : 'text-[#9ba1a6] hover:text-[#f4f5f6] border border-transparent'
               }`}
             >
               {tier}
@@ -109,32 +92,33 @@ export function IssuesMasterDetailView({
 
       {/* Master-Detail Split Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
         {/* Left 5 Cols: Master Findings List */}
         <div className="lg:col-span-5 space-y-3">
-          <div className="flex items-center justify-between text-xs text-[#86868b] px-2">
+          <div className="flex items-center justify-between text-xs text-[#9ba1a6] px-1 font-mono">
             <span>Discovered Barriers ({filteredFindings.length})</span>
             {filteredFindings.length === 0 && (
               <button
                 type="button"
                 onClick={onLoadBenchmarkFindings}
-                className="text-[#0071e3] hover:underline"
+                className="text-[#0090ff] hover:underline"
               >
                 Load Benchmark Set
               </button>
             )}
           </div>
 
-          <div className="space-y-2 max-h-[720px] overflow-y-auto pr-1">
+          <div className="space-y-2 max-h-[700px] overflow-y-auto pr-1">
             {filteredFindings.length === 0 ? (
-              <div className="p-8 rounded-3xl bg-white/[0.02] border border-white/[0.06] text-center space-y-3">
-                <ShieldCheck className="w-8 h-8 text-[#30d158] mx-auto opacity-70" />
-                <p className="text-xs text-[#86868b]">No findings matching current filter tier.</p>
+              <div className="p-8 rounded-2xl bg-[#141517] border border-[#23262a] text-center space-y-3">
+                <ShieldCheck className="w-8 h-8 text-[#30a46c] mx-auto opacity-70" />
+                <p className="text-xs text-[#9ba1a6]">No findings matching current filter tier.</p>
                 <button
                   type="button"
                   onClick={onLoadBenchmarkFindings}
-                  className="px-4 py-2 rounded-full bg-[#0071e3] text-white text-xs font-semibold hover:bg-[#0077ed] transition-all"
+                  className="px-4 py-2 rounded-lg bg-[#f4f5f6] text-[#0c0d0e] text-xs font-semibold hover:bg-white transition-all"
                 >
-                  Load Benchmark Sample Barriers
+                  Load Benchmark Sample Proofs
                 </button>
               </div>
             ) : (
@@ -147,27 +131,27 @@ export function IssuesMasterDetailView({
                     key={finding.id}
                     type="button"
                     onClick={() => onSelectFinding(finding)}
-                    className={`w-full text-left p-4 rounded-2xl border transition-all space-y-2.5 relative group ${
+                    className={`w-full text-left p-4 rounded-xl border transition-all space-y-2 relative ${
                       isSelected
-                        ? 'bg-[#1c1c20] border-[#0071e3] shadow-[0_4px_20px_rgba(0,113,227,0.15)]'
-                        : 'bg-[#121215]/80 border-white/[0.06] hover:bg-[#18181c] hover:border-white/[0.12]'
+                        ? 'bg-[#1f2226] border-[#0090ff] shadow-md'
+                        : 'bg-[#141517] border-[#23262a] hover:bg-[#181a1d] hover:border-[#34383e]'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         {/* Trust Tier Badge */}
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold uppercase tracking-wider ${
                           finding.trustTier === 'proven' 
-                            ? 'bg-[#30d158]/15 text-[#30d158] border border-[#30d158]/30'
+                            ? 'bg-[#30a46c]/15 text-[#30a46c] border border-[#30a46c]/30'
                             : finding.trustTier === 'observed'
-                            ? 'bg-[#ff9f0a]/15 text-[#ff9f0a] border border-[#ff9f0a]/30'
-                            : 'bg-white/10 text-[#86868b] border border-white/10'
+                            ? 'bg-[#0090ff]/15 text-[#0090ff] border border-[#0090ff]/30'
+                            : 'bg-[#f76808]/15 text-[#f76808] border border-[#f76808]/30'
                         }`}>
                           {finding.trustTier}
                         </span>
 
                         {isVerified && (
-                          <span className="flex items-center gap-1 text-[10px] font-mono text-[#30d158] bg-[#30d158]/10 px-2 py-0.5 rounded-full border border-[#30d158]/20">
+                          <span className="flex items-center gap-1 text-[10px] font-mono text-[#30a46c] bg-[#30a46c]/10 px-2 py-0.5 rounded border border-[#30a46c]/20">
                             <ShieldCheck className="w-3 h-3" />
                             Verified
                           </span>
@@ -175,22 +159,22 @@ export function IssuesMasterDetailView({
                       </div>
 
                       {/* Severity Score Pill */}
-                      <span className="font-mono text-xs font-bold text-red-400">
+                      <span className="font-mono text-xs font-bold text-[#e5484d]">
                         {finding.severityScore ? finding.severityScore.toFixed(1) : '8.5'}
                       </span>
                     </div>
 
-                    <h4 className="text-xs font-bold text-white group-hover:text-[#0071e3] transition-colors line-clamp-1">
+                    <h4 className="text-xs font-bold text-[#f4f5f6] line-clamp-1">
                       {finding.title || finding.kind.replace(/_/g, ' ')}
                     </h4>
 
-                    <p className="text-[11px] text-[#86868b] line-clamp-2 leading-relaxed">
+                    <p className="text-[12px] text-[#9ba1a6] line-clamp-2 leading-relaxed">
                       {finding.summary}
                     </p>
 
-                    <div className="flex items-center justify-between pt-1 text-[10px] text-[#86868b] border-t border-white/[0.04]">
+                    <div className="flex items-center justify-between pt-1 text-[11px] text-[#6b7280] border-t border-[#23262a]">
                       <span className="font-mono">{finding.wcagRules?.[0] || 'WCAG 2.2'}</span>
-                      <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isSelected ? 'text-[#0071e3] translate-x-0.5' : 'text-[#86868b]'}`} />
+                      <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isSelected ? 'text-[#0090ff] translate-x-0.5' : 'text-[#6b7280]'}`} />
                     </div>
                   </button>
                 );
@@ -199,23 +183,24 @@ export function IssuesMasterDetailView({
           </div>
         </div>
 
-        {/* Right 7 Cols: iPadOS Frosted Deep-Inspection Split-Sheet */}
+        {/* Right 7 Cols: Deep-Inspection Split-Sheet */}
         <div className="lg:col-span-7 space-y-4">
           {activeFinding ? (
-            <div className="rounded-3xl bg-[#121215]/95 border border-white/[0.08] p-6 shadow-2xl space-y-6">
+            <div className="rounded-2xl bg-[#141517] border border-[#23262a] p-6 shadow-xl space-y-6">
+              
               {/* Active Finding Banner */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/[0.06]">
-                <div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#23262a]">
+                <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#86868b]">
-                      Deep Inspection Tray
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#6b7280]">
+                      Deep Proof Inspector
                     </span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#0071e3]" />
-                    <span className="text-[11px] font-mono text-[#0071e3]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#0090ff]" />
+                    <span className="text-[11px] font-mono text-[#0090ff]">
                       {activeFinding.kind}
                     </span>
                   </div>
-                  <h3 className="text-base font-bold text-white mt-1">
+                  <h3 className="text-base font-bold text-[#f4f5f6]">
                     {activeFinding.title || activeFinding.kind}
                   </h3>
                 </div>
@@ -225,20 +210,20 @@ export function IssuesMasterDetailView({
                   type="button"
                   disabled={verifyingFindingId === activeFinding.id}
                   onClick={() => onVerifyRepair(activeFinding)}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#30d158] hover:bg-[#28c840] text-black text-xs font-bold transition-all shadow-md self-start sm:self-auto"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#30a46c] hover:bg-[#2b9a66] text-[#0c0d0e] text-xs font-bold transition-all shadow-md self-start sm:self-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0090ff]"
                 >
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>{verifyingFindingId === activeFinding.id ? 'Verifying...' : 'Verify Fix Replay'}</span>
+                  <span>{verifyingFindingId === activeFinding.id ? 'Replaying...' : 'Verify Fix in Sandbox'}</span>
                 </button>
               </div>
 
-              {/* Cupertino Segmented Tabs for Diagnostics */}
-              <div className="flex items-center bg-white/[0.04] p-1 rounded-2xl border border-white/[0.06] overflow-x-auto">
+              {/* Segmented Diagnostic Tabs */}
+              <div className="flex items-center bg-[#0c0d0e] p-1 rounded-lg border border-[#23262a] overflow-x-auto">
                 {[
-                  { id: 'focus-map', label: 'Focus Map', icon: Terminal },
-                  { id: 'speech', label: 'VoiceOver Audio', icon: Volume2 },
+                  { id: 'focus-map', label: 'Tarjan Proof', icon: Terminal },
+                  { id: 'speech', label: 'Audio VoiceOver', icon: Volume2 },
                   { id: 'genome', label: 'Barrier Genome', icon: Dna },
-                  { id: 'causal-diff', label: 'Causal Diff', icon: GitBranch },
+                  { id: 'causal-diff', label: 'AST Patch Diff', icon: GitBranch },
                 ].map((tab) => {
                   const Icon = tab.icon;
                   const isActive = inspectionTab === tab.id;
@@ -247,10 +232,10 @@ export function IssuesMasterDetailView({
                       key={tab.id}
                       type="button"
                       onClick={() => setInspectionTab(tab.id as any)}
-                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                         isActive
-                          ? 'bg-[#0071e3] text-white shadow-md'
-                          : 'text-[#86868b] hover:text-white hover:bg-white/[0.04]'
+                          ? 'bg-[#1f2226] text-[#f4f5f6] border border-[#34383e]'
+                          : 'text-[#9ba1a6] hover:text-[#f4f5f6] border border-transparent'
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5" />
@@ -260,8 +245,8 @@ export function IssuesMasterDetailView({
                 })}
               </div>
 
-              {/* Tab Contents */}
-              <div className="min-h-[440px]">
+              {/* Inspection Views */}
+              <div className="pt-2">
                 {inspectionTab === 'focus-map' && (
                   <FocusMapView
                     kendallTau={auditResult?.kendallTau}
@@ -271,9 +256,7 @@ export function IssuesMasterDetailView({
                 )}
 
                 {inspectionTab === 'speech' && (
-                  <ScreenReaderTranscript
-                    items={speechItems}
-                  />
+                  <ScreenReaderTranscript />
                 )}
 
                 {inspectionTab === 'genome' && (
@@ -285,21 +268,21 @@ export function IssuesMasterDetailView({
                     finding={activeFinding}
                     allFindings={findings}
                     onSelectFinding={onSelectFinding}
-                    targetUrl={auditResult?.targetUrl || '/benchmark'}
-                    onFixVerified={(id, res) => {
-                      // Handled via parent
-                    }}
+                    onFixVerified={(id, res) => onVerifyRepair(activeFinding)}
                   />
                 )}
               </div>
+
             </div>
           ) : (
-            <div className="h-[500px] rounded-3xl bg-[#121215]/50 border border-white/[0.06] flex flex-col items-center justify-center p-8 text-center text-[#86868b] space-y-2">
-              <Layers className="w-8 h-8 opacity-40 animate-pulse" />
-              <p className="text-xs">Select any finding from the left panel to inspect its causal proof.</p>
+            <div className="h-[400px] rounded-2xl bg-[#141517] border border-[#23262a] flex flex-col items-center justify-center text-center p-6 space-y-2 text-[#6b7280]">
+              <AlertTriangle className="w-8 h-8 opacity-40" />
+              <p className="text-xs text-[#9ba1a6]">No barrier selected for inspection.</p>
+              <p className="text-[11px] text-[#6b7280]">Select a finding on the left to inspect its mathematical proof.</p>
             </div>
           )}
         </div>
+
       </div>
     </div>
   );

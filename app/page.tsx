@@ -93,36 +93,26 @@ const BENCHMARK_SAMPLE_FINDINGS: BarrierFinding[] = [
 ];
 
 export default function Home() {
-  const [activeScreen, setActiveScreen] = useState<ScreenId>('audits');
+  const [activeScreen, setActiveScreen] = useState<ScreenId>('story');
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-  // Authenticated User Session (Starts as active developer workspace)
-  const [userSession, setUserSession] = useState<UserSession | null>({
-    id: 'auditor_local',
-    name: 'Accessibility Auditor',
-    email: 'auditor@barrierlens.local',
-    authMethod: 'sandbox_developer',
-    organization: 'Developer Workspace',
-    role: 'Lead Auditor',
-    awsRegion: 'us-east-1',
-    bedrockQuota: 'Active',
-    verifiedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  });
+  // Authenticated User Session (Defaults to guest in public mode)
+  const [userSession, setUserSession] = useState<UserSession | null>(null);
 
   // Audit Parameters
   const [targetUrl, setTargetUrl] = useState('/benchmark');
-  const [goal, setGoal] = useState('Subscribe to newsletter and test confirmation modal');
+  const [goal, setGoal] = useState('Navigate page and verify interactive keyboard focus paths');
   const [persona, setPersona] = useState<PersonaType>('keyboard');
   const [maxSteps, setMaxSteps] = useState(12);
   const [isAuditing, setIsAuditing] = useState(false);
   const [streamingStatus, setStreamingStatus] = useState<string>('');
   const [streamingStep, setStreamingStep] = useState<number>(0);
 
-  // Active Run & Findings State Machine
+  // Active Run & Findings State Machine (Clean state: no fabricated initial findings)
   const [auditResult, setAuditResult] = useState<AuditRun | null>(null);
-  const [historicalFindings, setHistoricalFindings] = useState<BarrierFinding[]>(BENCHMARK_SAMPLE_FINDINGS);
-  const [selectedFinding, setSelectedFinding] = useState<BarrierFinding | null>(BENCHMARK_SAMPLE_FINDINGS[0]);
+  const [historicalFindings, setHistoricalFindings] = useState<BarrierFinding[]>([]);
+  const [selectedFinding, setSelectedFinding] = useState<BarrierFinding | null>(null);
   const [verifyingFindingId, setVerifyingFindingId] = useState<string | null>(null);
   const [verifiedFixes, setVerifiedFixes] = useState<Record<string, VerifiedFixResult>>({});
 
@@ -139,6 +129,25 @@ export default function Home() {
 
   // Initial Data & Session Load
   useEffect(() => {
+    // 0. Check real session from BetterAuth
+    authClient.getSession()
+      .then(({ data }) => {
+        if (data?.user) {
+          setUserSession({
+            id: data.user.id,
+            name: data.user.name || 'Auditor',
+            email: data.user.email,
+            authMethod: 'apple_passkey',
+            organization: 'Pro Workspace',
+            role: 'Lead Auditor',
+            awsRegion: 'us-east-1',
+            bedrockQuota: 'Active',
+            verifiedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          });
+        }
+      })
+      .catch(() => {});
+
     // 1. Check Service Health
     fetch('/api/backend/health')
       .then(res => res.json())
@@ -242,6 +251,8 @@ export default function Home() {
     };
 
     setAuditResult(mockRun);
+    setHistoricalFindings(BENCHMARK_SAMPLE_FINDINGS);
+    setSelectedFinding(BENCHMARK_SAMPLE_FINDINGS[0]);
     setRunsHistory(prev => [mockRun, ...prev]);
   };
 
@@ -294,6 +305,8 @@ export default function Home() {
             } else if (data.type === 'finding') {
               const f = data.finding || data;
               accumulatedFindings.push(f);
+            } else if (data.type === 'error' || data.error) {
+              setStreamingStatus(`Error: ${data.error || 'Execution encountered an issue'}`);
             } else if (data.type === 'complete') {
               const run = data.auditRun || data;
               setAuditResult(run);
@@ -373,8 +386,8 @@ export default function Home() {
   const currentFindings = auditResult?.findings?.length ? auditResult.findings : historicalFindings;
 
   return (
-    <div className="min-h-screen bg-[#050507] text-[#f5f5f7] flex flex-col font-sans selection:bg-[#0071e3] selection:text-white antialiased">
-      {/* 1. Cupertino Top Bar Navigation */}
+    <div className="min-h-screen bg-[#0c0d0e] text-[#f4f5f6] flex flex-col font-sans selection:bg-[#0090ff]/30 selection:text-[#f4f5f6] antialiased">
+      {/* 1. Linear Navigation Bar */}
       <Navbar
         activeScreen={activeScreen}
         setActiveScreen={setActiveScreen}
@@ -544,18 +557,18 @@ export default function Home() {
         )}
       </main>
 
-      {/* Slim Cupertino Footer */}
-      <footer className="border-t border-white/[0.06] py-6 px-6 text-xs text-[#86868b] bg-[#050507]">
+      {/* Clean Linear Footer */}
+      <footer className="border-t border-[#23262a] py-6 px-6 text-xs text-[#9ba1a6] bg-[#0c0d0e]">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#30d158]" />
-            <span className="font-semibold text-white">BarrierLens Enterprise</span>
-            <span className="text-[#86868b]">| True Multi-Super-Agent Accessibility Auditor</span>
+            <span className="w-2 h-2 rounded-full bg-[#30a46c]" />
+            <span className="font-semibold text-[#f4f5f6]">BarrierLens</span>
+            <span className="text-[#6b7280]">· Task-Conditioned Autonomous Accessibility</span>
           </div>
-          <div className="flex items-center gap-4 font-mono text-[11px] text-[#86868b]">
-            <span>AWS Bedrock Strands Active</span>
-            <span>Neon pgvector</span>
-            <span>WCAG 2.2 AAA</span>
+          <div className="flex items-center gap-4 font-mono text-[11px] text-[#6b7280]">
+            <span>Playwright CDP</span>
+            <span>Neon Postgres</span>
+            <span>WCAG 2.2 Level AAA</span>
           </div>
         </div>
       </footer>

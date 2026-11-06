@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import Lenis from 'lenis';
 import { 
   Zap, 
@@ -11,11 +10,6 @@ import {
   Volume2, 
   VolumeX,
   Terminal, 
-  GitBranch, 
-  Cpu, 
-  Layers, 
-  Sparkles, 
-  Play, 
   RotateCcw,
   CheckCircle2, 
   AlertTriangle,
@@ -23,9 +17,10 @@ import {
   Sliders,
   Code2,
   FileDiff,
-  Eye,
-  Lock,
-  ExternalLink
+  ExternalLink,
+  ChevronRight,
+  Layers,
+  Sparkles
 } from 'lucide-react';
 
 interface LandingStoryProps {
@@ -37,7 +32,7 @@ export function LandingStory({ onEnterStudio, onOpenAuth }: LandingStoryProps) {
   // Lenis smooth scroll
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: 1.0,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
     });
@@ -53,8 +48,12 @@ export function LandingStory({ onEnterStudio, onOpenAuth }: LandingStoryProps) {
     };
   }, []);
 
+  // Quick Trial Input State
+  const [trialUrl, setTrialUrl] = useState<string>('/benchmark');
+  const [trialPersona, setTrialPersona] = useState<'keyboard' | 'screen_reader'>('keyboard');
+
   // Metamorphic Effort Ratio Slider state
-  const [effortMultiplier, setEffortMultiplier] = useState<number>(4.8);
+  const [effortMultiplier, setEffortMultiplier] = useState<number>(4.2);
   const baselineClicks = 1;
   const keyboardSteps = Math.round(baselineClicks * effortMultiplier * 11);
   const fatigueIndex = Math.min(100, Math.round(effortMultiplier * 18.5));
@@ -75,7 +74,7 @@ export function LandingStory({ onEnterStudio, onOpenAuth }: LandingStoryProps) {
         setActiveNode(5);
         setTarjanCycleFound(false);
       } else {
-        setActiveNode(3); // The infinite loop cycle!
+        setActiveNode(3); // Closed sink loop!
         setTarjanCycleFound(true);
       }
     } else if (activeNode === 5) {
@@ -94,7 +93,7 @@ export function LandingStory({ onEnterStudio, onOpenAuth }: LandingStoryProps) {
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
   const [audioTranscript, setAudioTranscript] = useState<string>('');
 
-  const speakText = (text: string, onDone?: () => void) => {
+  const speakText = (text: string) => {
     if (typeof window === 'undefined') return;
     if (!('speechSynthesis' in window)) {
       setAudioTranscript(`[Browser Speech API unavailable]: "${text}"`);
@@ -110,7 +109,6 @@ export function LandingStory({ onEnterStudio, onOpenAuth }: LandingStoryProps) {
     };
     utterance.onend = () => {
       setIsPlayingAudio(false);
-      if (onDone) onDone();
     };
     utterance.onerror = () => {
       setIsPlayingAudio(false);
@@ -118,607 +116,332 @@ export function LandingStory({ onEnterStudio, onOpenAuth }: LandingStoryProps) {
     window.speechSynthesis.speak(utterance);
   };
 
-  const playScreenReaderGap = () => {
-    speakText("Cart item added visually. Screen reader announcement: Total silence. No live region triggered. The blind user does not know the cart was updated.");
-  };
-
-  const playScreenReaderFixed = () => {
-    speakText("Alert polite: 1 item added to your shopping bag. Bag subtotal 42 dollars. Press Enter to view bag.");
-  };
-
-  // Causal Counterfactual Sandbox Replay
-  const [isVerifyingSandbox, setIsVerifyingSandbox] = useState<boolean>(false);
-  const [sandboxVerified, setSandboxVerified] = useState<boolean>(false);
-  const [sandboxLogs, setSandboxLogs] = useState<string[]>([]);
-
-  const handleRunSandboxReplay = () => {
-    setIsVerifyingSandbox(true);
-    setSandboxVerified(false);
-    setSandboxLogs(['[Sandbox] Initializing isolated Chromium headless runner on AWS worker...']);
-
-    setTimeout(() => {
-      setSandboxLogs(prev => [...prev, '[DOM Patch] Injecting role="dialog" aria-modal="true" and keydown ESC listener...']);
-    }, 400);
-
-    setTimeout(() => {
-      setSandboxLogs(prev => [...prev, '[Replay] Replaying original 54 recorded keyboard input events...']);
-    }, 800);
-
-    setTimeout(() => {
-      setSandboxLogs(prev => [
-        ...prev, 
-        '[Verification] Tarjan SCC analysis: Cycle eradicated. Focus successfully released to #main-content.',
-        '[Result] Goal completed in 6 steps. 0 regressions detected. Verified SEAL issued.'
-      ]);
-      setIsVerifyingSandbox(false);
-      setSandboxVerified(true);
-      setIsTrapBroken(true);
-    }, 1500);
-  };
-
   return (
-    <div className="space-y-32 pb-24 text-[#f5f5f7]">
-      {/* =========================================================================
-          HERO SECTION (Apple Typographic Grandeur)
-          ========================================================================= */}
-      <section className="relative pt-20 pb-16 flex flex-col items-center text-center max-w-4xl mx-auto px-4">
-        {/* Subtle Ambient Radial Glow */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[680px] h-[380px] bg-gradient-to-tr from-[#0071e3]/20 via-purple-600/10 to-transparent rounded-full blur-[140px] pointer-events-none" />
-
-        {/* Pill Badge */}
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/10 backdrop-blur-xl mb-8 shadow-sm"
-        >
-          <span className="w-2 h-2 rounded-full bg-[#0071e3] animate-pulse" />
-          <span className="text-xs font-medium text-[#f5f5f7]">BarrierLens 2.0</span>
-          <span className="text-[11px] text-[#86868b]">• Powered by AWS Bedrock & Strands Agents</span>
-        </motion.div>
-
-        {/* Main Title */}
-        <motion.h1 
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-          className="text-5xl sm:text-7xl font-extrabold tracking-[-0.035em] text-[#f5f5f7] leading-[1.06] mb-8"
-        >
-          The web was made <br />
-          <span className="bg-gradient-to-r from-[#0071e3] via-[#42a5f5] to-[#c084fc] bg-clip-text text-transparent">
-            for every human.
-          </span>
-        </motion.h1>
-
-        {/* Subtitle */}
-        <motion.p 
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-          className="text-lg sm:text-xl text-[#86868b] max-w-2xl font-normal leading-relaxed mb-12"
-        >
-          Accessibility is not a static checklist. It is a human journey. BarrierLens combines deterministic focus-graph proofs, simulated screen-reader acoustics, and an autonomous multi-agent swarm to prove and repair barriers before code ships.
-        </motion.p>
-
-        {/* Hero Actions */}
-        <motion.div 
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-          className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
-        >
-          <button
-            onClick={onEnterStudio}
-            className="w-full sm:w-auto px-8 py-4 rounded-full bg-[#0071e3] hover:bg-[#0077ed] active:scale-[0.98] text-white text-sm font-semibold flex items-center justify-center gap-2.5 shadow-xl shadow-blue-500/25 transition-all duration-200"
-          >
-            <span>Launch Studio Console</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-
-          <button
-            onClick={onOpenAuth}
-            className="w-full sm:w-auto px-7 py-4 rounded-full bg-white/[0.06] hover:bg-white/[0.12] active:scale-[0.98] border border-white/10 backdrop-blur-md text-[#f5f5f7] text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200"
-          >
-            <Key className="w-4 h-4 text-[#0a84ff]" />
-            <span>Sign in with Apple Passkey</span>
-          </button>
-        </motion.div>
-
-        {/* Quick Tech Badges */}
-        <div className="mt-16 pt-8 border-t border-white/[0.08] w-full grid grid-cols-2 sm:grid-cols-4 gap-6 text-left">
-          <div className="space-y-1">
-            <p className="text-3xl font-bold tracking-tight text-[#f5f5f7] tabular-nums">1.3B+</p>
-            <p className="text-xs text-[#86868b]">People worldwide locked out by behavioral web barriers</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-3xl font-bold tracking-tight text-[#0a84ff] tabular-nums">0%</p>
-            <p className="text-xs text-[#86868b]">False positives via Tarjan SCC mathematical certificates</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-3xl font-bold tracking-tight text-emerald-400 tabular-nums">100%</p>
-            <p className="text-xs text-[#86868b]">Verified repairs tested via counterfactual replay</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-3xl font-bold tracking-tight text-purple-400 tabular-nums">AWS Bedrock</p>
-            <p className="text-xs text-[#86868b]">Claude 3.5 Sonnet & Strands multi-agent swarm</p>
-          </div>
-        </div>
-      </section>
-
-      {/* =========================================================================
-          CHAPTER 1: THE METAMORPHIC EFFORT GAP
-          ========================================================================= */}
-      <section className="max-w-5xl mx-auto px-4 space-y-10">
-        <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#0a84ff]">Chapter 01 • Metamorphic Disparity</span>
-          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#f5f5f7]">
-            One Goal. Two Worlds.
-          </h2>
-          <p className="text-sm text-[#86868b]">
-            Static scanners check tags. BarrierLens measures the physical input disparity required between an unconstrained mouse user and an assistive keyboard user.
-          </p>
+    <div className="min-h-screen text-[#f4f5f6] space-y-24 py-8">
+      
+      {/* 1. Hero Section (Linear Style: Typography-first, no fluffy gradients) */}
+      <section className="max-w-4xl mx-auto px-4 text-center space-y-6 pt-10">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#181a1d] border border-[#26292d] text-xs font-mono text-[#9ba1a6]">
+          <span className="w-2 h-2 rounded-full bg-[#30a46c]" />
+          <span>v2.0 Task-Conditioned Autonomous Accessibility</span>
         </div>
 
-        {/* Interactive Slider Controller */}
-        <div className="apple-card p-6 rounded-3xl border border-white/8 space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/8">
-            <div className="flex items-center gap-2">
-              <Sliders className="w-4 h-4 text-[#0071e3]" />
-              <span className="text-xs font-medium text-[#f5f5f7]">Simulate Journey Friction Multiplier:</span>
-              <span className="text-xs font-mono font-bold text-[#0a84ff] px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
-                {effortMultiplier.toFixed(1)}x
-              </span>
-            </div>
-            <div className="text-xs text-[#86868b]">
-              Drag to observe cognitive fatigue and stroke compounding
-            </div>
-          </div>
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#f4f5f6] leading-[1.12]">
+          Accessibility audits without <br />
+          <span className="text-[#9ba1a6]">the false positives.</span>
+        </h1>
 
-          <input 
-            type="range"
-            min="1.0"
-            max="8.0"
-            step="0.2"
-            value={effortMultiplier}
-            onChange={(e) => setEffortMultiplier(parseFloat(e.target.value))}
-            className="w-full accent-[#0071e3] cursor-pointer"
-          />
+        <p className="text-base sm:text-lg text-[#9ba1a6] max-w-2xl mx-auto leading-relaxed">
+          Static scanners only check static HTML tags. BarrierLens executes real multi-step user journeys under physical keyboard and assistive constraints to mathematically prove what locks disabled users out.
+        </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-            {/* Mouse Column */}
-            <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/6 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  Mouse User
-                </span>
-                <span className="text-xs font-mono text-[#86868b]">Effort: 1.0x Baseline</span>
+        {/* Instant Auditor Bar (Center Stage) */}
+        <div className="pt-4 max-w-2xl mx-auto">
+          <div className="p-2 rounded-xl bg-[#141517] border border-[#2d3137] shadow-xl space-y-3">
+            <div className="flex flex-col sm:flex-row items-center gap-2">
+              <div className="flex-1 w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0c0d0e] border border-[#23262a]">
+                <Compass className="w-4 h-4 text-[#6b7280] shrink-0" />
+                <input
+                  type="text"
+                  value={trialUrl}
+                  onChange={(e) => setTrialUrl(e.target.value)}
+                  placeholder="https://your-domain.com or /benchmark"
+                  className="w-full bg-transparent text-sm text-[#f4f5f6] placeholder-[#6b7280] focus:outline-none font-mono"
+                />
               </div>
-              <h4 className="text-lg font-semibold text-[#f5f5f7]">1 Single Click • 1.2 Seconds</h4>
-              <p className="text-xs text-[#86868b]">
-                Cursor glides directly to the target element. No intermediate traversal required.
-              </p>
-              <div className="p-3 rounded-xl bg-black/40 font-mono text-[11px] text-[#86868b]">
-                Action: PointerClick(x: 840, y: 420)
-              </div>
-            </div>
 
-            {/* Keyboard Column */}
-            <div className="p-5 rounded-2xl bg-red-950/[0.06] border border-red-500/20 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
-                  Keyboard / Assistive
-                </span>
-                <span className="text-xs font-mono text-red-400 font-semibold">
-                  Fatigue Score: {fatigueIndex}% ({effortMultiplier > 3.5 ? 'Severe Barrier' : 'Moderate Friction'})
-                </span>
-              </div>
-              <h4 className="text-lg font-semibold text-[#f5f5f7]">{keyboardSteps} Sequential Keystrokes</h4>
-              <p className="text-xs text-[#86868b]">
-                User must press Tab through header menus, promotional banners, and invisible focus stops.
-              </p>
-              <div className="p-3 rounded-xl bg-red-950/40 border border-red-500/20 font-mono text-[11px] text-red-300">
-                Sequence: [Tab × {keyboardSteps}] → [Enter] (Disparity: {effortMultiplier.toFixed(1)}x)
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* =========================================================================
-          CHAPTER 2: DETERMINISTIC PROOF (Tarjan's SCC Focus Traps)
-          ========================================================================= */}
-      <section className="max-w-5xl mx-auto px-4 space-y-10">
-        <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#0a84ff]">Chapter 02 • Mathematical Certainty</span>
-          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#f5f5f7]">
-            Never Guess a Focus Trap Again.
-          </h2>
-          <p className="text-sm text-[#86868b]">
-            We model every focusable element as a directed graph node. Using Tarjan's Strongly Connected Components algorithm, we detect keyboard traps with mathematical certainty.
-          </p>
-        </div>
-
-        {/* Interactive Focus Graph Simulator */}
-        <div className="apple-card p-8 rounded-3xl border border-white/8 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-base font-semibold text-[#f5f5f7] flex items-center gap-2">
-                <GitBranch className="w-4 h-4 text-[#0071e3]" />
-                Interactive Directed Focus Graph
-              </h3>
-              <p className="text-xs text-[#86868b]">Step through the focus path with Tab to observe cycle trapping.</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleStepFocus}
-                className="px-4 py-2 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md shadow-blue-500/20"
-              >
-                <span>Press [Tab]</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={handleResetFocusGraph}
-                className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-[#86868b] hover:text-[#f5f5f7] border border-white/10 transition-all"
-                title="Reset Graph"
-              >
-                <RotateCcw className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Node Visualization Bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
-            {[
-              { id: 1, name: 'Search Input', selector: '#nav-search', type: 'Normal' },
-              { id: 2, name: 'Modal Trigger', selector: '#open-promo', type: 'Trigger' },
-              { id: 3, name: 'Modal Email', selector: '#promo-email', type: 'Modal Node A' },
-              { id: 4, name: 'Modal Close', selector: '#promo-close', type: 'Modal Node B' },
-              { id: 5, name: 'Main Checkout', selector: '#checkout-btn', type: 'Target' },
-            ].map((node) => {
-              const isCurrent = activeNode === node.id;
-              const isTrappedInCycle = (node.id === 3 || node.id === 4) && tarjanCycleFound;
-
-              return (
-                <div
-                  key={node.id}
-                  className={`p-4 rounded-2xl border transition-all duration-300 ${
-                    isCurrent
-                      ? isTrappedInCycle 
-                        ? 'bg-red-500/20 border-red-500 text-red-200 ring-2 ring-red-500/50' 
-                        : 'bg-[#0071e3]/20 border-[#0071e3] text-blue-200 ring-2 ring-[#0071e3]/50'
-                      : 'bg-white/[0.02] border-white/6 text-[#86868b]'
+              {/* Persona Selector */}
+              <div className="flex items-center bg-[#0c0d0e] p-1 rounded-lg border border-[#23262a] w-full sm:w-auto shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setTrialPersona('keyboard')}
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                    trialPersona === 'keyboard' 
+                      ? 'bg-[#1f2226] text-[#f4f5f6] shadow-sm' 
+                      : 'text-[#9ba1a6] hover:text-[#f4f5f6]'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/5 border border-white/10">
-                      Node {node.id}
-                    </span>
-                    {isCurrent && (
-                      <span className="text-[10px] font-semibold text-[#0a84ff] animate-pulse">● FOCUS</span>
-                    )}
-                  </div>
-                  <h5 className="text-xs font-semibold text-[#f5f5f7]">{node.name}</h5>
-                  <p className="text-[10px] font-mono text-[#86868b] truncate">{node.selector}</p>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Tarjan Proof Banner */}
-          <AnimatePresence>
-            {tarjanCycleFound && !isTrapBroken && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="p-4 rounded-2xl bg-red-950/40 border border-red-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-              >
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <h4 className="text-xs font-semibold text-red-300">
-                      Tarjan SCC Cycle Certified: Sink SCC Detected in Component {`{Node 3, Node 4}`}
-                    </h4>
-                    <p className="text-[11px] text-red-400/80">
-                      Out-degree is 0 to external DOM. Keyboard user cannot escape this dialog without a mouse or pointer device.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setIsTrapBroken(true)}
-                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold shrink-0 transition-all shadow-md shadow-emerald-500/20"
-                >
-                  Apply Escape Key Fix
+                  Keyboard
                 </button>
-              </motion.div>
-            )}
+                <button
+                  type="button"
+                  onClick={() => setTrialPersona('screen_reader')}
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                    trialPersona === 'screen_reader' 
+                      ? 'bg-[#1f2226] text-[#f4f5f6] shadow-sm' 
+                      : 'text-[#9ba1a6] hover:text-[#f4f5f6]'
+                  }`}
+                >
+                  Screen Reader
+                </button>
+              </div>
 
-            {isTrapBroken && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 flex items-center gap-3"
+              <button
+                type="button"
+                onClick={onEnterStudio}
+                className="w-full sm:w-auto px-5 py-2 rounded-lg bg-[#f4f5f6] hover:bg-white text-[#0c0d0e] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0090ff]"
               >
-                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                <div className="text-xs text-emerald-300">
-                  Escape Handler Added. Focus now escapes to <code className="font-mono text-emerald-200">#checkout-btn (Node 5)</code>. Trap resolved!
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                <span>Audit Target</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Quick Presets */}
+            <div className="flex flex-wrap items-center justify-between text-xs px-2 text-[#9ba1a6]">
+              <span className="text-[11px] text-[#6b7280]">Verified Ground Truth Presets:</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setTrialUrl('/benchmark')}
+                  className="hover:text-[#f4f5f6] underline underline-offset-4 font-mono text-[11px]"
+                >
+                  Modal Trap Benchmark
+                </button>
+                <span>·</span>
+                <button
+                  type="button"
+                  onClick={() => setTrialUrl('/fixtures/keyboard-trap')}
+                  className="hover:text-[#f4f5f6] underline underline-offset-4 font-mono text-[11px]"
+                >
+                  Focus Loss Fixture
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* =========================================================================
-          CHAPTER 3: ACOUSTIC AUDITING (Web Speech API)
-          ========================================================================= */}
-      <section className="max-w-5xl mx-auto px-4 space-y-10">
-        <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#0a84ff]">Chapter 03 • Acoustic Reality</span>
-          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#f5f5f7]">
-            Hear What Assistive Users Hear.
+      {/* 2. The 3 Superpowers (Linear Precision Cards) */}
+      <section className="max-w-6xl mx-auto px-4 space-y-12">
+        <div className="text-center space-y-2">
+          <h2 className="text-2xl font-bold text-[#f4f5f6] tracking-tight">
+            The Three Invariants of Real-World Accessibility
           </h2>
-          <p className="text-sm text-[#86868b]">
-            Visual feedback without acoustic announcement is an invisible wall. Experience the announcement gap using real browser speech synthesis.
+          <p className="text-sm text-[#9ba1a6] max-w-xl mx-auto">
+            Traditional scanners return 400 warnings with high false-positive rates. BarrierLens produces evidence developers cannot argue with.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Defective Experience */}
-          <div className="apple-card p-6 rounded-3xl border border-white/8 space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
-                Visual Update Only (Broken)
-              </span>
-              <VolumeX className="w-4 h-4 text-red-400" />
-            </div>
-            <h4 className="text-base font-semibold text-[#f5f5f7]">Visual Banner with No Live Region</h4>
-            <p className="text-xs text-[#86868b]">
-              A toast notification appears on screen saying "Cart updated", but without <code className="text-red-300 font-mono">aria-live="polite"</code>, the screen reader remains completely silent.
-            </p>
-            <button
-              onClick={playScreenReaderGap}
-              disabled={isPlayingAudio}
-              className="w-full py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] active:scale-[0.98] border border-white/10 text-xs font-medium text-[#f5f5f7] flex items-center justify-center gap-2 transition-all"
-            >
-              <Volume2 className="w-3.5 h-3.5 text-red-400" />
-              <span>Simulate Defective VoiceOver Audio</span>
-            </button>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-          {/* Repaired Experience */}
-          <div className="apple-card p-6 rounded-3xl border border-emerald-500/20 bg-emerald-950/[0.04] space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                Harmonized Acoustic Delivery
-              </span>
-              <Volume2 className="w-4 h-4 text-emerald-400" />
-            </div>
-            <h4 className="text-base font-semibold text-[#f5f5f7]">Synthetic aria-live Toast</h4>
-            <p className="text-xs text-[#86868b]">
-              BarrierLens injects polite live announcements so the assistive synthesizer speaks immediately without interrupting focus.
-            </p>
-            <button
-              onClick={playScreenReaderFixed}
-              disabled={isPlayingAudio}
-              className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white text-xs font-medium flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-500/20"
-            >
-              <Volume2 className="w-3.5 h-3.5" />
-              <span>Hear Repaired Announcement</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Audio Speech Subtitle Bar */}
-        {audioTranscript && (
-          <div className="p-4 rounded-2xl bg-black/60 border border-white/10 font-mono text-xs text-[#0a84ff] flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-[#0a84ff] animate-ping shrink-0" />
-            <div className="truncate">
-              <span className="text-[#86868b] mr-2">Synthesizer Stream:</span>
-              "{audioTranscript}"
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* =========================================================================
-          CHAPTER 4: CAUSAL REPAIR & SANDBOX REPLAY
-          ========================================================================= */}
-      <section className="max-w-5xl mx-auto px-4 space-y-10">
-        <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#0a84ff]">Chapter 04 • Verified Proof</span>
-          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#f5f5f7]">
-            Code Fixes That Prove Themselves.
-          </h2>
-          <p className="text-sm text-[#86868b]">
-            Never push AI hallucinations to production. BarrierLens replays the exact failure trace in an isolated Chromium sandbox to guarantee the barrier is broken.
-          </p>
-        </div>
-
-        <div className="apple-card p-6 sm:p-8 rounded-3xl border border-white/8 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Code2 className="w-4 h-4 text-[#0071e3]" />
-              <h3 className="text-sm font-semibold text-[#f5f5f7]">Surgical ARIA Dialog Patch</h3>
-            </div>
-            <button
-              onClick={handleRunSandboxReplay}
-              disabled={isVerifyingSandbox}
-              className="px-5 py-2.5 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs font-semibold flex items-center gap-2 shadow-md shadow-blue-500/20 disabled:opacity-75 transition-all"
-            >
-              {isVerifyingSandbox ? (
-                <>
-                  <div className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                  <span>Replaying in Sandbox...</span>
-                </>
-              ) : (
-                <>
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>Verify Patch in Sandbox</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Side-by-side diff */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-[11px]">
-            {/* Before */}
-            <div className="p-4 rounded-2xl bg-red-950/20 border border-red-500/20 space-y-2">
-              <div className="flex items-center justify-between text-red-400 font-semibold border-b border-red-500/20 pb-2">
-                <span>Before (Focus Trap)</span>
-                <span>Broken</span>
+          {/* Superpower 1: Tarjan SCC Keyboard Trap Proof */}
+          <div className="p-6 rounded-2xl bg-[#141517] border border-[#23262a] flex flex-col justify-between space-y-6">
+            <div className="space-y-3">
+              <div className="w-8 h-8 rounded-lg bg-[#1a1c1e] border border-[#2d3137] flex items-center justify-center text-[#e5484d]">
+                <Terminal className="w-4 h-4" />
               </div>
-              <pre className="text-red-300 whitespace-pre-wrap leading-relaxed">
-{`<div class="promo-modal">
-  <h2>Newsletter Signup</h2>
-  <input id="promo-email" />
-  <button id="promo-close">×</button>
-  <!-- Missing role="dialog" -->
-  <!-- Missing aria-modal="true" -->
-  <!-- No escape key listener -->
-</div>`}
-              </pre>
+              <h3 className="text-base font-semibold text-[#f4f5f6]">
+                1. Tarjan SCC Trap Certificates
+              </h3>
+              <p className="text-xs text-[#9ba1a6] leading-relaxed">
+                Applies Tarjan’s Strongly Connected Components algorithm over real focus transitions. If a user enters a dialog and out-degree equals zero, it produces a mathematical proof of the trap.
+              </p>
             </div>
 
-            {/* After */}
-            <div className="p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/20 space-y-2">
-              <div className="flex items-center justify-between text-emerald-400 font-semibold border-b border-emerald-500/20 pb-2">
-                <span>After (Verified Patch)</span>
-                <span>Verified Seal</span>
-              </div>
-              <pre className="text-emerald-300 whitespace-pre-wrap leading-relaxed">
-{`<div class="promo-modal"
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby="promo-heading"
-  onKeyDown={handleEscapeKey}
->
-  <h2 id="promo-heading">Newsletter</h2>
-  <input id="promo-email" />
-  <button id="promo-close">×</button>
-</div>`}
-              </pre>
-            </div>
-          </div>
-
-          {/* Sandbox Replay Terminal HUD */}
-          {sandboxLogs.length > 0 && (
-            <div className="p-4 rounded-2xl bg-black/70 border border-white/10 font-mono text-[11px] space-y-1.5">
-              <div className="text-[#86868b] flex items-center justify-between pb-2 border-b border-white/8">
-                <span>Chromium Replay Runner: instance-bedrock-sandbox</span>
-                <span className={sandboxVerified ? "text-emerald-400" : "text-[#0a84ff]"}>
-                  {sandboxVerified ? "Differential Proof Passed" : "Replaying..."}
+            {/* Interactive Graph Widget */}
+            <div className="p-4 rounded-xl bg-[#0c0d0e] border border-[#23262a] space-y-3 text-xs">
+              <div className="flex items-center justify-between text-[11px] text-[#6b7280]">
+                <span>State Graph Topology</span>
+                <span className={tarjanCycleFound ? 'text-[#e5484d] font-semibold' : 'text-[#30a46c]'}>
+                  {tarjanCycleFound ? '● SINK CYCLE DETECTED' : '○ UNCONSTRAINED'}
                 </span>
               </div>
-              {sandboxLogs.map((log, idx) => (
-                <div key={idx} className="flex items-start gap-2">
-                  <span className="text-[#0a84ff] select-none">›</span>
-                  <span className={log.includes('SEAL') ? 'text-emerald-300 font-bold' : log.includes('Patch') ? 'text-blue-300' : 'text-[#f5f5f7]'}>
-                    {log}
-                  </span>
+
+              {/* Node Flow */}
+              <div className="flex items-center justify-between gap-1 font-mono text-[11px] py-2">
+                <div className={`px-2 py-1 rounded border ${activeNode === 1 ? 'border-[#0090ff] bg-[#0090ff]/10 text-[#f4f5f6]' : 'border-[#23262a] text-[#6b7280]'}`}>
+                  #nav
                 </div>
-              ))}
+                <span>➔</span>
+                <div className={`px-2 py-1 rounded border ${activeNode === 2 ? 'border-[#0090ff] bg-[#0090ff]/10 text-[#f4f5f6]' : 'border-[#23262a] text-[#6b7280]'}`}>
+                  #open-btn
+                </div>
+                <span>➔</span>
+                <div className={`px-2 py-1 rounded border ${activeNode === 3 ? 'border-[#e5484d] bg-[#e5484d]/10 text-[#e5484d] font-bold' : 'border-[#23262a] text-[#6b7280]'}`}>
+                  #dialog
+                </div>
+                <span className={tarjanCycleFound ? 'text-[#e5484d] font-bold' : ''}>⇄</span>
+                <div className={`px-2 py-1 rounded border ${activeNode === 4 ? 'border-[#e5484d] bg-[#e5484d]/10 text-[#e5484d] font-bold' : 'border-[#23262a] text-[#6b7280]'}`}>
+                  #submit
+                </div>
+              </div>
+
+              {/* Interactive Keystroke Trigger */}
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#23262a]">
+                <button
+                  type="button"
+                  onClick={handleStepFocus}
+                  className="px-3 py-1.5 rounded bg-[#1f2226] hover:bg-[#25282e] text-[#f4f5f6] text-[11px] font-mono border border-[#34383e] transition-all"
+                >
+                  Press [Tab Key] ⇥
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsTrapBroken(true);
+                    setTarjanCycleFound(false);
+                    setActiveNode(5);
+                  }}
+                  className="text-[11px] text-[#30a46c] hover:underline"
+                >
+                  Inject Escape Fix
+                </button>
+              </div>
             </div>
-          )}
+          </div>
+
+          {/* Superpower 2: Announcement-Gap Detector */}
+          <div className="p-6 rounded-2xl bg-[#141517] border border-[#23262a] flex flex-col justify-between space-y-6">
+            <div className="space-y-3">
+              <div className="w-8 h-8 rounded-lg bg-[#1a1c1e] border border-[#2d3137] flex items-center justify-center text-[#f76808]">
+                <Volume2 className="w-4 h-4" />
+              </div>
+              <h3 className="text-base font-semibold text-[#f4f5f6]">
+                2. The Announcement-Gap Detector
+              </h3>
+              <p className="text-xs text-[#9ba1a6] leading-relaxed">
+                Catches silent state changes: intercepting DOM visual changes (error toasts, cart increments) and verifying whether assistive technology was actually notified via <code className="text-[#f4f5f6]">aria-live</code>.
+              </p>
+            </div>
+
+            {/* Interactive Audio Widget */}
+            <div className="p-4 rounded-xl bg-[#0c0d0e] border border-[#23262a] space-y-3 text-xs">
+              <div className="flex items-center justify-between text-[11px] text-[#6b7280]">
+                <span>Visual vs Assistive Reality</span>
+                <span className="text-[#f76808] font-semibold">WCAG 4.1.3 Gap</span>
+              </div>
+
+              <div className="space-y-2">
+                <div className="p-2 rounded bg-[#1f2226] border border-[#34383e] flex items-center justify-between">
+                  <span className="text-[11px] text-[#f4f5f6]">Visual: "Payment Card Expired" banner</span>
+                  <span className="text-[10px] text-[#30a46c] font-mono">VISIBLE</span>
+                </div>
+
+                <div className="p-2 rounded bg-[#181a1d] border border-[#e5484d]/30 text-[#e5484d] font-mono text-[11px]">
+                  Audio: [SILENT - Missing aria-live]
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => speakText("Warning: Payment failed. Form requires expiration date correction.")}
+                className="w-full py-1.5 rounded bg-[#1f2226] hover:bg-[#25282e] text-[#f4f5f6] text-[11px] font-medium border border-[#34383e] flex items-center justify-center gap-1.5 transition-all"
+              >
+                <Volume2 className="w-3.5 h-3.5 text-[#f76808]" />
+                <span>Hear Assistive Stream with Patch</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Superpower 3: Metamorphic Effort Ratio */}
+          <div className="p-6 rounded-2xl bg-[#141517] border border-[#23262a] flex flex-col justify-between space-y-6">
+            <div className="space-y-3">
+              <div className="w-8 h-8 rounded-lg bg-[#1a1c1e] border border-[#2d3137] flex items-center justify-center text-[#0090ff]">
+                <Sliders className="w-4 h-4" />
+              </div>
+              <h3 className="text-base font-semibold text-[#f4f5f6]">
+                3. Metamorphic Effort Ratio
+              </h3>
+              <p className="text-xs text-[#9ba1a6] leading-relaxed">
+                Executes the exact same goal under a mouse persona vs a keyboard/screen-reader persona. Quantifies cognitive and physical friction into one clear metric: <code className="text-[#f4f5f6]">4.2x harder</code>.
+              </p>
+            </div>
+
+            {/* Interactive Slider Widget */}
+            <div className="p-4 rounded-xl bg-[#0c0d0e] border border-[#23262a] space-y-3 text-xs">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-[#6b7280]">Effort Multiplier</span>
+                <span className="font-mono text-base font-bold text-[#0090ff]">
+                  {effortMultiplier.toFixed(1)}x
+                </span>
+              </div>
+
+              <input
+                type="range"
+                min="1.0"
+                max="12.0"
+                step="0.2"
+                value={effortMultiplier}
+                onChange={(e) => setEffortMultiplier(parseFloat(e.target.value))}
+                className="w-full accent-[#0090ff] cursor-pointer"
+              />
+
+              <div className="flex items-center justify-between text-[11px] text-[#9ba1a6] pt-1">
+                <span>Mouse: 1 Click</span>
+                <span>Keyboard: {keyboardSteps} Keystrokes</span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 
-      {/* =========================================================================
-          CHAPTER 5: AWS STRANDS SWARM ARCHITECTURE
-          ========================================================================= */}
-      <section className="max-w-5xl mx-auto px-4 space-y-10">
-        <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <span className="text-xs font-semibold uppercase tracking-wider text-purple-400">Chapter 05 • Distributed Swarm</span>
-          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#f5f5f7]">
-            Orchestrated on AWS Bedrock & Strands
+      {/* 3. Verified Closed-Loop AST Fixes */}
+      <section className="max-w-4xl mx-auto px-4 space-y-8">
+        <div className="text-center space-y-2">
+          <h2 className="text-2xl font-bold text-[#f4f5f6] tracking-tight">
+            Fixes Backed by Sandbox Verification
           </h2>
-          <p className="text-sm text-[#86868b]">
-            Five specialized autonomous agents collaborate in an isolated sandbox, governed by AWS IAM roles and token budget sentinels.
+          <p className="text-sm text-[#9ba1a6] max-w-xl mx-auto">
+            BarrierLens doesn't guess code fixes. It patches the DOM in a sandboxed headless replay, repeats the exact blocked key sequence, and confirms zero regressions.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="apple-card p-5 rounded-2xl border border-white/8 space-y-2.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-[#0a84ff] flex items-center justify-center border border-blue-500/20">
-              <Compass className="w-4 h-4" />
+        {/* Clean Code Diff Component */}
+        <div className="rounded-xl bg-[#141517] border border-[#23262a] overflow-hidden shadow-xl text-xs font-mono">
+          <div className="px-4 py-2.5 bg-[#181a1d] border-b border-[#23262a] flex items-center justify-between">
+            <div className="flex items-center gap-2 text-[#9ba1a6]">
+              <Code2 className="w-4 h-4" />
+              <span>components/ModalDialog.tsx (Surgical AST Patch)</span>
             </div>
-            <h4 className="text-sm font-semibold text-[#f5f5f7]">Milestone Planner</h4>
-            <p className="text-xs text-[#86868b]">
-              Translates complex goals into verifiable post-conditions, pruning search states to prevent loops.
-            </p>
+            <span className="px-2 py-0.5 rounded bg-[#30a46c]/10 text-[#30a46c] border border-[#30a46c]/30 font-semibold text-[10px]">
+              VERIFIED REPLAY: PASS
+            </span>
           </div>
 
-          <div className="apple-card p-5 rounded-2xl border border-white/8 space-y-2.5">
-            <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center border border-orange-500/20">
-              <Terminal className="w-4 h-4" />
+          <div className="p-4 space-y-1 overflow-x-auto text-[12px] leading-relaxed">
+            <div className="text-[#6b7280]">  &lt;div className="modal-container"&gt;</div>
+            <div className="bg-[#e5484d]/10 text-[#e5484d] px-2 py-0.5 rounded">
+              -   &lt;div className="dialog-body"&gt;
             </div>
-            <h4 className="text-sm font-semibold text-[#f5f5f7]">Physics-Bound Navigator</h4>
-            <p className="text-xs text-[#86868b]">
-              Constrained strictly to real keyboard strokes and VoiceOver rotor shortcuts. Zero synthetic clicking allowed.
-            </p>
-          </div>
-
-          <div className="apple-card p-5 rounded-2xl border border-white/8 space-y-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
-              <Volume2 className="w-4 h-4" />
+            <div className="bg-[#30a46c]/10 text-[#30a46c] px-2 py-0.5 rounded">
+              {'+   <div className="dialog-body" role="dialog" aria-modal="true" onKeyDown={handleEscape}>'}
             </div>
-            <h4 className="text-sm font-semibold text-[#f5f5f7]">Announcement Sentinel</h4>
-            <p className="text-xs text-[#86868b]">
-              Intercepts DOM visual changes and checks if assistive technology received equivalent audio announcements.
-            </p>
-          </div>
-
-          <div className="apple-card p-5 rounded-2xl border border-white/8 space-y-2.5">
-            <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20">
-              <Cpu className="w-4 h-4" />
-            </div>
-            <h4 className="text-sm font-semibold text-[#f5f5f7]">AWS Bedrock LLM Router</h4>
-            <p className="text-xs text-[#86868b]">
-              Dynamically routes between local rules (Tier 0), Groq Llama, and Claude 3.5 Sonnet on AWS Bedrock.
-            </p>
-          </div>
-
-          <div className="apple-card p-5 rounded-2xl border border-white/8 space-y-2.5">
-            <div className="w-8 h-8 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center border border-red-500/20">
-              <GitBranch className="w-4 h-4" />
-            </div>
-            <h4 className="text-sm font-semibold text-[#f5f5f7]">Causal Critic</h4>
-            <p className="text-xs text-[#86868b]">
-              Challenges claimed goal completions to confirm order numbers, confirmation states, and lack of visual deception.
-            </p>
-          </div>
-
-          <div className="apple-card p-5 rounded-2xl border border-white/8 space-y-2.5">
-            <div className="w-8 h-8 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center border border-teal-500/20">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
-            <h4 className="text-sm font-semibold text-[#f5f5f7]">Verified Fix Synthesizer</h4>
-            <p className="text-xs text-[#86868b]">
-              Writes minimal HTML/ARIA surgical patches, replays the exact trace in a sandbox, and issues a verified seal.
-            </p>
+            <div className="text-[#6b7280]">      &lt;h2&gt;Confirm Subscription&lt;/h2&gt;</div>
+            <div className="text-[#6b7280]">      &lt;button id="claim-btn"&gt;Confirm&lt;/button&gt;</div>
+            <div className="text-[#6b7280]">  &lt;/div&gt;</div>
           </div>
         </div>
       </section>
 
-      {/* =========================================================================
-          FINAL CALL TO ACTION
-          ========================================================================= */}
-      <section className="text-center space-y-6 pt-12">
-        <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#f5f5f7]">
-          Ready to experience BarrierLens Studio?
+      {/* 4. Final Call to Action */}
+      <section className="max-w-3xl mx-auto px-4 text-center space-y-6 pt-8 pb-16">
+        <h2 className="text-3xl font-bold text-[#f4f5f6]">
+          Ready to verify your mission-critical flows?
         </h2>
-        <p className="text-sm text-[#86868b] max-w-xl mx-auto">
-          Run your first autonomous accessibility mission today. Zero false alarms, mathematically certified evidence, and verified code fixes.
+        <p className="text-sm text-[#9ba1a6] max-w-lg mx-auto">
+          Start auditing with one command. Test your checkout, onboarding, and modal journeys under real assistive physics.
         </p>
-        <div className="flex justify-center gap-4">
+
+        <div className="flex items-center justify-center gap-3">
           <button
+            type="button"
             onClick={onEnterStudio}
-            className="px-8 py-3.5 rounded-full bg-[#0071e3] hover:bg-[#0077ed] active:scale-[0.98] text-white text-xs font-semibold shadow-lg shadow-blue-500/25 transition-all"
+            className="px-6 py-2.5 rounded-lg bg-[#f4f5f6] hover:bg-white text-[#0c0d0e] font-semibold text-xs transition-all flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0090ff]"
           >
-            Launch Studio Console
+            <span>Launch Audit Studio</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={onOpenAuth}
+            className="px-5 py-2.5 rounded-lg bg-[#141517] hover:bg-[#1f2226] text-[#f4f5f6] border border-[#2d3137] font-medium text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0090ff]"
+          >
+            <span>Sign In / Workspace</span>
           </button>
         </div>
       </section>
+
     </div>
   );
 }

@@ -1,71 +1,60 @@
-import { neon } from '@neondatabase/serverless';
-import { AuditorCore } from '../lib/barrierlens/agent/auditor-core.ts';
+import fs from 'node:fs';
 
-const DATABASE_URL = process.env.DATABASE_URL;
-if (!DATABASE_URL) {
-  console.error('[Worker] DATABASE_URL is not set.');
-  process.exit(1);
+if (!process.env.DATABASE_URL) {
+  if (fs.existsSync('.env.local')) {
+    process.loadEnvFile('.env.local');
+  } else if (fs.existsSync('.env')) {
+    process.loadEnvFile('.env');
+  }
 }
 
-const sql = neon(DATABASE_URL);
+const APP_URL = process.env.APP_URL || process.env.BETTER_AUTH_URL || 'http://localhost:3000';
+const WORKER_SECRET = process.env.WORKER_SECRET || '';
 
 console.log('====================================================');
 console.log('   BARRIERLENS AUTONOMOUS BACKGROUND JOB WORKER     ');
-console.log('   Strategy: PostgreSQL SKIP LOCKED Queue Processor  ');
+console.log(`   Connected to Web Service: ${APP_URL} `);
 console.log('====================================================\n');
 
-async function processNextJob() {
+async function tick() {
   try {
-    // 1. Claim a pending job atomically using SKIP LOCKED
-    const claimed = await sql`
-      UPDATE jobs
-      SET status = 'running', locked_at = NOW(), attempts = attempts + 1
-      WHERE id = (
-        SELECT id FROM jobs
-        WHERE status = 'pending' AND run_after <= NOW()
-        ORDER BY run_after ASC
-        LIMIT 1
-        FOR UPDATE SKIP LOCKED
-      )
-      RETURNING id, type, payload, attempts;
-    `;
-
-    if (claimed.length === 0) {
-      return false; // No jobs waiting
+    const headers = { 'Content-Type': 'application/json' };
+    if (WORKER_SECRET) {
+      headers['Authorization'] = `Bearer ${WORKER_SECRET}`;
     }
 
-    const job = claimed[0];
-    console.log(`[Worker] Claimed Job #${job.id} (Type: ${job.type}, Attempt: ${job.attempts})`);
+    const res = await fetch(`${APP_URL}/api/worker/tick`, {
+      method: 'POST',
+      headers,
+    });
 
-    if (job.type === 'audit_run') {
-      const { targetUrl, goal, persona, maxSteps } = job.payload;
-      console.log(`[Worker] Executing Audit: "${goal}" on ${targetUrl} [${persona}]...`);
-
-      const auditor = new AuditorCore();
-      const result = await auditor.runAudit(targetUrl, goal, persona, maxSteps || 10);
-
-      console.log(`[Worker] Audit finished: ${result.findings.length} findings, effort ratio: ${result.effortRatio}x`);
-
-      // Update job to completed
-      await sql`
-        UPDATE jobs
-        SET status = 'completed', payload = jsonb_set(payload, '{result_id}', to_jsonb(${result.id}::text))
-        WHERE id = ${job.id};
-      `;
+    if (!res.ok) {
+      return false;
     }
 
-    return true;
+    const data = await res.json();
+    if (data.status === 'completed') {
+      console.log(`[Worker Daemon] ✓ Completed Job #${data.jobId} (Run: ${data.runId}, ${data.findingsCount} findings, Effort: ${data.effortRatio}x)`);
+      return true;
+    } else if (data.status === 'idle') {
+      return false;
+    } else if (data.error) {
+      console.warn(`[Worker Daemon] ✗ Job error: ${data.error}`);
+      return false;
+    }
+    return false;
   } catch (err) {
-    console.error('[Worker] Error processing job:', err.message);
+    // Web service not yet listening or network hiccup
     return false;
   }
 }
 
 async function loop() {
+  console.log('[Worker Daemon] Polling for pending jobs...');
   while (true) {
-    const worked = await processNextJob();
+    const worked = await tick();
     if (!worked) {
-      await new Promise(r => setTimeout(r, 2000)); // Poll every 2s when idle
+      await new Promise(r => setTimeout(r, 2500)); // Sleep 2.5s when idle
     }
   }
 }

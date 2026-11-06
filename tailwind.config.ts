@@ -11,6 +11,49 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        // Linear-grade charcoal slate & high-contrast WCAG AAA palette
+        canvas: {
+          DEFAULT: "#0c0d0e",
+          subtle: "#101113",
+        },
+        surface: {
+          DEFAULT: "#141517",
+          elevated: "#181a1d",
+          hover: "#1f2226",
+          active: "#25282e",
+        },
+        border: {
+          subtle: "#23262a",
+          strong: "#34383e",
+          focus: "#0090ff",
+        },
+        text: {
+          primary: "#f4f5f6",
+          secondary: "#9ba1a6",
+          muted: "#6b7280",
+        },
+        semantic: {
+          trap: {
+            DEFAULT: "#e5484d",
+            subtle: "rgba(229, 72, 77, 0.12)",
+            border: "rgba(229, 72, 77, 0.35)",
+          },
+          gap: {
+            DEFAULT: "#f76808",
+            subtle: "rgba(247, 104, 8, 0.12)",
+            border: "rgba(247, 104, 8, 0.35)",
+          },
+          verified: {
+            DEFAULT: "#30a46c",
+            subtle: "rgba(48, 164, 108, 0.12)",
+            border: "rgba(48, 164, 108, 0.35)",
+          },
+          focus: {
+            DEFAULT: "#0090ff",
+            subtle: "rgba(0, 144, 255, 0.12)",
+            border: "rgba(0, 144, 255, 0.35)",
+          },
+        },
         apple: {
           blue: "#0071e3",
           "blue-hover": "#0077ed",
@@ -29,26 +72,18 @@ const config: Config = {
           },
         },
       },
-      fontSize: {
-        "large-title": ["34px", { lineHeight: "41px", letterSpacing: "-0.022em" }],
-        "title-1": ["28px", { lineHeight: "34px", letterSpacing: "-0.020em" }],
-        "title-2": ["22px", { lineHeight: "28px", letterSpacing: "-0.017em" }],
-        "title-3": ["20px", { lineHeight: "25px", letterSpacing: "-0.014em" }],
-        headline: ["17px", { lineHeight: "22px", letterSpacing: "-0.015em", fontWeight: "600" }],
-        body: ["17px", { lineHeight: "22px", letterSpacing: "-0.015em" }],
-        callout: ["16px", { lineHeight: "21px", letterSpacing: "-0.010em" }],
-        subheadline: ["15px", { lineHeight: "20px", letterSpacing: "-0.005em" }],
-        footnote: ["13px", { lineHeight: "18px", letterSpacing: "+0.005em" }],
-        "caption-1": ["12px", { lineHeight: "16px", letterSpacing: "+0.008em" }],
-        "caption-2": ["11px", { lineHeight: "13px", letterSpacing: "+0.010em" }],
-      },
-      borderWidth: {
-        "0.5": "0.5px",
-        hairline: "0.5px",
+      fontFamily: {
+        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+        mono: ["JetBrains Mono", "SF Mono", "Fira Code", "monospace"],
       },
       transitionTimingFunction: {
         spring: "cubic-bezier(0.16, 1, 0.3, 1)",
         "spring-bouncy": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+      },
+      boxShadow: {
+        "subtle-card": "0 1px 3px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06)",
+        "elevated-card": "0 8px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)",
+        "focus-ring": "0 0 0 2px #0c0d0e, 0 0 0 4px #0090ff",
       },
     },
   },

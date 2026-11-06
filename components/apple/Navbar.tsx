@@ -5,26 +5,24 @@ import {
   Zap, 
   Compass, 
   Volume2, 
-  LineChart, 
-  Dna, 
-  Flame, 
-  MonitorPlay, 
-  Sparkles, 
   ShieldCheck,
   ChevronDown,
-  Activity,
   Globe,
   FileText,
   AlertTriangle,
   Settings,
   Terminal,
-  Cpu
+  Search,
+  Sparkles,
+  Cpu,
+  Flame,
+  Dna,
+  Layers
 } from 'lucide-react';
 import { UserSession } from './AppleAuthModal';
 
 export type ScreenId = 
   | 'story'
-  // 5 Cupertino Primary Hubs
   | 'overview'
   | 'websites'
   | 'audits'
@@ -32,7 +30,6 @@ export type ScreenId =
   | 'fixes'
   | 'reports'
   | 'settings'
-  // Aliases for compatibility
   | 'pulse'
   | 'inspector'
   | 'remedy'
@@ -68,129 +65,112 @@ export function Navbar({
 }: NavbarProps) {
   const [isToolsOpen, setIsToolsOpen] = useState(false);
 
-  // 5 Cupertino Primary Hubs
+  // Core High-Conviction Hubs
   const primaryHubs = [
-    { id: 'overview' as ScreenId, label: 'Overview', icon: Activity, keyNumber: '1' },
-    { id: 'websites' as ScreenId, label: 'Sites & Journeys', icon: Globe, keyNumber: '2' },
-    { id: 'audits' as ScreenId, label: 'Audit Studio', icon: Compass, keyNumber: '3' },
-    { id: 'issues' as ScreenId, label: 'Issues & Evidence', icon: AlertTriangle, keyNumber: '4' },
-    { id: 'fixes' as ScreenId, label: 'Fixes & PRs', icon: ShieldCheck, keyNumber: '5' },
+    { id: 'story' as ScreenId, label: 'Product' },
+    { id: 'audits' as ScreenId, label: 'Audit Studio', keyNumber: '1' },
+    { id: 'issues' as ScreenId, label: 'Evidence & Proofs', keyNumber: '2' },
+    { id: 'fixes' as ScreenId, label: 'Verified Fixes', keyNumber: '3' },
+    { id: 'reports' as ScreenId, label: 'Reports', keyNumber: '4' },
   ];
 
-  // Secondary Diagnostic Tools
-  const secondaryDiagnostics = [
-    { id: 'reports' as ScreenId, label: 'Executive Scorecard & Reports', icon: FileText },
-    { id: 'focus-map' as ScreenId, label: 'Focus Map & Tarjan Proofs', icon: Terminal },
-    { id: 'screen-reader' as ScreenId, label: 'VoiceOver Auditory Twin', icon: Volume2 },
-    { id: 'genome' as ScreenId, label: 'Barrier Genome Vector Map', icon: Dna },
-    { id: 'arena' as ScreenId, label: 'Red-Team Stress Arena', icon: Flame },
-    { id: 'visual-twin' as ScreenId, label: 'Visual Twin Simulator', icon: MonitorPlay },
-    { id: 'aws-bridge' as ScreenId, label: 'AWS Strands Swarm Console', icon: Cpu },
-    { id: 'settings' as ScreenId, label: 'Workspace & Security Vault', icon: Settings },
+  // Secondary Deep Diagnostic Lab Tools
+  const diagnosticTools = [
+    { id: 'focus-map' as ScreenId, label: 'Focus Map & Tarjan Proofs', icon: Terminal, desc: 'Interactive graph topology cycles' },
+    { id: 'screen-reader' as ScreenId, label: 'VoiceOver Auditory Twin', icon: Volume2, desc: 'Acoustic reading order transcript' },
+    { id: 'websites' as ScreenId, label: 'Target Sites & Journeys', icon: Globe, desc: 'Monitored domains and flows' },
+    { id: 'arena' as ScreenId, label: 'Adversarial Stress Arena', icon: Flame, desc: 'Synthetic barrier injection tests' },
+    { id: 'genome' as ScreenId, label: 'Barrier Genome Vectors', icon: Dna, desc: 'Cross-site similarity cluster map' },
+    { id: 'settings' as ScreenId, label: 'Workspace & Security Vault', icon: Settings, desc: 'API keys, webhooks, rate limits' },
   ];
 
   const isNavActive = (id: ScreenId) => {
     if (activeScreen === id) return true;
-    if (id === 'overview' && activeScreen === 'pulse') return true;
     if (id === 'audits' && (activeScreen === 'inspector' || activeScreen === 'studio')) return true;
     if (id === 'issues' && activeScreen === 'triage') return true;
     if (id === 'fixes' && activeScreen === 'remedy') return true;
-    if (id === 'websites' && activeScreen === 'websites') return true;
+    if (id === 'reports' && (activeScreen === 'scorecard' || activeScreen === 'trends')) return true;
     return false;
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-2xl bg-[#050507]/80 border-b border-white/[0.08] transition-all duration-200">
-      <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
-        {/* Brand & Story Link */}
-        <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-50 w-full bg-[#0c0d0e]/95 backdrop-blur-md border-b border-[#23262a] transition-all">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between gap-4">
+        
+        {/* Brand Link */}
+        <div className="flex items-center gap-4">
           <button 
             type="button"
-            onClick={() => setActiveScreen('overview')}
-            className="flex items-center gap-2.5 text-left group transition-all"
+            onClick={() => setActiveScreen('story')}
+            className="flex items-center gap-2.5 text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0090ff] rounded-md px-1 py-0.5"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#0071e3] to-[#30d158] p-[1.5px] shadow-[0_2px_12px_rgba(0,113,227,0.35)]">
-              <div className="w-full h-full bg-[#050507] rounded-[10px] flex items-center justify-center">
-                <Zap className="w-4 h-4 text-[#0071e3] group-hover:scale-110 transition-transform" />
-              </div>
+            <div className="w-5 h-5 rounded bg-[#181a1d] border border-[#34383e] flex items-center justify-center">
+              <Zap className="w-3 h-3 text-[#f4f5f6]" />
             </div>
-            <div className="hidden sm:block">
-              <span className="font-semibold text-sm tracking-tight text-white flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-xs tracking-tight text-[#f4f5f6]">
                 BarrierLens
-                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded-md bg-white/[0.08] text-[#86868b] border border-white/[0.05]">
-                  Pro
-                </span>
+              </span>
+              <span className="text-[10px] font-mono font-medium px-1.5 py-0.2 rounded bg-[#181a1d] text-[#9ba1a6] border border-[#23262a]">
+                v2.0
               </span>
             </div>
           </button>
-
-          {/* Distinct Product Story Pill */}
-          <button
-            type="button"
-            onClick={() => setActiveScreen('story')}
-            className={`hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-all ${
-              activeScreen === 'story'
-                ? 'bg-gradient-to-r from-[#0071e3] to-[#bf5af2] text-white border-transparent shadow-[0_2px_12px_rgba(0,113,227,0.4)]'
-                : 'bg-white/[0.04] text-[#86868b] hover:text-white border-white/[0.06] hover:bg-white/[0.08]'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-[#30d158]" />
-            <span>Story & Live Demos</span>
-          </button>
         </div>
 
-        {/* 5 Cupertino Primary Hubs Segmented Control */}
+        {/* Primary Segmented Navigation (Linear Style) */}
         <nav 
           aria-label="Primary Navigation" 
-          className="flex items-center bg-white/[0.04] p-1 rounded-full border border-white/[0.06] backdrop-blur-md"
+          className="flex items-center gap-1 bg-[#141517] p-0.5 rounded-lg border border-[#23262a]"
         >
           {primaryHubs.map((hub) => {
-            const Icon = hub.icon;
             const active = isNavActive(hub.id);
             return (
               <button
                 key={hub.id}
                 type="button"
                 onClick={() => setActiveScreen(hub.id)}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 relative ${
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0090ff] ${
                   active
-                    ? 'bg-[#0071e3] text-white shadow-[0_2px_10px_rgba(0,113,227,0.4)]'
-                    : 'text-[#86868b] hover:text-[#f5f5f7] hover:bg-white/[0.05]'
+                    ? 'bg-[#1f2226] text-[#f4f5f6] shadow-sm border border-[#34383e]'
+                    : 'text-[#9ba1a6] hover:text-[#f4f5f6] hover:bg-[#181a1d] border border-transparent'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${active ? 'text-white' : 'text-[#86868b]'}`} />
-                <span className="hidden md:inline">{hub.label}</span>
-                <span className={`text-[9px] font-mono opacity-50 ml-0.5 hidden lg:inline`}>
-                  {hub.keyNumber}
-                </span>
+                <span>{hub.label}</span>
+                {hub.keyNumber && (
+                  <span className={`text-[10px] font-mono opacity-40 hidden md:inline ml-0.5`}>
+                    {hub.keyNumber}
+                  </span>
+                )}
               </button>
             );
           })}
         </nav>
 
-        {/* Action Controls & Session Profile */}
-        <div className="flex items-center gap-2.5">
-          {/* Secondary Diagnostics Menu */}
+        {/* Right Controls: Diagnostic Lab, Search ⌘K, User Auth */}
+        <div className="flex items-center gap-2">
+          
+          {/* Diagnostic Lab Dropdown */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setIsToolsOpen(!isToolsOpen)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.09] text-xs font-medium text-[#86868b] hover:text-white border border-white/[0.06] transition-all"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#141517] hover:bg-[#1a1c1e] text-xs font-medium text-[#9ba1a6] hover:text-[#f4f5f6] border border-[#23262a] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0090ff]"
             >
-              <Terminal className="w-3.5 h-3.5 text-[#86868b]" />
-              <span className="hidden sm:inline">Diagnostics</span>
-              <ChevronDown className={`w-3 h-3 text-[#86868b] transition-transform ${isToolsOpen ? 'rotate-180' : ''}`} />
+              <Terminal className="w-3.5 h-3.5 text-[#9ba1a6]" />
+              <span className="hidden sm:inline">Lab Tools</span>
+              <ChevronDown className={`w-3 h-3 transition-transform ${isToolsOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isToolsOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setIsToolsOpen(false)} />
-                <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-[#121215]/95 backdrop-blur-2xl border border-white/[0.1] shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-3 py-1.5 text-[10px] font-semibold text-[#86868b] uppercase tracking-wider">
-                    Diagnostic Deep-Inspection Tools
+                <div className="absolute right-0 mt-2 w-72 rounded-xl bg-[#141517] border border-[#2d3137] shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-2.5 py-1 text-[11px] font-semibold text-[#9ba1a6] uppercase tracking-wider">
+                    Diagnostic Deep Inspection
                   </div>
                   <div className="space-y-0.5 mt-1">
-                    {secondaryDiagnostics.map((tool) => {
+                    {diagnosticTools.map((tool) => {
                       const Icon = tool.icon;
                       return (
                         <button
@@ -200,14 +180,17 @@ export function Navbar({
                             setActiveScreen(tool.id);
                             setIsToolsOpen(false);
                           }}
-                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-left transition-all ${
+                          className={`w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg text-xs text-left transition-all ${
                             activeScreen === tool.id 
-                              ? 'bg-[#0071e3] text-white font-medium' 
-                              : 'text-[#d1d1d6] hover:bg-white/[0.08] hover:text-white'
+                              ? 'bg-[#1f2226] text-[#f4f5f6] border border-[#34383e]' 
+                              : 'text-[#9ba1a6] hover:bg-[#181a1d] hover:text-[#f4f5f6] border border-transparent'
                           }`}
                         >
-                          <Icon className="w-4 h-4 shrink-0" />
-                          <span className="truncate">{tool.label}</span>
+                          <Icon className="w-4 h-4 mt-0.5 text-[#9ba1a6] shrink-0" />
+                          <div className="min-w-0">
+                            <div className="font-medium text-[#f4f5f6] truncate">{tool.label}</div>
+                            <div className="text-[11px] text-[#6b7280] truncate">{tool.desc}</div>
+                          </div>
                         </button>
                       );
                     })}
@@ -217,41 +200,43 @@ export function Navbar({
             )}
           </div>
 
-          {/* Spotlight Command Palette (Cmd + K) */}
+          {/* Quick Search Palette (Cmd+K) */}
           <button
             type="button"
             onClick={openPalette}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.09] text-xs text-[#86868b] hover:text-white border border-white/[0.06] transition-all"
+            className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#141517] hover:bg-[#1a1c1e] text-xs text-[#9ba1a6] hover:text-[#f4f5f6] border border-[#23262a] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0090ff]"
             title="Open Command Palette (Cmd+K)"
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#30d158]" />
-            <span className="hidden md:inline">Search</span>
-            <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono text-[#86868b] bg-white/[0.06] rounded border border-white/[0.08]">
+            <Search className="w-3 h-3 text-[#9ba1a6]" />
+            <kbd className="hidden sm:inline-block px-1 py-0.2 text-[10px] font-mono text-[#6b7280] bg-[#181a1d] rounded border border-[#23262a]">
               ⌘K
             </kbd>
           </button>
 
-          {/* Active Backend Engine Status Badge */}
-          <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/[0.03] border border-white/[0.06] text-[11px] text-[#86868b]">
-            <span className="w-2 h-2 rounded-full bg-[#30d158] animate-pulse" />
-            <span className="font-mono text-[10px] text-[#30d158]">Hybrid Swarm</span>
-          </div>
-
-          {/* User Workspace Profile */}
-          {userSession && (
+          {/* User Session Profile or Sign In */}
+          {userSession ? (
             <button
               type="button"
               onClick={onOpenAuth}
-              className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.07] transition-all"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#141517] hover:bg-[#1a1c1e] border border-[#23262a] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0090ff]"
             >
-              <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-[#0071e3] to-[#bf5af2] flex items-center justify-center text-[10px] font-semibold text-white">
-                {userSession.name?.[0]?.toUpperCase() || 'A'}
+              <div className="w-4 h-4 rounded-full bg-[#25282e] border border-[#34383e] flex items-center justify-center text-[10px] font-semibold text-[#f4f5f6]">
+                {userSession.name?.[0]?.toUpperCase() || 'U'}
               </div>
-              <span className="hidden xl:inline text-xs font-medium text-white max-w-[100px] truncate">
+              <span className="hidden xl:inline text-xs font-medium text-[#f4f5f6] max-w-[90px] truncate">
                 {userSession.name}
               </span>
             </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onOpenAuth}
+              className="flex items-center gap-1 px-3 py-1 rounded-md bg-[#f4f5f6] hover:bg-white text-xs font-medium text-[#0c0d0e] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0090ff]"
+            >
+              <span>Sign In</span>
+            </button>
           )}
+
         </div>
       </div>
     </header>
