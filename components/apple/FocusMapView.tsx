@@ -447,49 +447,49 @@ export function FocusMapView({
   };
 
   return (
-    <div className="w-full space-y-8 animate-in fade-in duration-300">
-      {/* Cupertino Top Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-white/[0.08]">
+    <div className="w-full space-y-6 animate-in fade-in duration-200">
+      {/* Top Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#23262a]">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#0071e3] to-[#42a5f5] flex items-center justify-center shadow-md shadow-blue-500/20 ring-hairline ring-white/20">
-              <Terminal className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-[#181a1d] border border-[#282c32] flex items-center justify-center text-[#5e6ad2]">
+              <Terminal className="w-4 h-4 text-[#5e6ad2]" />
             </div>
-            <h2 className="text-[26px] font-bold tracking-[-0.02em] text-[#f5f5f7]">
+            <h2 className="text-xl font-semibold tracking-tight text-[#f4f5f6]">
               Focus Map & Kendall's Tau Concordance
             </h2>
           </div>
-          <p className="text-[13px] text-[#86868b] tracking-[0.005em] mt-1">
+          <p className="text-xs text-[#9ba1a6] mt-1">
             Empirical physical keyboard traversal graph with Tarjan SCC cycle analysis, unreachable control diffing, and Kendall's τ concordance.
           </p>
         </div>
 
         {/* Global Concordance & Trap Status Badges */}
         <div className="flex flex-wrap items-center gap-2.5">
-          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold border-hairline ${
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium border ${
             isHealthy
-              ? 'bg-emerald-500/10 text-[#30d158] border-emerald-500/30'
-              : 'bg-rose-500/10 text-[#ff453a] border-rose-500/30'
+              ? 'bg-[#30a46c]/10 text-[#30a46c] border-[#30a46c]/30'
+              : 'bg-[#e5484d]/10 text-[#e5484d] border-[#e5484d]/30'
           }`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${isHealthy ? 'bg-[#30d158]' : 'bg-[#ff453a] animate-ping'}`} />
+            <span className={`w-1.5 h-1.5 rounded-full ${isHealthy ? 'bg-[#30a46c]' : 'bg-[#e5484d] animate-ping'}`} />
             τ = {tau >= 0 ? `+${tau.toFixed(2)}` : tau.toFixed(2)} ({isHealthy ? 'CONCORDANT' : 'DISORIENTING'})
           </span>
 
           {activeDataset.trapCertificate && (
             <button
               onClick={() => setIsCertificateOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/15 hover:bg-rose-500/25 text-[#ff453a] text-xs font-mono font-semibold border-hairline border-rose-500/40 active:scale-[0.98] transition-all duration-150 ease-spring"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e5484d]/10 hover:bg-[#e5484d]/20 text-[#e5484d] text-xs font-mono font-medium border border-[#e5484d]/30 transition-colors"
             >
-              <Lock className="w-3.5 h-3.5 text-[#ff453a]" />
+              <Lock className="w-3.5 h-3.5 text-[#e5484d]" />
               <span>Trap Certificate Available</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Preset Switcher: Segmented Cupertino Control */}
-      <div className="p-1.5 rounded-2xl bg-[#1c1c1e]/80 backdrop-blur-xl border-hairline shadow-inner flex flex-wrap items-center gap-1.5">
-        <span className="text-[11px] font-mono uppercase tracking-wider text-[#86868b] px-3 font-semibold">
+      {/* Preset Switcher: Segmented Control */}
+      <div className="p-1 rounded-lg bg-[#141517] border border-[#23262a] flex flex-wrap items-center gap-1">
+        <span className="text-[11px] font-mono uppercase tracking-wider text-[#9ba1a6] px-3 font-medium">
           Audit Fixtures:
         </span>
 
@@ -504,16 +504,16 @@ export function FocusMapView({
             <button
               key={preset.id}
               onClick={() => setSelectedPreset(preset.id as PresetId)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-medium active:scale-[0.98] transition-all duration-150 ease-spring flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 ${
                 active
-                  ? 'bg-[#2c2c2e] text-[#f5f5f7] shadow-sm shadow-black/50 ring-hairline ring-white/15'
-                  : 'text-[#86868b] hover:text-[#f5f5f7]'
+                  ? 'bg-[#1f2226] text-[#f4f5f6] border border-[#34383f]'
+                  : 'text-[#9ba1a6] hover:text-[#f4f5f6] hover:bg-[#181a1d] border border-transparent'
               }`}
             >
-              {preset.id === 'fixture-a' && <Lock className="w-3.5 h-3.5 text-[#ff453a]" />}
-              {preset.id === 'fixture-b' && <AlertTriangle className="w-3.5 h-3.5 text-[#ff9f0a]" />}
-              {preset.id === 'fixture-c' && <ShieldAlert className="w-3.5 h-3.5 text-[#bf5af2]" />}
-              {preset.id === 'live' && <Compass className="w-3.5 h-3.5 text-[#0a84ff]" />}
+              {preset.id === 'fixture-a' && <Lock className="w-3.5 h-3.5 text-[#e5484d]" />}
+              {preset.id === 'fixture-b' && <AlertTriangle className="w-3.5 h-3.5 text-[#f76808]" />}
+              {preset.id === 'fixture-c' && <ShieldAlert className="w-3.5 h-3.5 text-[#8e4ec6]" />}
+              {preset.id === 'live' && <Compass className="w-3.5 h-3.5 text-[#0090ff]" />}
               <span>{preset.label}</span>
             </button>
           );
@@ -521,8 +521,8 @@ export function FocusMapView({
       </div>
 
       {/* Subtitle description of active preset */}
-      <div className="px-1 text-xs text-[#86868b] flex items-center gap-2">
-        <Info className="w-3.5 h-3.5 text-[#0a84ff]" />
+      <div className="px-1 text-xs text-[#9ba1a6] flex items-center gap-2">
+        <Info className="w-3.5 h-3.5 text-[#5e6ad2]" />
         <span>{activeDataset.subtitle}</span>
       </div>
 
@@ -530,7 +530,7 @@ export function FocusMapView({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left Column: 2D Focus Graph Canvas */}
-        <div className="lg:col-span-8 apple-vibrancy-regular rounded-3xl p-6 border-hairline shadow-2xl space-y-5 flex flex-col justify-between">
+        <div className="lg:col-span-8 bg-[#141517] rounded-xl p-5 border border-[#23262a] space-y-4 flex flex-col justify-between">
           
           {/* Canvas Sub-header & Legend */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-hairline text-xs">
@@ -635,18 +635,18 @@ export function FocusMapView({
               const isSelected = node.id === selectedNodeId;
 
               // Node styling based on state
-              let cardStyle = 'bg-[#1c1c1e]/90 text-[#f5f5f7] border-white/10 hover:border-white/25';
-              let badgeStyle = 'bg-[#0a84ff] text-white';
+              let cardStyle = 'bg-[#181a1d] text-[#f4f5f6] border-[#282c32] hover:border-[#34383f]';
+              let badgeStyle = 'bg-[#23262a] text-[#9ba1a6]';
 
               if (node.isTrapped) {
-                cardStyle = 'bg-rose-950/85 text-rose-200 border-rose-500/60 shadow-[0_0_20px_rgba(255,69,58,0.35)]';
-                badgeStyle = 'bg-[#ff453a] text-white';
+                cardStyle = 'bg-[#241315] text-[#f4f5f6] border-[#e5484d]';
+                badgeStyle = 'bg-[#e5484d] text-white';
               } else if (node.isUnreachable) {
-                cardStyle = 'bg-amber-950/70 text-amber-200 border-2 border-dashed border-amber-500/60 shadow-lg';
-                badgeStyle = 'bg-[#ff9f0a] text-black';
+                cardStyle = 'bg-[#1f1912] text-[#f4f5f6] border-2 border-dashed border-[#f76808]';
+                badgeStyle = 'bg-[#f76808] text-black font-bold';
               } else if (node.isFocusLoss) {
-                cardStyle = 'bg-orange-950/80 text-orange-200 border-orange-500/60';
-                badgeStyle = 'bg-[#ff9f0a] text-white';
+                cardStyle = 'bg-[#1f1912] text-[#f4f5f6] border-[#f76808]';
+                badgeStyle = 'bg-[#f76808] text-white';
               }
 
               return (
@@ -657,26 +657,26 @@ export function FocusMapView({
                     left: `${(node.x / 760) * 100}%`,
                     top: `${(node.y / 440) * 100}%`,
                   }}
-                  className={`absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-200 ease-spring ${
-                    isActive ? 'scale-110 z-30 ring-2 ring-[#0a84ff] shadow-[0_0_24px_rgba(10,132,255,0.7)]' : 'z-10'
+                  className={`absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-150 ${
+                    isActive ? 'scale-105 z-30 ring-2 ring-[#5e6ad2] shadow-lg' : 'z-10'
                   } ${isSelected ? 'ring-2 ring-white/50' : ''}`}
                 >
-                  <div className={`px-3 py-2 rounded-2xl border-hairline backdrop-blur-md flex items-center gap-2 text-xs font-mono font-medium shadow-xl ${cardStyle}`}>
+                  <div className={`px-2.5 py-1.5 rounded-lg border flex items-center gap-2 text-xs font-mono font-normal shadow-md ${cardStyle}`}>
                     {/* Index badge */}
-                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${badgeStyle}`}>
-                      {node.isTrapped ? <Lock className="w-3 h-3" /> : (node.readingOrderRank ?? '•')}
+                    <span className={`w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold shrink-0 ${badgeStyle}`}>
+                      {node.isTrapped ? <Lock className="w-2.5 h-2.5" /> : (node.readingOrderRank ?? '•')}
                     </span>
 
                     <div className="flex flex-col text-left">
-                      <span className="font-semibold text-[12px] truncate max-w-[150px]">
+                      <span className="font-medium text-xs truncate max-w-[140px] text-[#f4f5f6]">
                         {node.label}
                       </span>
-                      <div className="flex items-center gap-1.5 text-[10px] text-[#86868b]">
-                        <span className="uppercase text-[9px] px-1 py-0.2 rounded bg-white/5 border border-white/10">
+                      <div className="flex items-center gap-1.5 text-[10px] text-[#9ba1a6]">
+                        <span className="uppercase text-[9px] px-1 py-0.2 rounded bg-[#0c0d0e] border border-[#23262a]">
                           {node.role}
                         </span>
                         {node.tabIndex !== undefined && (
-                          <span className={`font-mono ${node.tabIndex > 0 ? 'text-amber-400 font-bold' : ''}`}>
+                          <span className={`font-mono ${node.tabIndex > 0 ? 'text-[#f76808] font-bold' : ''}`}>
                             tabindex={node.tabIndex}
                           </span>
                         )}
@@ -684,7 +684,7 @@ export function FocusMapView({
                     </div>
 
                     {node.isUnreachable && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#f76808]/20 text-[#f76808] border border-[#f76808]/40 shrink-0 font-medium">
                         Unreachable
                       </span>
                     )}
@@ -695,15 +695,15 @@ export function FocusMapView({
 
             {/* Empty State when in Live mode with 0 nodes */}
             {selectedPreset === 'live' && activeDataset.nodes.length === 0 && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 space-y-3 bg-[#0a0b10]/95 backdrop-blur-md">
-                <Compass className="w-10 h-10 text-[#0a84ff] animate-pulse" />
-                <h4 className="text-base font-bold text-white">No Live Audit Graph Recorded</h4>
-                <p className="text-xs text-[#86868b] max-w-md">
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 space-y-3 bg-[#0c0d0e]/95">
+                <Compass className="w-8 h-8 text-[#5e6ad2] animate-pulse" />
+                <h4 className="text-sm font-semibold text-[#f4f5f6]">No Live Audit Graph Recorded</h4>
+                <p className="text-xs text-[#9ba1a6] max-w-md">
                   Run a task audit in the Studio & Theater screen to build the real-time empirical focus graph, or inspect the built-in Fixture Presets (A, B, C) above.
                 </p>
                 <button
                   onClick={() => setSelectedPreset('fixture-a')}
-                  className="px-4 py-1.5 rounded-xl bg-[#0a84ff] text-white text-xs font-medium active:scale-[0.98] transition-transform"
+                  className="px-3.5 py-1.5 rounded-lg bg-[#f4f5f6] text-[#0c0d0e] hover:bg-white text-xs font-medium transition-colors"
                 >
                   Load Fixture A (Keyboard Trap)
                 </button>
@@ -712,30 +712,30 @@ export function FocusMapView({
           </div>
 
           {/* Focus Traversal Replay Scrubber HUD */}
-          <div className="p-4 rounded-2xl bg-black/40 border-hairline space-y-3">
+          <div className="p-3.5 rounded-lg bg-[#0f1011] border border-[#23262a] space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2">
-                <span className="text-[#86868b] font-mono text-[11px] uppercase tracking-wider">Focus Replay Scrubber:</span>
-                <span className="font-mono font-bold text-white">
+                <span className="text-[#9ba1a6] font-mono text-[11px] uppercase tracking-wider">Focus Replay Scrubber:</span>
+                <span className="font-mono font-medium text-[#f4f5f6]">
                   Step {replayStep + 1} of {Math.max(1, activeDataset.replaySteps.length)}
                 </span>
               </div>
 
               {/* Physical Keycap Announcement */}
               <div className="flex items-center gap-2">
-                <span className="text-[#86868b] text-[11px] font-mono">Dispatched Key:</span>
-                <span className="apple-keycap px-2.5 py-1 text-xs text-white shadow-sm font-mono active:translate-y-0.5">
+                <span className="text-[#9ba1a6] text-[11px] font-mono">Dispatched Key:</span>
+                <kbd className="px-2 py-0.5 rounded bg-[#1e2023] border border-[#34383f] text-xs text-[#f4f5f6] font-mono shadow-sm">
                   {currentReplay?.keyDispatched || 'Tab'}
-                </span>
+                </kbd>
                 {currentReplay?.isViolation && (
-                  <span className="px-2 py-0.5 rounded-full bg-rose-500/20 text-[#ff453a] text-[10px] font-mono border border-rose-500/30">
+                  <span className="px-2 py-0.5 rounded bg-[#e5484d]/20 text-[#e5484d] text-[10px] font-mono border border-[#e5484d]/30 font-medium">
                     Defect Injected
                   </span>
                 )}
               </div>
             </div>
 
-            {/* Scrubber Range Slider with Spring Physics */}
+            {/* Scrubber Range Slider */}
             <div className="flex items-center gap-3">
               <input
                 type="range"
@@ -753,11 +753,11 @@ export function FocusMapView({
             {/* Playback Controls & Action Step Description */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-1">
               {/* Playback Buttons */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => setReplayStep(0)}
                   disabled={replayStep === 0}
-                  className="p-1.5 rounded-lg bg-[#2c2c2e]/70 hover:bg-[#3a3a3c] text-white disabled:opacity-40 active:scale-[0.98] transition-all"
+                  className="p-1.5 rounded bg-[#181a1d] border border-[#282c32] hover:bg-[#23262a] text-[#f4f5f6] disabled:opacity-30 transition-colors"
                   title="Reset to beginning"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
@@ -765,14 +765,14 @@ export function FocusMapView({
                 <button
                   onClick={() => setReplayStep(prev => Math.max(0, prev - 1))}
                   disabled={replayStep === 0}
-                  className="p-1.5 rounded-lg bg-[#2c2c2e]/70 hover:bg-[#3a3a3c] text-white disabled:opacity-40 active:scale-[0.98] transition-all"
+                  className="p-1.5 rounded bg-[#181a1d] border border-[#282c32] hover:bg-[#23262a] text-[#f4f5f6] disabled:opacity-30 transition-colors"
                   title="Step Backward"
                 >
                   <SkipBack className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setIsPlaying(!isPlaying)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0a84ff] hover:bg-[#0071e3] text-white font-medium text-xs active:scale-[0.98] transition-all shadow-md shadow-blue-500/20"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#f4f5f6] hover:bg-white text-[#0c0d0e] font-medium text-xs transition-colors"
                 >
                   {isPlaying ? (
                     <>
@@ -781,7 +781,7 @@ export function FocusMapView({
                     </>
                   ) : (
                     <>
-                      <Play className="w-3.5 h-3.5" />
+                      <Play className="w-3.5 h-3.5 fill-current" />
                       <span>Replay Traversal</span>
                     </>
                   )}
@@ -789,7 +789,7 @@ export function FocusMapView({
                 <button
                   onClick={() => setReplayStep(prev => Math.min(activeDataset.replaySteps.length - 1, prev + 1))}
                   disabled={replayStep >= activeDataset.replaySteps.length - 1}
-                  className="p-1.5 rounded-lg bg-[#2c2c2e]/70 hover:bg-[#3a3a3c] text-white disabled:opacity-40 active:scale-[0.98] transition-all"
+                  className="p-1.5 rounded bg-[#181a1d] border border-[#282c32] hover:bg-[#23262a] text-[#f4f5f6] disabled:opacity-30 transition-colors"
                   title="Step Forward"
                 >
                   <SkipForward className="w-3.5 h-3.5" />
@@ -797,33 +797,33 @@ export function FocusMapView({
               </div>
 
               {/* Step Annotation Description */}
-              <div className="text-xs text-[#86868b] font-mono truncate max-w-md">
-                <span className="text-white font-medium">{currentReplay?.description}</span>
+              <div className="text-xs text-[#9ba1a6] font-mono truncate max-w-md">
+                <span className="text-[#f4f5f6] font-normal">{currentReplay?.description}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Right Column: Kendall's Tau Concordance Meter & Certificate Card (4 cols) */}
-        <div className="lg:col-span-4 space-y-6 flex flex-col justify-between">
+        <div className="lg:col-span-4 space-y-5 flex flex-col justify-between">
           
           {/* Card 1: Kendall's Tau Circular Arc Concordance Meter */}
-          <div className="apple-vibrancy-regular rounded-3xl p-6 border-hairline shadow-2xl space-y-5">
+          <div className="bg-[#141517] rounded-xl p-5 border border-[#23262a] space-y-4">
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <h3 className="text-[12px] font-semibold text-[#86868b] uppercase tracking-wider font-mono">
+                <h3 className="text-xs font-semibold text-[#9ba1a6] uppercase tracking-wider font-mono">
                   Kendall's Tau (τ) Rank Concordance
                 </h3>
-                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border-hairline ${
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-medium border ${
                   isHealthy 
-                    ? 'bg-emerald-500/10 text-[#30d158] border-emerald-500/30' 
-                    : 'bg-rose-500/10 text-[#ff453a] border-rose-500/30'
+                    ? 'bg-[#30a46c]/10 text-[#30a46c] border-[#30a46c]/30' 
+                    : 'bg-[#e5484d]/10 text-[#e5484d] border-[#e5484d]/30'
                 }`}>
                   {isHealthy ? 'CONCORDANT' : 'DISORIENTING'}
                 </span>
               </div>
-              <p className="text-xs text-[#86868b] leading-relaxed">
-                Measures the statistical rank correlation between sequential Tab index order and 2D visual screen coordinates.
+              <p className="text-xs text-[#9ba1a6] leading-relaxed">
+                Measures statistical rank correlation between sequential Tab index order and 2D visual screen coordinates.
               </p>
             </div>
 
@@ -834,7 +834,7 @@ export function FocusMapView({
                 <path
                   d="M 39.38 135 A 70 70 0 1 1 160.62 135"
                   fill="none"
-                  stroke="rgba(255, 255, 255, 0.08)"
+                  stroke="#23262a"
                   strokeWidth="10"
                   strokeLinecap="round"
                 />
@@ -843,7 +843,7 @@ export function FocusMapView({
                 <path
                   d="M 39.38 135 A 70 70 0 1 1 160.62 135"
                   fill="none"
-                  stroke={isHealthy ? '#30d158' : '#ff453a'}
+                  stroke={isHealthy ? '#30a46c' : '#e5484d'}
                   strokeWidth="10"
                   strokeLinecap="round"
                   strokeDasharray={`${arcLength} ${arcLength}`}
@@ -854,51 +854,51 @@ export function FocusMapView({
 
               {/* Center Tabular Numerals Display */}
               <div className="absolute top-12 flex flex-col items-center text-center">
-                <span className="text-4xl font-extrabold text-white tracking-tight tabular-nums">
+                <span className="text-3xl font-bold text-[#f4f5f6] tracking-tight tabular-nums">
                   {tau >= 0 ? `+${tau.toFixed(2)}` : tau.toFixed(2)}
                 </span>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-[#86868b] mt-0.5">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-[#9ba1a6] mt-0.5">
                   Threshold: τ ≥ 0.60
                 </span>
               </div>
 
               {/* Status Pill below Arc */}
               <div className="mt-1 text-center">
-                <span className={`text-xs font-semibold ${isHealthy ? 'text-[#30d158]' : 'text-[#ff453a]'}`}>
+                <span className={`text-xs font-semibold ${isHealthy ? 'text-[#30a46c]' : 'text-[#e5484d]'}`}>
                   {isHealthy ? 'Meets WCAG 2.4.3 Focus Order' : 'DISORIENTING FOCUS ORDER (τ < 0.60)'}
                 </span>
               </div>
             </div>
 
             {/* Statistical Pairs Breakdown Table */}
-            <div className="p-4 rounded-2xl bg-black/40 border-hairline text-xs font-mono space-y-2.5 text-[#86868b]">
+            <div className="p-3.5 rounded-lg bg-[#0f1011] border border-[#23262a] text-xs font-mono space-y-2 text-[#9ba1a6]">
               <div className="flex justify-between items-center">
                 <span>Concordant Pairs (C):</span>
-                <span className="text-white font-bold">{activeDataset.concordantPairs}</span>
+                <span className="text-[#f4f5f6] font-medium">{activeDataset.concordantPairs}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span>Discordant Inversions (D):</span>
-                <span className={`font-bold ${activeDataset.inversions > 0 ? 'text-[#ff453a]' : 'text-emerald-400'}`}>
+                <span className={`font-semibold ${activeDataset.inversions > 0 ? 'text-[#e5484d]' : 'text-[#30a46c]'}`}>
                   {activeDataset.inversions}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span>Total Evaluated Pairs n(n-1)/2:</span>
-                <span className="text-white">{activeDataset.totalPairs}</span>
+                <span className="text-[#f4f5f6]">{activeDataset.totalPairs}</span>
               </div>
-              <div className="hairline-divider my-1" />
+              <div className="h-px bg-[#23262a] my-1" />
               <div className="flex justify-between items-center text-[11px]">
                 <span>Formula:</span>
-                <span className="text-[#0a84ff] font-semibold">τ = (C - D) / Total</span>
+                <span className="text-[#5e6ad2] font-medium">τ = (C - D) / Total</span>
               </div>
             </div>
 
             {/* Visual Reading Order vs Tab Order Pair List */}
             <div className="space-y-2">
-              <span className="text-[11px] font-mono text-[#86868b] uppercase tracking-wider font-semibold">
+              <span className="text-[11px] font-mono text-[#9ba1a6] uppercase tracking-wider font-medium">
                 Sequence Concordance:
               </span>
-              <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+              <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
                 {activeDataset.nodes.map((node, idx) => {
                   const isInverted = node.tabOrderRank !== undefined && 
                                      node.readingOrderRank !== undefined && 
@@ -906,19 +906,19 @@ export function FocusMapView({
                   return (
                     <div
                       key={node.id}
-                      className={`px-3 py-1.5 rounded-xl border-hairline text-[11px] font-mono flex items-center justify-between ${
+                      className={`px-2.5 py-1.5 rounded-md border text-[11px] font-mono flex items-center justify-between ${
                         isInverted
-                          ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-                          : 'bg-white/[0.03] border-white/5 text-[#86868b]'
+                          ? 'bg-[#e5484d]/10 border-[#e5484d]/30 text-[#f4f5f6]'
+                          : 'bg-[#181a1d] border-[#23262a] text-[#9ba1a6]'
                       }`}
                     >
-                      <span className="truncate max-w-[130px] text-white">
+                      <span className="truncate max-w-[130px] text-[#f4f5f6]">
                         {node.label}
                       </span>
                       <div className="flex items-center gap-2">
                         <span>Visual #{node.readingOrderRank}</span>
-                        <ArrowRight className="w-3 h-3 text-[#6e6e73]" />
-                        <span className={isInverted ? 'text-amber-400 font-bold' : 'text-[#30d158]'}>
+                        <ArrowRight className="w-3 h-3 text-[#5a626a]" />
+                        <span className={isInverted ? 'text-[#f76808] font-bold' : 'text-[#30a46c]'}>
                           Tab #{node.tabOrderRank === -1 ? 'None' : node.tabOrderRank}
                         </span>
                       </div>
@@ -931,17 +931,17 @@ export function FocusMapView({
 
           {/* Card 2: Trap Certificate Summary Card */}
           {activeDataset.trapCertificate && (
-            <div className="apple-vibrancy-regular rounded-3xl p-6 border-hairline shadow-2xl space-y-4">
+            <div className="bg-[#141517] rounded-xl p-5 border border-[#23262a] space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-xl bg-rose-500/20 flex items-center justify-center border border-rose-500/30">
-                    <Lock className="w-4 h-4 text-[#ff453a]" />
+                  <div className="w-7 h-7 rounded-lg bg-[#e5484d]/15 flex items-center justify-center border border-[#e5484d]/30">
+                    <Lock className="w-3.5 h-3.5 text-[#e5484d]" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+                    <h4 className="text-xs font-semibold text-[#f4f5f6] uppercase tracking-wider font-mono">
                       Trap Certificate Engine
                     </h4>
-                    <span className="text-[10px] text-[#ff453a] font-mono">
+                    <span className="text-[10px] text-[#e5484d] font-mono">
                       Type: {activeDataset.trapCertificate.trapType.toUpperCase()}
                     </span>
                   </div>
@@ -949,30 +949,30 @@ export function FocusMapView({
 
                 <button
                   onClick={() => setIsCertificateOpen(true)}
-                  className="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-[#ff453a] text-[11px] font-medium border border-rose-500/40 active:scale-[0.98] transition-all"
+                  className="px-2.5 py-1 rounded bg-[#e5484d]/15 hover:bg-[#e5484d]/25 text-[#e5484d] text-[11px] font-medium border border-[#e5484d]/30 transition-colors"
                 >
                   Inspect Sheet
                 </button>
               </div>
 
               {/* Minimal Keycaps Preview */}
-              <div className="p-3 rounded-2xl bg-black/40 border-hairline space-y-2">
-                <span className="text-[10px] font-mono text-[#86868b] uppercase">Shortest Key Sequence:</span>
+              <div className="p-2.5 rounded-lg bg-[#0f1011] border border-[#23262a] space-y-1.5">
+                <span className="text-[10px] font-mono text-[#9ba1a6] uppercase">Shortest Key Sequence:</span>
                 <div className="flex flex-wrap items-center gap-1.5">
                   {activeDataset.trapCertificate.keySequence.map((key, kIdx) => (
                     <React.Fragment key={kIdx}>
-                      <span className="apple-keycap px-2 py-0.5 text-[11px] text-white">
+                      <kbd className="px-1.5 py-0.5 rounded bg-[#1e2023] border border-[#34383f] text-[11px] text-[#f4f5f6] font-mono">
                         {key}
-                      </span>
+                      </kbd>
                       {kIdx < activeDataset.trapCertificate!.keySequence.length - 1 && (
-                        <span className="text-[10px] text-[#6e6e73]">→</span>
+                        <span className="text-[10px] text-[#5a626a]">→</span>
                       )}
                     </React.Fragment>
                   ))}
                 </div>
               </div>
 
-              <p className="text-[11px] text-[#86868b] leading-relaxed line-clamp-2">
+              <p className="text-[11px] text-[#9ba1a6] leading-relaxed line-clamp-2">
                 {activeDataset.trapCertificate.proofExplanation}
               </p>
             </div>
@@ -980,55 +980,55 @@ export function FocusMapView({
         </div>
       </div>
 
-      {/* Cupertino Trap Certificate Inspection Sheet (Slide-over / Modal) */}
+      {/* Linear Trap Certificate Inspection Sheet (Slide-over / Modal) */}
       {isCertificateOpen && activeDataset.trapCertificate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150">
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-xl apple-card-raised rounded-3xl p-8 border-hairline shadow-2xl space-y-6 text-left relative animate-in zoom-in-95 duration-200"
+            className="w-full max-w-xl bg-[#141517] border border-[#23262a] rounded-xl p-6 md:p-7 shadow-2xl space-y-5 text-left relative"
           >
             {/* Close Button */}
             <button
               onClick={() => setIsCertificateOpen(false)}
-              className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 text-[#86868b] hover:text-white transition-all active:scale-[0.98]"
+              className="absolute top-5 right-5 p-1.5 rounded-md bg-[#181a1d] border border-[#23262a] hover:bg-[#23262a] text-[#9ba1a6] hover:text-[#f4f5f6] transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
 
             {/* Sheet Header */}
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center shadow-lg shadow-rose-500/20">
-                <Lock className="w-6 h-6 text-[#ff453a]" />
+              <div className="w-10 h-10 rounded-lg bg-[#e5484d]/15 border border-[#e5484d]/30 flex items-center justify-center">
+                <Lock className="w-5 h-5 text-[#e5484d]" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-xl font-bold text-white tracking-tight">
+                  <h3 className="text-lg font-semibold text-[#f4f5f6] tracking-tight">
                     Keyboard Trap Certificate
                   </h3>
-                  <span className="px-2 py-0.5 rounded-full bg-rose-500/20 text-[#ff453a] text-[10px] font-mono font-bold border border-rose-500/30">
+                  <span className="px-2 py-0.5 rounded bg-[#e5484d]/15 text-[#e5484d] text-[10px] font-mono font-medium border border-[#e5484d]/30">
                     PROVEN
                   </span>
                 </div>
-                <p className="text-xs text-[#86868b] font-mono mt-0.5">
+                <p className="text-xs text-[#9ba1a6] font-mono mt-0.5">
                   Deterministic Proof of WCAG 2.1.2 & 2.4.3 Violation
                 </p>
               </div>
             </div>
 
             {/* Proof Details */}
-            <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-black/40 border-hairline space-y-2">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-[#86868b]">
+            <div className="space-y-3.5">
+              <div className="p-3.5 rounded-lg bg-[#0f1011] border border-[#23262a] space-y-2">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-[#9ba1a6] font-medium">
                   Shortest Reproducible Key Sequence:
                 </span>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   {activeDataset.trapCertificate.keySequence.map((key, idx) => (
                     <React.Fragment key={idx}>
-                      <span className="apple-keycap px-3 py-1.5 text-xs text-white shadow-md active:translate-y-0.5 cursor-pointer">
+                      <kbd className="px-2 py-1 rounded bg-[#1e2023] border border-[#34383f] text-xs text-[#f4f5f6] font-mono shadow-sm">
                         {key}
-                      </span>
+                      </kbd>
                       {idx < activeDataset.trapCertificate!.keySequence.length - 1 && (
-                        <ChevronRight className="w-3.5 h-3.5 text-[#6e6e73]" />
+                        <ChevronRight className="w-3.5 h-3.5 text-[#5a626a]" />
                       )}
                     </React.Fragment>
                   ))}
@@ -1036,22 +1036,22 @@ export function FocusMapView({
               </div>
 
               <div className="space-y-1.5">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-[#86868b]">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-[#9ba1a6] font-medium">
                   Algorithmic Proof Explanation:
                 </span>
-                <p className="text-xs text-[#d1d1d6] leading-relaxed p-4 rounded-2xl bg-white/[0.03] border-hairline">
+                <p className="text-xs text-[#f4f5f6] leading-relaxed p-3.5 rounded-lg bg-[#181a1d] border border-[#23262a]">
                   {activeDataset.trapCertificate.proofExplanation}
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-                <div className="p-3 rounded-2xl bg-black/30 border-hairline space-y-1">
-                  <span className="text-[#86868b] text-[10px] uppercase">Trap Type:</span>
-                  <div className="font-bold text-[#ff453a]">{activeDataset.trapCertificate.trapType.toUpperCase()}</div>
+                <div className="p-3 rounded-lg bg-[#0f1011] border border-[#23262a] space-y-1">
+                  <span className="text-[#9ba1a6] text-[10px] uppercase">Trap Type:</span>
+                  <div className="font-semibold text-[#e5484d]">{activeDataset.trapCertificate.trapType.toUpperCase()}</div>
                 </div>
-                <div className="p-3 rounded-2xl bg-black/30 border-hairline space-y-1">
-                  <span className="text-[#86868b] text-[10px] uppercase">Component Nodes:</span>
-                  <div className="text-white font-bold">{activeDataset.trapCertificate.componentNodeIds.length} Nodes Involved</div>
+                <div className="p-3 rounded-lg bg-[#0f1011] border border-[#23262a] space-y-1">
+                  <span className="text-[#9ba1a6] text-[10px] uppercase">Component Nodes:</span>
+                  <div className="text-[#f4f5f6] font-medium">{activeDataset.trapCertificate.componentNodeIds.length} Nodes Involved</div>
                 </div>
               </div>
             </div>
@@ -1060,7 +1060,7 @@ export function FocusMapView({
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 onClick={() => setIsCertificateOpen(false)}
-                className="px-5 py-2 rounded-xl bg-[#2c2c2e] hover:bg-[#3a3a3c] text-white text-xs font-semibold active:scale-[0.98] transition-all"
+                className="px-4 py-2 rounded-lg bg-[#181a1d] border border-[#282c32] hover:bg-[#23262a] text-[#f4f5f6] text-xs font-medium transition-colors"
               >
                 Dismiss Sheet
               </button>

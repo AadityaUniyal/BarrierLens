@@ -165,31 +165,31 @@ export function ExecutiveReport({
       {/* 1. Hero Verdict Card & Metamorphic Effort Ratio Dial */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Left: Plain Words Executive Verdict Hero (8 Columns) */}
-        <div className="md:col-span-8 apple-vibrancy-regular rounded-3xl p-6 sm:p-8 flex flex-col justify-between border-[0.5px] border-white/12 shadow-2xl space-y-6">
+        <div className="md:col-span-8 bg-[#141517] rounded-2xl p-6 sm:p-8 flex flex-col justify-between border border-[#23262a] shadow-xl space-y-6">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
-              <span className={`text-[10px] font-mono uppercase px-3 py-1 rounded-full border-[0.5px] font-bold ${
+              <span className={`text-[10px] font-mono uppercase px-3 py-1 rounded-md border font-bold ${
                 auditRun.taskSuccess
-                  ? 'bg-emerald-500/10 text-[#30d158] border-emerald-500/30'
-                  : 'bg-rose-500/10 text-[#ff453a] border-rose-500/30'
+                  ? 'bg-[#30a46c]/10 text-[#30a46c] border-[#30a46c]/30'
+                  : 'bg-[#e5484d]/10 text-[#e5484d] border-[#e5484d]/30'
               }`}>
                 {auditRun.taskSuccess ? 'Task Accessible' : 'Task Flow Blocked'}
               </span>
-              <span className="text-xs text-[#86868b] font-mono">
+              <span className="text-xs text-[#9ba1a6] font-mono">
                 {auditRun.steps.length} Physical Steps Traversed
               </span>
-              <span className="text-[10px] font-mono text-[#86868b] bg-white/5 px-2 py-0.5 rounded-full border-[0.5px] border-white/10">
+              <span className="text-[10px] font-mono text-[#9ba1a6] bg-[#0c0d0e] px-2 py-0.5 rounded border border-[#23262a]">
                 Overall Health: {complianceScores.overall}%
               </span>
             </div>
 
-            <h2 className="text-[26px] sm:text-[30px] font-bold tracking-tight text-[#f5f5f7] leading-tight">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#f4f5f6] leading-tight">
               {auditRun.taskSuccess
                 ? `Flow Completed Successfully by ${auditRun.persona.toUpperCase()} User`
                 : `Task Cannot be Completed by ${auditRun.persona.toUpperCase()} User`}
             </h2>
 
-            <p className="text-[15px] text-[#a1a1a6] leading-relaxed tracking-tight max-w-2xl">
+            <p className="text-sm text-[#9ba1a6] leading-relaxed max-w-2xl">
               {auditRun.findings.length === 0
                 ? 'Zero behavioral or static barriers were encountered along the goal trajectory. The assistive flow adheres to WCAG 2.2 Level AA.'
                 : `Identified ${auditRun.findings.length} blocking or disorienting accessibility barrier(s). Key bottlenecks lock assistive technology users out of completing primary user journeys.`}
@@ -197,21 +197,21 @@ export function ExecutiveReport({
           </div>
 
           {/* Footer Metadata */}
-          <div className="pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs text-[#86868b]">
+          <div className="pt-6 border-t border-[#23262a] flex flex-wrap items-center justify-between gap-4 text-xs text-[#9ba1a6]">
             <div className="flex flex-wrap items-center gap-4">
-              <span>Persona: <strong className="text-white font-medium capitalize">{auditRun.persona.replace('_', ' ')}</strong></span>
-              <span>Kendall τ: <strong className="text-[#0a84ff] font-mono">{auditRun.kendallTau?.tau?.toFixed(2) ?? '0.88'}</strong></span>
-              <span>Barriers: <strong className="text-amber-400 font-mono">{auditRun.findings.length}</strong></span>
+              <span>Persona: <strong className="text-[#f4f5f6] font-medium capitalize">{auditRun.persona.replace('_', ' ')}</strong></span>
+              <span>Kendall τ: <strong className="text-[#0090ff] font-mono">{auditRun.kendallTau?.tau?.toFixed(2) ?? '0.88'}</strong></span>
+              <span>Barriers: <strong className="text-[#f76808] font-mono">{auditRun.findings.length}</strong></span>
             </div>
-            <span className="text-[11px] font-mono text-[#30d158] bg-emerald-500/10 px-2.5 py-0.5 rounded-full border-[0.5px] border-emerald-500/30 font-semibold flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#30d158]" />
+            <span className="text-[11px] font-mono text-[#30a46c] bg-[#30a46c]/10 px-2.5 py-0.5 rounded border border-[#30a46c]/30 font-semibold flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#30a46c]" />
               Proven Evidence Sealed
             </span>
           </div>
         </div>
 
         {/* Right: Metamorphic Effort Ratio Dial (4 Columns) */}
-        <div className="md:col-span-4 apple-vibrancy-regular rounded-3xl p-6 sm:p-8 flex flex-col items-center justify-between text-center border-[0.5px] border-white/12 shadow-2xl relative overflow-hidden">
+        <div className="md:col-span-4 bg-[#141517] rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-between text-center border border-[#23262a] shadow-xl relative overflow-hidden">
           <div className="space-y-1">
             <span className="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider font-mono">
               Metamorphic Effort Ratio
@@ -268,13 +268,13 @@ export function ExecutiveReport({
       {/* 2. WCAG 2.2 Coverage Radar & Static Health Scorecard */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         {/* Left: 5-Axis WCAG Radar Spider Chart (5 Cols) */}
-        <div className="lg:col-span-5 apple-vibrancy-regular rounded-3xl p-6 sm:p-7 flex flex-col items-center justify-between border-[0.5px] border-white/12 shadow-2xl relative overflow-hidden">
-          <div className="w-full flex items-center justify-between pb-3 border-b border-white/10">
-            <span className="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider font-mono flex items-center gap-1.5">
-              <Activity className="w-3.5 h-3.5 text-[#0a84ff]" />
+        <div className="lg:col-span-5 bg-[#141517] rounded-2xl p-6 sm:p-7 flex flex-col items-center justify-between border border-[#23262a] shadow-xl relative overflow-hidden">
+          <div className="w-full flex items-center justify-between pb-3 border-b border-[#23262a]">
+            <span className="text-[11px] font-semibold text-[#9ba1a6] uppercase tracking-wider font-mono flex items-center gap-1.5">
+              <Activity className="w-3.5 h-3.5 text-[#0090ff]" />
               WCAG 2.2 Coverage Radar
             </span>
-            <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-blue-500/10 text-[#0a84ff] border-[0.5px] border-blue-500/30 font-semibold">
+            <span className="text-[10px] font-mono px-2.5 py-0.5 rounded bg-[#0090ff]/10 text-[#0090ff] border border-[#0090ff]/30 font-semibold">
               5-Axis Spider
             </span>
           </div>
@@ -379,77 +379,77 @@ export function ExecutiveReport({
         {/* Right: Compliance & Static Health Scorecard (4 Cards in 7 Cols) */}
         <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Card 1: W3C AccName */}
-          <div className="p-5 rounded-2xl apple-vibrancy-thin border-[0.5px] border-white/10 space-y-2 flex flex-col justify-between">
-            <div className="flex items-center justify-between text-xs font-mono text-[#86868b]">
+          <div className="p-5 rounded-2xl bg-[#141517] border border-[#23262a] space-y-2 flex flex-col justify-between shadow-sm">
+            <div className="flex items-center justify-between text-xs font-mono text-[#9ba1a6]">
               <span className="uppercase tracking-wider">W3C AccName</span>
-              <Layers className="w-4 h-4 text-[#0a84ff]" />
+              <Layers className="w-4 h-4 text-[#0090ff]" />
             </div>
-            <div className="text-2xl font-bold text-white tabular-nums">
+            <div className="text-2xl font-bold text-[#f4f5f6] tabular-nums font-mono">
               {complianceScores.accName}%
             </div>
-            <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-[#0c0d0e] h-1.5 rounded-full overflow-hidden border border-[#23262a]">
               <div
-                className="bg-[#0a84ff] h-full rounded-full transition-all duration-500 ease-spring"
+                className="bg-[#0090ff] h-full rounded-full transition-all duration-500 ease-spring"
                 style={{ width: `${complianceScores.accName}%` }}
               />
             </div>
-            <div className="text-[11px] text-[#86868b]">
+            <div className="text-[11px] text-[#9ba1a6]">
               Provenance &amp; accessible labeling health
             </div>
           </div>
 
           {/* Card 2: Focus Graph */}
-          <div className="p-5 rounded-2xl apple-vibrancy-thin border-[0.5px] border-white/10 space-y-2 flex flex-col justify-between">
-            <div className="flex items-center justify-between text-xs font-mono text-[#86868b]">
+          <div className="p-5 rounded-2xl bg-[#141517] border border-[#23262a] space-y-2 flex flex-col justify-between shadow-sm">
+            <div className="flex items-center justify-between text-xs font-mono text-[#9ba1a6]">
               <span className="uppercase tracking-wider">Focus Navigation</span>
-              <Lock className="w-4 h-4 text-[#30d158]" />
+              <Lock className="w-4 h-4 text-[#30a46c]" />
             </div>
-            <div className="text-2xl font-bold text-white tabular-nums">
+            <div className="text-2xl font-bold text-[#f4f5f6] tabular-nums font-mono">
               {complianceScores.focus}%
             </div>
-            <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-[#0c0d0e] h-1.5 rounded-full overflow-hidden border border-[#23262a]">
               <div
-                className="bg-[#30d158] h-full rounded-full transition-all duration-500 ease-spring"
+                className="bg-[#30a46c] h-full rounded-full transition-all duration-500 ease-spring"
                 style={{ width: `${complianceScores.focus}%` }}
               />
             </div>
-            <div className="text-[11px] text-[#86868b]">
+            <div className="text-[11px] text-[#9ba1a6]">
               Tarjan trap-free &amp; Kendall τ {auditRun.kendallTau?.tau?.toFixed(2) ?? '0.88'}
             </div>
           </div>
 
           {/* Card 3: Color Contrast */}
-          <div className="p-5 rounded-2xl apple-vibrancy-thin border-[0.5px] border-white/10 space-y-2 flex flex-col justify-between">
-            <div className="flex items-center justify-between text-xs font-mono text-[#86868b]">
+          <div className="p-5 rounded-2xl bg-[#141517] border border-[#23262a] space-y-2 flex flex-col justify-between shadow-sm">
+            <div className="flex items-center justify-between text-xs font-mono text-[#9ba1a6]">
               <span className="uppercase tracking-wider">WCAG 1.4.3 Contrast</span>
-              <Sliders className="w-4 h-4 text-[#ff9f0a]" />
+              <Sliders className="w-4 h-4 text-[#f76808]" />
             </div>
-            <div className="text-2xl font-bold text-white tabular-nums">
+            <div className="text-2xl font-bold text-[#f4f5f6] tabular-nums font-mono">
               {complianceScores.contrast}%
             </div>
-            <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-[#0c0d0e] h-1.5 rounded-full overflow-hidden border border-[#23262a]">
               <div
-                className="bg-[#ff9f0a] h-full rounded-full transition-all duration-500 ease-spring"
+                className="bg-[#f76808] h-full rounded-full transition-all duration-500 ease-spring"
                 style={{ width: `${complianceScores.contrast}%` }}
               />
             </div>
-            <div className="text-[11px] text-[#86868b]">
+            <div className="text-[11px] text-[#9ba1a6]">
               sRGB luminance AA (4.5:1) compliance
             </div>
           </div>
 
           {/* Card 4: Target Size */}
-          <div className="p-5 rounded-2xl apple-vibrancy-thin border-[0.5px] border-white/10 space-y-2 flex flex-col justify-between">
-            <div className="flex items-center justify-between text-xs font-mono text-[#86868b]">
+          <div className="p-5 rounded-2xl bg-[#141517] border border-[#23262a] space-y-2 flex flex-col justify-between shadow-sm">
+            <div className="flex items-center justify-between text-xs font-mono text-[#9ba1a6]">
               <span className="uppercase tracking-wider">WCAG 2.5.8 Target Size</span>
-              <CheckCircle2 className="w-4 h-4 text-[#bf5af2]" />
+              <CheckCircle2 className="w-4 h-4 text-[#8e4ec6]" />
             </div>
-            <div className="text-2xl font-bold text-white tabular-nums">
+            <div className="text-2xl font-bold text-[#f4f5f6] tabular-nums font-mono">
               {complianceScores.targetSize}%
             </div>
-            <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-[#0c0d0e] h-1.5 rounded-full overflow-hidden border border-[#23262a]">
               <div
-                className="bg-[#bf5af2] h-full rounded-full transition-all duration-500 ease-spring"
+                className="bg-[#8e4ec6] h-full rounded-full transition-all duration-500 ease-spring"
                 style={{ width: `${complianceScores.targetSize}%` }}
               />
             </div>

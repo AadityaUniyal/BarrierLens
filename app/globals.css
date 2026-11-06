@@ -114,58 +114,44 @@
 }
 
 /* =========================================================================
-   Translucent Vibrancy Materials (-webkit-backdrop-filter: blur(...) saturate(190%))
+   Linear-Grade Surfaces & Panel Materials (Crisp Slate, No Glass Blur)
    ========================================================================= */
 .apple-vibrancy-ultra-thin {
-  background: rgba(22, 22, 24, 0.45);
-  backdrop-filter: blur(20px) saturate(190%);
-  -webkit-backdrop-filter: blur(20px) saturate(190%);
-  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  background: #141517;
+  border: 1px solid #23262a;
 }
 
 .apple-vibrancy-thin {
-  background: rgba(26, 26, 29, 0.60);
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border: 0.5px solid rgba(255, 255, 255, 0.10);
+  background: #141517;
+  border: 1px solid #23262a;
 }
 
 .apple-vibrancy-regular {
-  background: rgba(30, 30, 34, 0.75);
-  backdrop-filter: blur(36px) saturate(190%);
-  -webkit-backdrop-filter: blur(36px) saturate(190%);
-  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  background: #141517;
+  border: 1px solid #23262a;
 }
 
 .apple-vibrancy-thick {
-  background: rgba(36, 36, 40, 0.88);
-  backdrop-filter: blur(48px) saturate(190%);
-  -webkit-backdrop-filter: blur(48px) saturate(190%);
-  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  background: #181a1d;
+  border: 1px solid #23262a;
 }
 
 /* Translucent Apple Glass & Cards */
 .apple-glass {
-  background: rgba(26, 26, 30, 0.72);
-  backdrop-filter: blur(32px) saturate(190%);
-  -webkit-backdrop-filter: blur(32px) saturate(190%);
-  border: 0.5px solid rgba(255, 255, 255, 0.10);
+  background: #141517;
+  border: 1px solid #23262a;
 }
 
 .apple-card {
-  background: rgba(22, 22, 26, 0.68);
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border: 0.5px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.5), 0 2px 8px -1px rgba(0, 0, 0, 0.4);
+  background: #141517;
+  border: 1px solid #23262a;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.6);
 }
 
 .apple-card-raised {
-  background: rgba(30, 30, 36, 0.82);
-  backdrop-filter: blur(36px) saturate(190%);
-  -webkit-backdrop-filter: blur(36px) saturate(190%);
-  border: 0.5px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 16px 48px -8px rgba(0, 0, 0, 0.7), 0 4px 16px -2px rgba(0, 0, 0, 0.5);
+  background: #181a1d;
+  border: 1px solid #282c32;
+  box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.7);
 }
 
 /* =========================================================================
@@ -231,26 +217,26 @@
 }
 
 /* =========================================================================
-   Tactile 3D Keycaps (Physical Keyboard Sensory Delight)
+   Linear Mechanical Keycaps (Tactile Solid Physical Keycap)
    ========================================================================= */
 .apple-keycap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-system);
-  font-weight: 600;
-  background: linear-gradient(180deg, #2e2e32 0%, #1c1c1f 100%);
-  border: 0.5px solid rgba(255, 255, 255, 0.22);
-  border-bottom: 2px solid rgba(0, 0, 0, 0.85);
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.12s ease, border-bottom-width 0.12s ease;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 500;
+  background: #181a1d;
+  color: #f4f5f6;
+  border: 1px solid #34383f;
+  border-bottom: 2px solid #23262a;
+  border-radius: 5px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  transition: transform 0.1s ease, border-bottom-width 0.1s ease;
   user-select: none;
 }
 .apple-keycap:active, .apple-keycap.active {
-  transform: translateY(1.5px);
+  transform: translateY(1px);
   border-bottom-width: 1px;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.7), 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 /* Custom minimal scrollbar */
