@@ -14,8 +14,23 @@ export async function POST(req: Request) {
 
   const customStream = new ReadableStream({
     async start(controller) {
-      const sendEvent = (event: string, data: any) => {
-        controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+      const sendEvent = (event: string, rawData: any) => {
+        let payload: any = { type: event };
+        if (event === 'step') {
+          payload.step = rawData?.step || rawData;
+        } else if (event === 'finding') {
+          payload.finding = rawData?.finding || rawData;
+        } else if (event === 'complete') {
+          payload.auditRun = rawData?.auditRun || rawData;
+          payload.shareUrl = rawData?.shareUrl || (payload.auditRun?.id ? `/scorecard/${payload.auditRun.id}` : '');
+        } else if (event === 'status') {
+          payload.message = rawData?.message || (typeof rawData === 'string' ? rawData : 'Processing...');
+        } else if (event === 'error') {
+          payload.error = rawData?.error || rawData?.message || 'Audit encountered an issue';
+        } else if (typeof rawData === 'object' && rawData !== null) {
+          payload = { ...payload, ...rawData };
+        }
+        controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`));
       };
 
       try {
