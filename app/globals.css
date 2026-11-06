@@ -23,6 +23,81 @@
   --text-tertiary: #6b7280;
 }
 
+[data-theme="oled"] {
+  --bg-primary: #000000;
+  --bg-secondary: #080808;
+  --surface-group: #0d0d0d;
+  --surface-raised: #141414;
+  --separator: #1f1f1f;
+  --separator-strong: #2a2a2a;
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+}
+
+[data-theme="light"] {
+  --bg-primary: #f6f8fa;
+  --bg-secondary: #ffffff;
+  --surface-group: #ffffff;
+  --surface-raised: #f3f4f6;
+  --surface-overlay: rgba(255, 255, 255, 0.95);
+  --separator: #d0d7de;
+  --separator-strong: #afb8c1;
+  --text-primary: #1f2328;
+  --text-secondary: #656d76;
+  --text-tertiary: #8c959f;
+}
+
+/* Light mode overrides for component utility classes */
+[data-theme="light"] body {
+  background-color: #f6f8fa;
+  color: #1f2328;
+}
+
+[data-theme="light"] .bg-\[\#0c0d0e\] {
+  background-color: #f6f8fa !important;
+}
+
+[data-theme="light"] .bg-\[\#141517\] {
+  background-color: #ffffff !important;
+}
+
+[data-theme="light"] .bg-\[\#181a1d\] {
+  background-color: #f6f8fa !important;
+}
+
+[data-theme="light"] .bg-\[\#1f2226\] {
+  background-color: #eaeef2 !important;
+}
+
+[data-theme="light"] .border-\[\#23262a\] {
+  border-color: #d0d7de !important;
+}
+
+[data-theme="light"] .border-\[\#34383e\] {
+  border-color: #afb8c1 !important;
+}
+
+[data-theme="light"] .text-\[\#f4f5f6\] {
+  color: #1f2328 !important;
+}
+
+[data-theme="light"] .text-\[\#9ba1a6\] {
+  color: #656d76 !important;
+}
+
+/* OLED Mode overrides */
+[data-theme="oled"] .bg-\[\#0c0d0e\] {
+  background-color: #000000 !important;
+}
+
+[data-theme="oled"] .bg-\[\#141517\] {
+  background-color: #080808 !important;
+}
+
+[data-theme="oled"] .border-\[\#23262a\] {
+  border-color: #1c1c1c !important;
+}
+
 @layer base {
   * {
     border-color: var(--separator);

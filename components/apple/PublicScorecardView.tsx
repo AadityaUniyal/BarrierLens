@@ -19,6 +19,7 @@ import {
   Download
 } from 'lucide-react';
 import { AuditRun } from '@/lib/barrierlens/types';
+import { ExecutiveReportModal } from './ExecutiveReportModal';
 
 interface PublicScorecardViewProps {
   auditRun?: AuditRun | null;
@@ -27,6 +28,7 @@ interface PublicScorecardViewProps {
 export function PublicScorecardView({ auditRun }: PublicScorecardViewProps) {
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedBadge, setCopiedBadge] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const runId = auditRun?.id || 'demo_run_latest';
   const effortRatio = auditRun?.effortRatio ?? 4.2;
@@ -136,12 +138,12 @@ export function PublicScorecardView({ auditRun }: PublicScorecardViewProps) {
 
           <button
             type="button"
-            onClick={() => window.print()}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#181a1d] hover:bg-[#1f2226] text-xs font-medium text-[#9ba1a6] hover:text-[#f4f5f6] border border-[#2d3137] transition-all"
-            title="Print or Save as PDF"
+            onClick={() => setIsPreviewOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#181a1d] hover:bg-[#1f2226] text-xs font-medium text-[#f4f5f6] border border-[#2d3137] transition-all"
+            title="Preview Formal Executive Audit Certificate & PDF"
           >
-            <Printer className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">PDF</span>
+            <Printer className="w-3.5 h-3.5 text-[#5e6ad2]" />
+            <span>Audit PDF Sheet</span>
           </button>
         </div>
       </div>
@@ -293,6 +295,14 @@ export function PublicScorecardView({ auditRun }: PublicScorecardViewProps) {
         </div>
 
       </div>
+
+      {/* Executive PDF & Printable Certificate Modal */}
+      <ExecutiveReportModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        auditRun={auditRun || null}
+        grade={grade}
+      />
     </div>
   );
 }

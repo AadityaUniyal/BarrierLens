@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Zap, 
   Compass, 
@@ -17,7 +17,10 @@ import {
   Cpu,
   Flame,
   Dna,
-  Layers
+  Layers,
+  Sun,
+  Moon,
+  Contrast
 } from 'lucide-react';
 import { UserSession } from './AppleAuthModal';
 
@@ -64,6 +67,30 @@ export function Navbar({
   onOpenAuth
 }: NavbarProps) {
   const [isToolsOpen, setIsToolsOpen] = useState(false);
+  const [theme, setTheme] = useState<'dark' | 'oled' | 'light'>('dark');
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('barrierlens-theme') as 'dark' | 'oled' | 'light';
+      if (saved && (saved === 'dark' || saved === 'oled' || saved === 'light')) {
+        setTheme(saved);
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+    } catch {
+      // ignore SSR or storage restriction
+    }
+  }, []);
+
+  const cycleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'oled' : theme === 'oled' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    try {
+      document.documentElement.setAttribute('data-theme', nextTheme);
+      localStorage.setItem('barrierlens-theme', nextTheme);
+    } catch {
+      // ignore
+    }
+  };
 
   // Core High-Conviction Hubs
   const primaryHubs = [
@@ -211,6 +238,18 @@ export function Navbar({
             <kbd className="hidden sm:inline-block px-1 py-0.2 text-[10px] font-mono text-[#6b7280] bg-[#181a1d] rounded border border-[#23262a]">
               ⌘K
             </kbd>
+          </button>
+
+          {/* Theme Mode Switcher (Linear Slate / OLED Black / Paper Light) */}
+          <button
+            type="button"
+            onClick={cycleTheme}
+            className="p-1.5 rounded-md bg-[#141517] hover:bg-[#1a1c1e] text-[#9ba1a6] hover:text-[#f4f5f6] border border-[#23262a] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0090ff]"
+            title={`Active Theme: ${theme.toUpperCase()} (Click to toggle)`}
+          >
+            {theme === 'dark' && <Moon className="w-3.5 h-3.5 text-[#5e6ad2]" />}
+            {theme === 'oled' && <Contrast className="w-3.5 h-3.5 text-[#f4f5f6]" />}
+            {theme === 'light' && <Sun className="w-3.5 h-3.5 text-[#f76808]" />}
           </button>
 
           {/* User Session Profile or Sign In */}

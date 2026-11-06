@@ -18,10 +18,12 @@ import {
   Layers,
   Sliders,
   Eye,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Printer
 } from 'lucide-react';
 import { AuditRun, BarrierFinding, VerifiedFixResult, FindingKind } from '@/lib/barrierlens/types';
 import { BarrierDetailView } from './BarrierDetailView';
+import { ExecutiveReportModal } from './ExecutiveReportModal';
 
 export interface ExecutiveReportProps {
   auditRun: AuditRun;
@@ -42,6 +44,7 @@ export function ExecutiveReport({
     auditRun.findings[0]?.id || ''
   );
   const [activeFilter, setActiveFilter] = useState<FilterCategory>('all');
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const selectedFinding = auditRun.findings.find(f => f.id === selectedFindingId) || auditRun.findings[0];
   const activeFix = selectedFinding ? verifiedFixes[selectedFinding.id] : null;
@@ -167,20 +170,32 @@ export function ExecutiveReport({
         {/* Left: Plain Words Executive Verdict Hero (8 Columns) */}
         <div className="md:col-span-8 bg-[#141517] rounded-2xl p-6 sm:p-8 flex flex-col justify-between border border-[#23262a] shadow-xl space-y-6">
           <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className={`text-[10px] font-mono uppercase px-3 py-1 rounded-md border font-bold ${
-                auditRun.taskSuccess
-                  ? 'bg-[#30a46c]/10 text-[#30a46c] border-[#30a46c]/30'
-                  : 'bg-[#e5484d]/10 text-[#e5484d] border-[#e5484d]/30'
-              }`}>
-                {auditRun.taskSuccess ? 'Task Accessible' : 'Task Flow Blocked'}
-              </span>
-              <span className="text-xs text-[#9ba1a6] font-mono">
-                {auditRun.steps.length} Physical Steps Traversed
-              </span>
-              <span className="text-[10px] font-mono text-[#9ba1a6] bg-[#0c0d0e] px-2 py-0.5 rounded border border-[#23262a]">
-                Overall Health: {complianceScores.overall}%
-              </span>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`text-[10px] font-mono uppercase px-3 py-1 rounded-md border font-bold ${
+                  auditRun.taskSuccess
+                    ? 'bg-[#30a46c]/10 text-[#30a46c] border-[#30a46c]/30'
+                    : 'bg-[#e5484d]/10 text-[#e5484d] border-[#e5484d]/30'
+                }`}>
+                  {auditRun.taskSuccess ? 'Task Accessible' : 'Task Flow Blocked'}
+                </span>
+                <span className="text-xs text-[#9ba1a6] font-mono">
+                  {auditRun.steps.length} Physical Steps Traversed
+                </span>
+                <span className="text-[10px] font-mono text-[#9ba1a6] bg-[#0c0d0e] px-2 py-0.5 rounded border border-[#23262a]">
+                  Overall Health: {complianceScores.overall}%
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsPreviewOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#181a1d] hover:bg-[#1f2226] text-xs font-medium text-[#f4f5f6] border border-[#282c32] transition-colors"
+                title="Preview Formal Executive PDF Certificate"
+              >
+                <Printer className="w-3.5 h-3.5 text-[#5e6ad2]" />
+                <span>Executive PDF Preview</span>
+              </button>
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#f4f5f6] leading-tight">
@@ -577,6 +592,14 @@ export function ExecutiveReport({
           activeFix={activeFix}
         />
       )}
+
+      {/* Formal Executive PDF Certificate Modal */}
+      <ExecutiveReportModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        auditRun={auditRun}
+        grade={complianceScores.overall >= 85 ? 'A' : complianceScores.overall >= 70 ? 'B+' : 'C'}
+      />
     </div>
   );
 }
