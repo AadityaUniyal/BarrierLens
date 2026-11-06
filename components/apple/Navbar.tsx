@@ -102,7 +102,7 @@ export function Navbar({
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-2xl bg-[#050507]/80 border-b border-white/[0.08] transition-all duration-200">
       <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
-        {/* Brand */}
+        {/* Brand & Story Link */}
         <div className="flex items-center gap-3">
           <button 
             type="button"
@@ -122,6 +122,20 @@ export function Navbar({
                 </span>
               </span>
             </div>
+          </button>
+
+          {/* Distinct Product Story Pill */}
+          <button
+            type="button"
+            onClick={() => setActiveScreen('story')}
+            className={`hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-all ${
+              activeScreen === 'story'
+                ? 'bg-gradient-to-r from-[#0071e3] to-[#bf5af2] text-white border-transparent shadow-[0_2px_12px_rgba(0,113,227,0.4)]'
+                : 'bg-white/[0.04] text-[#86868b] hover:text-white border-white/[0.06] hover:bg-white/[0.08]'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#30d158]" />
+            <span>Story & Live Demos</span>
           </button>
         </div>
 
