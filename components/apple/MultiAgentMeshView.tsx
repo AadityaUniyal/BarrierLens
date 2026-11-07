@@ -52,7 +52,7 @@ export function MultiAgentMeshView() {
       status: isRunning ? 'active' : 'idle',
       description: 'Coordinates agent task assignment, token budgets, and consensus verification.',
       icon: Network,
-      accent: 'border-blue-500/30 text-blue-400 bg-blue-500/10'
+      accent: 'border-blue-500/20 text-blue-400 bg-blue-500/10'
     },
     {
       role: 'navigator',
@@ -61,7 +61,7 @@ export function MultiAgentMeshView() {
       status: isRunning ? 'active' : 'idle',
       description: 'Drives physical traversal strictly through keyboard, screen reader, and speech limits.',
       icon: Bot,
-      accent: 'border-purple-500/30 text-purple-400 bg-purple-500/10'
+      accent: 'border-purple-500/20 text-purple-400 bg-purple-500/10'
     },
     {
       role: 'forensic_auditor',
@@ -70,7 +70,7 @@ export function MultiAgentMeshView() {
       status: isRunning ? 'active' : 'certified',
       description: 'Tarjan SCC cycles, Kendall tau visual-focus correlation, and W3C AccName provenance.',
       icon: Dna,
-      accent: 'border-amber-500/30 text-amber-400 bg-amber-500/10'
+      accent: 'border-amber-500/20 text-amber-400 bg-amber-500/10'
     },
     {
       role: 'red_team_chaos',
@@ -79,7 +79,7 @@ export function MultiAgentMeshView() {
       status: isRunning ? 'stressing' : 'idle',
       description: 'Applies network throttling, 320px viewport reflow, and Parkinson motor tremors.',
       icon: Flame,
-      accent: 'border-rose-500/30 text-rose-400 bg-rose-500/10'
+      accent: 'border-rose-500/20 text-rose-400 bg-rose-500/10'
     },
     {
       role: 'causal_repair',
@@ -88,7 +88,7 @@ export function MultiAgentMeshView() {
       status: isRunning ? 'active' : 'certified',
       description: 'Pearl SCM causal graphs and do(X=x) calculus synthesizing minimal HTML/ARIA patches.',
       icon: GitBranch,
-      accent: 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
+      accent: 'border-emerald-500/20 text-emerald-400 bg-emerald-500/10'
     },
     {
       role: 'sandbox_judge',
@@ -97,7 +97,7 @@ export function MultiAgentMeshView() {
       status: isRunning ? 'active' : 'certified',
       description: 'Executes within AWS Firecracker container, certifying 0 regressions with SHA-256 proofs.',
       icon: ShieldCheck,
-      accent: 'border-teal-500/30 text-teal-400 bg-teal-500/10'
+      accent: 'border-teal-500/20 text-teal-400 bg-teal-500/10'
     }
   ];
 
@@ -119,25 +119,23 @@ export function MultiAgentMeshView() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner: AWS Strands & Sandbox Overview */}
-      <div className="apple-vibrancy-regular rounded-3xl p-6 border-hairline relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-500/10 via-teal-500/5 to-transparent blur-3xl pointer-events-none" />
-
+    <div className="space-y-5">
+      {/* 1. Top Banner: AWS Strands & Sandbox Overview */}
+      <div className="rounded-xl p-5 bg-[#141517] border border-[#23262a] relative overflow-hidden">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500/20 to-teal-600/20 border border-blue-400/30 flex items-center justify-center">
-              <Network className="w-5 h-5 text-blue-400" />
+            <div className="w-9 h-9 rounded-lg bg-[#5e6ad2]/10 border border-[#5e6ad2]/20 flex items-center justify-center text-[#5e6ad2]">
+              <Network className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-[19px] font-semibold text-[#f5f5f7]">Multi-Agent Cognitive Mesh</h2>
-                <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                  AWS Strands + Firecracker Sandbox
+                <h2 className="text-base font-semibold text-[#f4f5f6]">Multi-Agent Cognitive Mesh</h2>
+                <span className="px-2 py-0.5 text-[10px] font-mono rounded bg-[#5e6ad2]/10 text-[#5e6ad2] border border-[#5e6ad2]/20">
+                  AWS Strands + Firecracker MicroVMs
                 </span>
               </div>
-              <p className="text-[13px] text-[#86868b]">
-                6 autonomous agents orchestrated via AWS EventBridge, Bedrock inference, S3 artifact persistence, and isolated micro-sandboxes
+              <p className="text-[12px] text-[#9ba1a6]">
+                6 autonomous agents orchestrated via AWS EventBridge, Bedrock inference, S3 artifact persistence, and isolated replay sandboxes.
               </p>
             </div>
           </div>
@@ -147,100 +145,100 @@ export function MultiAgentMeshView() {
             type="button"
             disabled={isRunning}
             onClick={handleLaunchMesh}
-            className={`px-5 py-2.5 rounded-2xl font-medium text-sm transition-all duration-200 flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-lg font-medium text-xs transition-all flex items-center gap-2 shadow-sm ${
               isRunning
-                ? 'bg-blue-500/20 text-blue-300 cursor-not-allowed border border-blue-500/30'
-                : 'bg-[#0071e3] hover:bg-[#0077ed] text-white shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98]'
+                ? 'bg-[#181a1d] text-[#9ba1a6] cursor-not-allowed border border-[#23262a]'
+                : 'bg-[#5e6ad2] hover:bg-[#6875e5] text-white'
             }`}
           >
             {isRunning ? (
               <>
-                <RefreshCw className="w-4 h-4 animate-spin" /> Orchestrating 6-Agent Mesh...
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Orchestrating 6-Agent Mesh...
               </>
             ) : (
               <>
-                <Play className="w-4 h-4 fill-current" /> Dispatch Multi-Agent Mission
+                <Play className="w-3.5 h-3.5 fill-current" /> Dispatch Multi-Agent Mission
               </>
             )}
           </button>
         </div>
       </div>
 
-      {/* AWS Strands Telemetry Pill Bar */}
+      {/* 2. AWS Strands Telemetry Pill Bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="p-4 rounded-2xl bg-white/[0.03] border-hairline flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-            <Cpu className="w-4 h-4 text-blue-400" />
+        <div className="p-3.5 rounded-lg bg-[#141517] border border-[#23262a] flex items-center gap-3">
+          <div className="w-8 h-8 rounded-md bg-[#181a1d] border border-[#23262a] flex items-center justify-center text-blue-400">
+            <Cpu className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[10px] font-mono uppercase text-[#86868b] block">AWS Bedrock</span>
-            <span className="text-[13px] font-semibold text-[#f5f5f7]">Claude 3.5 Sonnet</span>
+            <span className="text-[10px] font-mono uppercase text-[#62676d] block">AWS Bedrock</span>
+            <span className="text-xs font-semibold text-[#f4f5f6]">Claude 3.5 Sonnet</span>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white/[0.03] border-hairline flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
-            <Network className="w-4 h-4 text-purple-400" />
+        <div className="p-3.5 rounded-lg bg-[#141517] border border-[#23262a] flex items-center gap-3">
+          <div className="w-8 h-8 rounded-md bg-[#181a1d] border border-[#23262a] flex items-center justify-center text-purple-400">
+            <Network className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[10px] font-mono uppercase text-[#86868b] block">AWS EventBridge</span>
-            <span className="text-[13px] font-semibold text-[#f5f5f7]">SQS Pub/Sub Bus</span>
+            <span className="text-[10px] font-mono uppercase text-[#62676d] block">AWS EventBridge</span>
+            <span className="text-xs font-semibold text-[#f4f5f6]">SQS Event Bus</span>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white/[0.03] border-hairline flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-            <HardDrive className="w-4 h-4 text-amber-400" />
+        <div className="p-3.5 rounded-lg bg-[#141517] border border-[#23262a] flex items-center gap-3">
+          <div className="w-8 h-8 rounded-md bg-[#181a1d] border border-[#23262a] flex items-center justify-center text-amber-400">
+            <HardDrive className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[10px] font-mono uppercase text-[#86868b] block">AWS S3 Storage</span>
-            <span className="text-[13px] font-semibold text-[#f5f5f7]">Artifacts &amp; Traces</span>
+            <span className="text-[10px] font-mono uppercase text-[#62676d] block">AWS S3 Vault</span>
+            <span className="text-xs font-semibold text-[#f4f5f6]">Artifacts &amp; Traces</span>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white/[0.03] border-hairline flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-            <Lock className="w-4 h-4 text-emerald-400" />
+        <div className="p-3.5 rounded-lg bg-[#141517] border border-[#23262a] flex items-center gap-3">
+          <div className="w-8 h-8 rounded-md bg-[#181a1d] border border-[#23262a] flex items-center justify-center text-emerald-400">
+            <Lock className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[10px] font-mono uppercase text-[#86868b] block">Firecracker Sandbox</span>
-            <span className="text-[13px] font-semibold text-emerald-400">Egress Firewall ON</span>
+            <span className="text-[10px] font-mono uppercase text-[#62676d] block">Firecracker Sandbox</span>
+            <span className="text-xs font-semibold text-emerald-400">Egress Blocked</span>
           </div>
         </div>
       </div>
 
-      {/* 6 Specialized Agent Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* 3. 6 Specialized Agent Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {agents.map((agent) => {
           const Icon = agent.icon;
           return (
             <div
               key={agent.role}
-              className="apple-vibrancy-regular rounded-3xl p-5 border-hairline space-y-3 relative overflow-hidden group hover:bg-white/[0.06] transition-colors"
+              className="rounded-lg p-4 bg-[#141517] border border-[#23262a] hover:border-[#34383e] space-y-2.5 transition-colors"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center border ${agent.accent}`}>
-                    <Icon className="w-4 h-4" />
+                  <div className={`w-7 h-7 rounded-md flex items-center justify-center border ${agent.accent}`}>
+                    <Icon className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <h3 className="text-[14px] font-semibold text-[#f5f5f7]">{agent.name}</h3>
-                    <span className="text-[11px] font-mono text-[#86868b]">{agent.strand}</span>
+                    <h3 className="text-xs font-semibold text-[#f4f5f6]">{agent.name}</h3>
+                    <span className="text-[10px] font-mono text-[#62676d]">{agent.strand}</span>
                   </div>
                 </div>
 
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono uppercase border ${
+                <span className={`px-2 py-0.5 rounded text-[9px] font-mono uppercase border ${
                   agent.status === 'active'
-                    ? 'bg-blue-500/15 text-blue-300 border-blue-500/30 animate-pulse'
+                    ? 'bg-blue-500/10 text-blue-300 border-blue-500/20 animate-pulse'
                     : agent.status === 'stressing'
-                    ? 'bg-rose-500/15 text-rose-300 border-rose-500/30 animate-pulse'
-                    : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                    ? 'bg-rose-500/10 text-rose-300 border-rose-500/20 animate-pulse'
+                    : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
                 }`}>
                   {agent.status}
                 </span>
               </div>
 
-              <p className="text-[12px] text-[#86868b] leading-relaxed">
+              <p className="text-[11px] text-[#9ba1a6] leading-relaxed">
                 {agent.description}
               </p>
             </div>
@@ -248,12 +246,12 @@ export function MultiAgentMeshView() {
         })}
       </div>
 
-      {/* Live Inter-Agent Communication Bus Log */}
-      <div className="apple-vibrancy-regular rounded-3xl p-6 border-hairline space-y-4">
+      {/* 4. Live Inter-Agent Communication Bus Log */}
+      <div className="rounded-xl p-5 bg-[#141517] border border-[#23262a] space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Terminal className="w-4 h-4 text-blue-400" />
-            <h3 className="text-[15px] font-medium text-[#f5f5f7]">
+            <Terminal className="w-4 h-4 text-[#5e6ad2]" />
+            <h3 className="text-xs font-mono uppercase tracking-wider text-[#f4f5f6]">
               AWS EventBridge Inter-Agent Message Stream
             </h3>
           </div>
@@ -262,12 +260,12 @@ export function MultiAgentMeshView() {
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-black/50 border border-white/[0.04] font-mono text-[12px] space-y-2.5 max-h-64 overflow-y-auto">
+        <div className="p-3.5 rounded-lg bg-[#0c0d0e] border border-[#23262a] font-mono text-[11px] space-y-2 max-h-56 overflow-y-auto">
           {agentLogs.map((log, idx) => (
             <div key={idx} className="flex items-start gap-2 leading-relaxed">
-              <span className="text-[#6e6e73] shrink-0">[{log.time}]</span>
+              <span className="text-[#62676d] shrink-0">[{log.time}]</span>
               <span className={`font-semibold shrink-0 ${log.color}`}>{log.from} → {log.to}:</span>
-              <span className="text-[#d1d1d6]">{log.text}</span>
+              <span className="text-[#f4f5f6]">{log.text}</span>
             </div>
           ))}
         </div>
