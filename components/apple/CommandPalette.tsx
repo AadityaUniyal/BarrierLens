@@ -19,7 +19,8 @@ import {
   ShieldCheck,
   CheckCircle2,
   CornerDownLeft,
-  LayoutDashboard
+  LayoutDashboard,
+  Award
 } from 'lucide-react';
 import { ScreenId } from './Navbar';
 
@@ -53,6 +54,7 @@ export function CommandPalette({ isOpen, onClose, onSelectScreen, onRunAudit }: 
 
     // Primary Actions
     { id: 'act-run', category: 'Actions', label: 'Launch Autonomous Flow Audit', description: 'Dispatch Tarjan graph & screen reader probes', icon: Play, shortcut: '↵', action: () => { onRunAudit(); onClose(); } },
+    { id: 'act-cert', category: 'Actions', label: 'Export Cryptographic Causal Certificate', description: 'Download verified SHA-256 certificate and PR markdown', icon: Award, shortcut: 'C', action: () => { onSelectScreen('audits'); onClose(); } },
 
     // Diagnostics & Lab Tools
     { id: 'lab-focus', category: 'Diagnostics', label: 'Focus Map & Kendall\'s Tau Meter', description: '2D keyboard geometry and concordance score', icon: Terminal, shortcut: 'F', action: () => { onSelectScreen('focus-map'); onClose(); } },

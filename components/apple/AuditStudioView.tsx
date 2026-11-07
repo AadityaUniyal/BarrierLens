@@ -20,13 +20,15 @@ import {
   Share2,
   Sparkles,
   ShieldCheck,
-  Eye
+  Eye,
+  Award
 } from 'lucide-react';
 import { AuditRun, BarrierFinding, ActionStep, PersonaType } from '@/lib/barrierlens/types';
 import { TraceTheater } from './TraceTheater';
 import { ScreenReaderTranscript } from './ScreenReaderTranscript';
 import { FocusMapView } from './FocusMapView';
 import { CDPPatchSimulator } from './CDPPatchSimulator';
+import { CausalCertificateDrawer } from './CausalCertificateDrawer';
 
 interface AuditStudioViewProps {
   targetUrl: string;
@@ -67,6 +69,7 @@ export function AuditStudioView({
 }: AuditStudioViewProps) {
   const [activeTab, setActiveTab] = useState<StudioViewTab>('viewport');
   const [speechActive, setSpeechActive] = useState<boolean>(true);
+  const [isCertDrawerOpen, setIsCertDrawerOpen] = useState<boolean>(false);
 
   // Verified benchmark presets
   const benchmarkPresets = [
@@ -169,6 +172,16 @@ export function AuditStudioView({
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsCertDrawerOpen(true)}
+              className="px-3 py-1.5 rounded-lg bg-[#181a1d] hover:bg-[#23262a] text-xs font-medium text-[#f4f5f6] border border-[#23262a] transition-all flex items-center gap-1.5 shadow-sm"
+              title="Inspect and Export Cryptographic Causal Certificate"
+            >
+              <Award className="w-3.5 h-3.5 text-[#5e6ad2]" />
+              <span>Export Certificate</span>
+            </button>
+
             {!auditResult && (
               <button
                 type="button"
@@ -515,6 +528,15 @@ export function AuditStudioView({
         </div>
 
       </div>
+
+      {/* Cryptographic Causal Certificate Drawer Modal */}
+      <CausalCertificateDrawer
+        isOpen={isCertDrawerOpen}
+        onClose={() => setIsCertDrawerOpen(false)}
+        finding={findings[0]}
+        auditResult={auditResult}
+        targetUrl={targetUrl}
+      />
 
     </div>
   );
