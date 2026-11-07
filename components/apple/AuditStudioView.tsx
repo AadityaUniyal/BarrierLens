@@ -26,6 +26,7 @@ import { AuditRun, BarrierFinding, ActionStep, PersonaType } from '@/lib/barrier
 import { TraceTheater } from './TraceTheater';
 import { ScreenReaderTranscript } from './ScreenReaderTranscript';
 import { FocusMapView } from './FocusMapView';
+import { CDPPatchSimulator } from './CDPPatchSimulator';
 
 interface AuditStudioViewProps {
   targetUrl: string;
@@ -351,57 +352,30 @@ export function AuditStudioView({
               </div>
             </div>
 
-            {/* Tab 1: Default CDP Viewport */}
+            {/* Tab 1: Live CDP Viewport with Before/After Patch Simulator */}
             {activeTab === 'viewport' && (
-              <div className="flex-1 flex flex-col justify-between">
-                <div className="flex-1 bg-[#0c0d0e] p-6 flex flex-col items-center justify-center relative overflow-hidden min-h-[380px]">
-                  <div className="w-full max-w-md p-5 rounded-xl bg-[#141517] border border-[#23262a] space-y-3.5 shadow-xl">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono uppercase text-[#9ba1a6] tracking-wider font-semibold">
-                        Current Focus Target
-                      </span>
-                      <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#5e6ad2]/10 text-[#5e6ad2] border border-[#5e6ad2]/20 font-medium">
-                        {activeElementSelector}
-                      </span>
-                    </div>
-
-                    <div className="p-3 rounded-lg bg-[#0c0d0e] border border-[#23262a] space-y-1">
-                      <div className="text-xs text-[#f4f5f6] font-medium">
-                        Goal: {goal}
-                      </div>
-                      <div className="text-[11px] text-[#9ba1a6]">
-                        Traversal Bounds: <span className="text-[#f4f5f6] font-mono capitalize">{persona.replace(/_/g, ' ')}</span>
-                      </div>
-                    </div>
-
-                    {/* Focus Ring Indicator */}
-                    <div className="p-2.5 rounded-lg border border-[#5e6ad2] bg-[#5e6ad2]/5 flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#5e6ad2]" />
-                        <span className="font-mono text-[11px] text-[#f4f5f6]">
-                          Active: {activeElementSelector}
-                        </span>
-                      </div>
-                      <span className="text-[10px] text-[#9ba1a6] font-mono">WCAG 2.4.7 Focus Visible</span>
-                    </div>
-                  </div>
-
-                  {/* Streaming Status Overlay */}
-                  {isAuditing && (
-                    <div className="absolute bottom-4 left-4 right-4 px-3.5 py-2 rounded-lg bg-[#141517] border border-[#23262a] text-xs text-[#f4f5f6] flex items-center gap-2.5 shadow-xl">
-                      <div className="w-2 h-2 rounded-full bg-[#5e6ad2] animate-ping" />
-                      <span className="truncate font-mono text-[11px]">{streamingStatus || 'Auditor executing next action...'}</span>
-                    </div>
-                  )}
-                </div>
+              <div className="flex-1 flex flex-col justify-between p-4 space-y-4">
+                <CDPPatchSimulator
+                  targetUrl={targetUrl}
+                  goal={goal}
+                  persona={persona}
+                  findings={findings}
+                  activeElementSelector={activeElementSelector}
+                  setActiveElementSelector={setActiveElementSelector}
+                  activeKey={activeKey}
+                  setActiveKey={setActiveKey}
+                  isAuditing={isAuditing}
+                  streamingStatus={streamingStatus}
+                  onSelectFinding={onSelectFinding}
+                />
 
                 {/* Bottom: Mechanical Physical Keystroke Visualizer */}
-                <div className="p-3.5 bg-[#181a1d] border-t border-[#23262a] space-y-2">
+                <div className="p-3.5 bg-[#181a1d] rounded-xl border border-[#23262a] space-y-2">
                   <div className="flex items-center justify-between text-[10px] font-mono text-[#9ba1a6]">
                     <span className="font-semibold uppercase tracking-wider text-[#62676d]">
                       Physical Keystroke Visualizer
                     </span>
-                    <span>Direct CDP input dispatch</span>
+                    <span>CDP Hardware Event Stream</span>
                   </div>
 
                   <div className="flex items-center gap-2 overflow-x-auto py-0.5">
