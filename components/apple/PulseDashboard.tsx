@@ -14,7 +14,10 @@ import {
   ExternalLink,
   Sparkles,
   Play,
-  RotateCcw
+  RotateCcw,
+  Cpu,
+  Layers,
+  ArrowUpRight
 } from 'lucide-react';
 import { AuditRun } from '@/lib/barrierlens/types';
 
@@ -44,24 +47,26 @@ export function PulseDashboard({
   // Derive active run (either live latestRun or most recent historical run)
   const active = latestRun || (runsHistory.length > 0 ? runsHistory[0] : null);
 
-  // Dynamic 3-Ring Computations
+  // Dynamic Metrics Computation
   const totalFindings = active?.findings ? active.findings.length : (active?.payload?.findings?.length || 1);
   const criticalFindings = active?.findings 
     ? active.findings.filter((f: any) => (f.severity === 'critical' || f.severity === 'high') && !f.verifiedFix).length 
     : (active?.task_success ? 0 : 1);
 
-  // Ring 1 (Red / Outer): Spatial Traversal & Focus Traps (100% when no traps or all fixed)
+  // Metric 1: Spatial Traversal & Focus Traps
   const spatialScore = Math.max(25, Math.min(100, Math.round((1 - (criticalFindings / Math.max(1, totalFindings))) * 100)));
 
-  // Ring 2 (Green / Middle): Auditory Flow & Speech Parity (Monotonic Kendall Tau)
+  // Metric 2: Auditory Flow & Speech Parity (Monotonic Kendall Tau)
   const auditoryScore = active?.kendallTau?.tau !== undefined 
     ? Math.max(30, Math.min(100, Math.round((active.kendallTau.tau + 1) * 50))) 
     : (active?.task_success ? 94 : 78);
 
-  // Ring 3 (Blue / Inner): Cognitive Friction & Direct Action Ratio
+  // Metric 3: Cognitive Friction & Direct Action Ratio
   const cognitiveScore = active?.effortRatio 
     ? Math.max(30, Math.min(100, Math.round(100 / Math.max(1, active.effortRatio * 0.25)))) 
     : 92;
+
+  const overallTraversability = Math.round((spatialScore + auditoryScore + cognitiveScore) / 3);
 
   // Table rows to display
   const displayRuns = runsHistory.length > 0 ? runsHistory : [
@@ -84,29 +89,29 @@ export function PulseDashboard({
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-6 text-[#f4f5f6]">
       {/* 1. Header Greeting & Status */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-white/[0.06]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#23262a]">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2 h-2 rounded-full bg-[#30d158] animate-pulse" />
-            <span className="text-[12px] font-semibold tracking-wider uppercase text-[#86868b]">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-[#9ba1a6]">
               Pulse · Continuous Accessibility Radar
             </span>
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight text-[#f5f5f7]">
+          <h1 className="text-2xl font-bold tracking-tight text-[#f4f5f6]">
             Accessibility Overview
           </h1>
-          <p className="text-[14px] text-[#86868b] mt-0.5">
-            Real-time traversability telemetry across your verified web properties.
+          <p className="text-[13px] text-[#9ba1a6] mt-0.5">
+            Real-time physical traversability telemetry across your monitored web properties.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={onRunQuickAudit}
             disabled={isAuditing}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#0071e3] text-white text-[13px] font-medium hover:bg-[#0077ed] active:scale-[0.98] transition-all shadow-lg shadow-blue-500/25 disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5e6ad2] hover:bg-[#6875e5] text-white text-xs font-semibold shadow-sm transition-all disabled:opacity-50"
           >
             {isAuditing ? (
               <>
@@ -115,7 +120,7 @@ export function PulseDashboard({
               </>
             ) : (
               <>
-                <Play className="w-3.5 h-3.5 fill-white" />
+                <Play className="w-3.5 h-3.5 fill-current" />
                 <span>Run Quick Audit</span>
               </>
             )}
@@ -123,256 +128,240 @@ export function PulseDashboard({
         </div>
       </div>
 
-      {/* 2. Apple Watch 3-Ring Activity Widget & Live Telemetry Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Apple Watch 3-Ring Widget (5 Columns) */}
-        <div className="lg:col-span-5 apple-vibrancy-regular rounded-3xl p-6 border-hairline flex flex-col justify-between shadow-2xl relative overflow-hidden">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <span className="text-[11px] font-semibold tracking-wider uppercase text-[#86868b] block">
-                Activity Scorecard
-              </span>
-              <h2 className="text-lg font-semibold text-[#f5f5f7]">Physical Traversability</h2>
-            </div>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border-hairline text-[11px] text-[#a1a1a6]">
-              <Activity className="w-3.5 h-3.5 text-[#30d158]" />
-              <span>Live Pulse</span>
-            </div>
+      {/* 2. Top Metric Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Card 1: Overall Traversability Index */}
+        <div className="rounded-xl p-5 bg-[#141517] border border-[#23262a] space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono uppercase text-[#9ba1a6] tracking-wider font-semibold">
+              Traversability Index
+            </span>
+            <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
+              overallTraversability >= 80 
+                ? 'bg-emerald-500/10 text-[#30d158] border-emerald-500/20' 
+                : 'bg-amber-500/10 text-[#ff9f0a] border-amber-500/20'
+            }`}>
+              {overallTraversability >= 80 ? 'Optimal' : 'Action Required'}
+            </span>
           </div>
-
-          {/* 3-Ring SVG Concentric Visualizer */}
-          <div className="flex items-center justify-center my-4 relative">
-            <svg className="w-48 h-48 -rotate-90 transform" viewBox="0 0 100 100">
-              {/* Outer Ring Background (Red / Spatial) */}
-              <circle cx="50" cy="50" r="40" fill="transparent" stroke="#ff453a" strokeOpacity="0.15" strokeWidth="6" />
-              {/* Outer Ring Progress */}
-              <circle
-                cx="50"
-                cy="50"
-                r="40"
-                fill="transparent"
-                stroke="#ff453a"
-                strokeWidth="6"
-                strokeDasharray={`${2 * Math.PI * 40}`}
-                strokeDashoffset={`${2 * Math.PI * 40 * (1 - spatialScore / 100)}`}
-                strokeLinecap="round"
-                className="transition-all duration-1000 ease-out"
-              />
-
-              {/* Middle Ring Background (Green / Auditory) */}
-              <circle cx="50" cy="50" r="32" fill="transparent" stroke="#30d158" strokeOpacity="0.15" strokeWidth="6" />
-              {/* Middle Ring Progress */}
-              <circle
-                cx="50"
-                cy="50"
-                r="32"
-                fill="transparent"
-                stroke="#30d158"
-                strokeWidth="6"
-                strokeDasharray={`${2 * Math.PI * 32}`}
-                strokeDashoffset={`${2 * Math.PI * 32 * (1 - auditoryScore / 100)}`}
-                strokeLinecap="round"
-                className="transition-all duration-1000 ease-out"
-              />
-
-              {/* Inner Ring Background (Blue / Cognitive) */}
-              <circle cx="50" cy="50" r="24" fill="transparent" stroke="#0a84ff" strokeOpacity="0.15" strokeWidth="6" />
-              {/* Inner Ring Progress */}
-              <circle
-                cx="50"
-                cy="50"
-                r="24"
-                fill="transparent"
-                stroke="#0a84ff"
-                strokeWidth="6"
-                strokeDasharray={`${2 * Math.PI * 24}`}
-                strokeDashoffset={`${2 * Math.PI * 24 * (1 - cognitiveScore / 100)}`}
-                strokeLinecap="round"
-                className="transition-all duration-1000 ease-out"
-              />
-            </svg>
-
-            {/* Central Score */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-3xl font-bold tracking-tight text-[#f5f5f7]">
-                {Math.round((spatialScore + auditoryScore + cognitiveScore) / 3)}%
-              </span>
-              <span className="text-[10px] text-[#86868b] uppercase tracking-wider font-semibold">Traversable</span>
-            </div>
+          <div className="text-3xl font-bold tracking-tight font-mono text-[#f4f5f6]">
+            {overallTraversability}%
           </div>
+          <div className="h-1.5 w-full bg-[#181a1d] rounded-full overflow-hidden">
+            <div 
+              className={`h-full rounded-full transition-all duration-700 ${overallTraversability >= 80 ? 'bg-[#30d158]' : 'bg-[#ff9f0a]'}`}
+              style={{ width: `${overallTraversability}%` }}
+            />
+          </div>
+          <p className="text-[11px] text-[#62676d] pt-1">
+            Aggregate score across spatial, auditory, and cognitive bounds.
+          </p>
+        </div>
 
-          {/* Legend Metrics */}
-          <div className="grid grid-cols-3 gap-2 pt-4 border-t border-white/[0.06] text-center">
-            <div className="space-y-0.5">
-              <div className="flex items-center justify-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-[#ff453a]" />
-                <span className="text-[11px] text-[#86868b]">Spatial</span>
-              </div>
-              <p className="text-sm font-semibold text-[#f5f5f7]">{spatialScore}%</p>
+        {/* Card 2: Spatial Traversal */}
+        <div className="rounded-xl p-5 bg-[#141517] border border-[#23262a] space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono uppercase text-[#9ba1a6] tracking-wider font-semibold">
+              Spatial Traversal
+            </span>
+            <span className="w-2 h-2 rounded-full bg-[#ff453a]" />
+          </div>
+          <div className="text-3xl font-bold tracking-tight font-mono text-[#f4f5f6]">
+            {spatialScore}%
+          </div>
+          <div className="h-1.5 w-full bg-[#181a1d] rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-[#ff453a] rounded-full transition-all duration-700" 
+              style={{ width: `${spatialScore}%` }}
+            />
+          </div>
+          <p className="text-[11px] text-[#62676d] pt-1">
+            Keyboard sink traps: <strong className="text-[#f4f5f6] font-mono">{criticalFindings} detected</strong>
+          </p>
+        </div>
+
+        {/* Card 3: Auditory Flow */}
+        <div className="rounded-xl p-5 bg-[#141517] border border-[#23262a] space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono uppercase text-[#9ba1a6] tracking-wider font-semibold">
+              Auditory Sequence
+            </span>
+            <span className="w-2 h-2 rounded-full bg-[#30d158]" />
+          </div>
+          <div className="text-3xl font-bold tracking-tight font-mono text-[#f4f5f6]">
+            {auditoryScore}%
+          </div>
+          <div className="h-1.5 w-full bg-[#181a1d] rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-[#30d158] rounded-full transition-all duration-700" 
+              style={{ width: `${auditoryScore}%` }}
+            />
+          </div>
+          <p className="text-[11px] text-[#62676d] pt-1">
+            Kendall Tau correlation: <strong className="text-[#30d158] font-mono">τ = {active?.kendallTau?.tau ?? 0.52}</strong>
+          </p>
+        </div>
+
+        {/* Card 4: Cognitive Friction */}
+        <div className="rounded-xl p-5 bg-[#141517] border border-[#23262a] space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono uppercase text-[#9ba1a6] tracking-wider font-semibold">
+              Cognitive Friction
+            </span>
+            <span className="w-2 h-2 rounded-full bg-[#5e6ad2]" />
+          </div>
+          <div className="text-3xl font-bold tracking-tight font-mono text-[#f4f5f6]">
+            {active?.effortRatio ? `${active.effortRatio}x` : '1.2x'}
+          </div>
+          <div className="h-1.5 w-full bg-[#181a1d] rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-[#5e6ad2] rounded-full transition-all duration-700" 
+              style={{ width: `${cognitiveScore}%` }}
+            />
+          </div>
+          <p className="text-[11px] text-[#62676d] pt-1">
+            Constrained steps vs. baseline unconstrained clicks.
+          </p>
+        </div>
+      </div>
+
+      {/* 3. Feature Shortcuts Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Hub Card 1: Autonomous Studio */}
+        <div 
+          onClick={onOpenInspector}
+          className="rounded-xl p-5 bg-[#141517] border border-[#23262a] hover:border-[#34383e] flex flex-col justify-between transition-all cursor-pointer group"
+        >
+          <div className="space-y-2">
+            <div className="w-8 h-8 rounded-lg bg-[#5e6ad2]/10 border border-[#5e6ad2]/20 flex items-center justify-center text-[#5e6ad2]">
+              <Compass className="w-4 h-4" />
             </div>
-            <div className="space-y-0.5">
-              <div className="flex items-center justify-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-[#30d158]" />
-                <span className="text-[11px] text-[#86868b]">Auditory</span>
-              </div>
-              <p className="text-sm font-semibold text-[#f5f5f7]">{auditoryScore}%</p>
-            </div>
-            <div className="space-y-0.5">
-              <div className="flex items-center justify-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-[#0a84ff]" />
-                <span className="text-[11px] text-[#86868b]">Cognitive</span>
-              </div>
-              <p className="text-sm font-semibold text-[#f5f5f7]">{cognitiveScore}%</p>
-            </div>
+            <h3 className="text-sm font-semibold text-[#f4f5f6]">Audit Studio</h3>
+            <p className="text-xs text-[#9ba1a6] leading-relaxed">
+              Live CDP session with real-time keycaps, trace replay, and auditory feed.
+            </p>
+          </div>
+          <div className="pt-4 border-t border-[#23262a] flex items-center justify-between text-xs font-medium text-[#5e6ad2] mt-4">
+            <span>Launch Studio</span>
+            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
           </div>
         </div>
 
-        {/* Feature Highlights & Direct Navigation (7 Columns) */}
-        <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Card 1: Inspector Autonomous Traversal */}
-          <div className="apple-vibrancy-regular rounded-3xl p-6 border-hairline flex flex-col justify-between hover:border-white/20 transition-all">
-            <div className="space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-blue-500/10 border-hairline border-blue-500/20 flex items-center justify-center text-[#0a84ff]">
-                <Compass className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-[#f5f5f7]">Autonomous Inspector</h3>
-                <p className="text-[12px] text-[#86868b] mt-1">
-                  Evaluates interactive task flows using physical keyboard keycaps and CDP accessibility trees.
-                </p>
-              </div>
+        {/* Hub Card 2: Causal Fixes & PRs */}
+        <div 
+          onClick={onOpenRemedy}
+          className="rounded-xl p-5 bg-[#141517] border border-[#23262a] hover:border-[#34383e] flex flex-col justify-between transition-all cursor-pointer group"
+        >
+          <div className="space-y-2">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-[#30d158]">
+              <ShieldCheck className="w-4 h-4" />
             </div>
-            <button
-              onClick={onOpenInspector}
-              className="mt-6 flex items-center justify-between text-[12px] text-[#0a84ff] font-medium pt-3 border-t border-white/[0.06] group"
-            >
-              <span>Launch Live Inspector</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-            </button>
+            <h3 className="text-sm font-semibold text-[#f4f5f6]">Verified Fixes & PRs</h3>
+            <p className="text-xs text-[#9ba1a6] leading-relaxed">
+              Minimal AST patches verified in headless replay with 1-click GitHub Pull Requests.
+            </p>
           </div>
-
-          {/* Card 2: Remedy Causal AST Repair */}
-          <div className="apple-vibrancy-regular rounded-3xl p-6 border-hairline flex flex-col justify-between hover:border-white/20 transition-all">
-            <div className="space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border-hairline border-emerald-500/20 flex items-center justify-center text-[#30d158]">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-[#f5f5f7]">Causal Remedy</h3>
-                <p className="text-[12px] text-[#86868b] mt-1">
-                  Synthesizes minimal surgical AST diffs and verifies fix stability in a headless Playwright sandbox.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={onOpenRemedy}
-              className="mt-6 flex items-center justify-between text-[12px] text-[#30d158] font-medium pt-3 border-t border-white/[0.06] group"
-            >
-              <span>Review Surgical Fixes</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-            </button>
+          <div className="pt-4 border-t border-[#23262a] flex items-center justify-between text-xs font-medium text-[#30d158] mt-4">
+            <span>Review Fixes</span>
+            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
           </div>
+        </div>
 
-          {/* Card 3: Enterprise Vault & Team RBAC */}
-          <div className="apple-vibrancy-regular rounded-3xl p-6 border-hairline flex flex-col justify-between hover:border-white/20 transition-all">
-            <div className="space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-purple-500/10 border-hairline border-purple-500/20 flex items-center justify-center text-[#bf5af2]">
-                <Key className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-[#f5f5f7]">Enterprise Vault</h3>
-                <p className="text-[12px] text-[#86868b] mt-1">
-                  Manage scoped API keys, cryptographic webhooks, and Bedrock model quotas.
-                </p>
-              </div>
+        {/* Hub Card 3: Enterprise Vault */}
+        <div 
+          onClick={onOpenVault}
+          className="rounded-xl p-5 bg-[#141517] border border-[#23262a] hover:border-[#34383e] flex flex-col justify-between transition-all cursor-pointer group"
+        >
+          <div className="space-y-2">
+            <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+              <Key className="w-4 h-4" />
             </div>
-            <button
-              onClick={onOpenVault}
-              className="mt-6 flex items-center justify-between text-[12px] text-[#bf5af2] font-medium pt-3 border-t border-white/[0.06] group"
-            >
-              <span>Manage Administration</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-            </button>
+            <h3 className="text-sm font-semibold text-[#f4f5f6]">Enterprise Vault</h3>
+            <p className="text-xs text-[#9ba1a6] leading-relaxed">
+              API key credentials (`bl_live_...`), outbound webhooks, RBAC, and EAA 2025 pack.
+            </p>
           </div>
+          <div className="pt-4 border-t border-[#23262a] flex items-center justify-between text-xs font-medium text-purple-400 mt-4">
+            <span>Manage Vault</span>
+            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+          </div>
+        </div>
 
-          {/* Card 4: Genome Intelligence */}
-          <div className="apple-vibrancy-regular rounded-3xl p-6 border-hairline flex flex-col justify-between hover:border-white/20 transition-all">
-            <div className="space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border-hairline border-amber-500/20 flex items-center justify-center text-[#ff9f0a]">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-[#f5f5f7]">Genome Memory</h3>
-                <p className="text-[12px] text-[#86868b] mt-1">
-                  768-dimensional normalized barrier vector embeddings stored in Neon pgvector.
-                </p>
-              </div>
+        {/* Hub Card 4: Barrier Genome */}
+        <div 
+          onClick={onOpenGenome}
+          className="rounded-xl p-5 bg-[#141517] border border-[#23262a] hover:border-[#34383e] flex flex-col justify-between transition-all cursor-pointer group"
+        >
+          <div className="space-y-2">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[#ff9f0a]">
+              <Sparkles className="w-4 h-4" />
             </div>
-            <button
-              onClick={onOpenGenome}
-              className="mt-6 flex items-center justify-between text-[12px] text-[#ff9f0a] font-medium pt-3 border-t border-white/[0.06] group"
-            >
-              <span>Explore Genome Viz</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-            </button>
+            <h3 className="text-sm font-semibold text-[#f4f5f6]">Barrier Genome</h3>
+            <p className="text-xs text-[#9ba1a6] leading-relaxed">
+              768-dimensional pgvector dense heatmaps and cross-site fix transfer learning.
+            </p>
+          </div>
+          <div className="pt-4 border-t border-[#23262a] flex items-center justify-between text-xs font-medium text-[#ff9f0a] mt-4">
+            <span>Explore Genome</span>
+            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
           </div>
         </div>
       </div>
 
-      {/* 3. Recent Autonomous Runs Table */}
-      <div className="apple-vibrancy-regular rounded-3xl p-6 border-hairline">
-        <div className="flex items-center justify-between mb-4">
+      {/* 4. Recent Autonomous Runs Table */}
+      <div className="rounded-xl p-5 bg-[#141517] border border-[#23262a] space-y-4">
+        <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base font-semibold text-[#f5f5f7]">Recent Task Audits</h2>
-            <p className="text-[12px] text-[#86868b]">Continuous monitoring runs saved in Neon PostgreSQL</p>
+            <h2 className="text-sm font-semibold text-[#f4f5f6]">Recent Task Audits</h2>
+            <p className="text-xs text-[#9ba1a6]">Continuous execution history stored in Neon PostgreSQL</p>
           </div>
 
           <button
             onClick={onOpenInspector}
-            className="text-[12px] text-[#0a84ff] hover:underline flex items-center gap-1 font-medium"
+            className="text-xs font-mono text-[#5e6ad2] hover:underline flex items-center gap-1 font-medium"
           >
-            <span>View all in Inspector</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span>Open in Studio</span>
+            <ArrowRight className="w-3 h-3" />
           </button>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-white/[0.06] text-[11px] font-bold text-[#86868b] uppercase tracking-wider">
+              <tr className="border-b border-[#23262a] text-[10px] font-mono text-[#62676d] uppercase tracking-wider">
                 <th className="py-2.5 px-3">Target Domain</th>
-                <th className="py-2.5 px-3">Persona</th>
+                <th className="py-2.5 px-3">Constraint Persona</th>
                 <th className="py-2.5 px-3">Task Goal</th>
-                <th className="py-2.5 px-3">Cert Status</th>
-                <th className="py-2.5 px-3 text-right">Action</th>
+                <th className="py-2.5 px-3">Audit Outcome</th>
+                <th className="py-2.5 px-3 text-right">Inspect</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.04] text-[13px]">
+            <tbody className="divide-y divide-[#23262a]">
               {displayRuns.map((run: any) => (
-                <tr key={run.id} className="hover:bg-white/[0.02] transition-colors">
-                  <td className="py-3 px-3 font-mono text-[12px] text-[#f5f5f7] truncate max-w-[200px]">
+                <tr key={run.id} className="hover:bg-[#181a1d] transition-colors">
+                  <td className="py-3 px-3 font-mono text-xs text-[#f4f5f6] truncate max-w-[200px]">
                     {run.target_url || run.origin || 'benchmark.local'}
                   </td>
                   <td className="py-3 px-3">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border-hairline ${
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono border ${
                       run.persona === 'screen_reader'
-                        ? 'bg-purple-500/10 text-[#bf5af2] border-purple-500/20'
-                        : 'bg-blue-500/10 text-[#0a84ff] border-blue-500/20'
+                        ? 'bg-purple-500/10 text-purple-300 border-purple-500/20'
+                        : 'bg-blue-500/10 text-blue-300 border-blue-500/20'
                     }`}>
                       {run.persona === 'screen_reader' ? 'Screen Reader' : 'Keyboard-Only'}
                     </span>
                   </td>
-                  <td className="py-3 px-3 text-[#a1a1a6] truncate max-w-[280px]">
+                  <td className="py-3 px-3 text-[#9ba1a6] truncate max-w-[260px]">
                     {run.goal_text || run.goal || 'General WCAG task evaluation'}
                   </td>
                   <td className="py-3 px-3">
                     {run.task_success ? (
-                      <span className="inline-flex items-center gap-1.5 text-[12px] text-[#30d158] font-medium">
+                      <span className="inline-flex items-center gap-1 text-xs text-[#30d158] font-medium font-mono">
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Task Completed</span>
+                        <span>Completed</span>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 text-[12px] text-[#ff9f0a] font-medium">
+                      <span className="inline-flex items-center gap-1 text-xs text-[#ff9f0a] font-medium font-mono">
                         <AlertTriangle className="w-3.5 h-3.5" />
                         <span>Barrier Detected</span>
                       </span>
@@ -387,9 +376,9 @@ export function PulseDashboard({
                           onOpenInspector();
                         }
                       }}
-                      className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] font-medium border-hairline text-[#f5f5f7] transition-all"
+                      className="px-2.5 py-1 rounded bg-[#181a1d] hover:bg-[#23262a] text-[11px] font-mono border border-[#23262a] text-[#f4f5f6] transition-all"
                     >
-                      Inspect Run
+                      Inspect
                     </button>
                   </td>
                 </tr>

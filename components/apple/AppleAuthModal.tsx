@@ -57,16 +57,14 @@ export function AppleAuthModal({
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authSuccess, setAuthSuccess] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
-  const [enterpriseOrg, setEnterpriseOrg] = useState('Acme Global Retail');
 
   if (!isOpen) return null;
 
   const handlePasskeyAuth = async () => {
     setIsAuthenticating(true);
-    setStatusMessage('Prompting Apple Touch ID / Face ID WebAuthn...');
+    setStatusMessage('Prompting FIDO2 WebAuthn / Passkey...');
 
     try {
-      // Real Better Auth WebAuthn Passkey
       const res = await (authClient as any).signIn.passkey({
         autoFill: false,
       });
@@ -89,7 +87,7 @@ export function AppleAuthModal({
           setIsAuthenticating(false);
           setAuthSuccess(false);
           onClose();
-        }, 600);
+        }, 500);
         return;
       } else {
         throw new Error(res?.error?.message || 'Passkey was not recognized');
@@ -134,67 +132,61 @@ export function AppleAuthModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/75 backdrop-blur-xl transition-opacity animate-in fade-in duration-200"
+        className="absolute inset-0 bg-[#0c0d0e]/80"
         onClick={onClose}
       />
 
-      {/* Modal Dialog (Apple Translucent Sheet) */}
-      <div className="relative w-full max-w-lg apple-card-raised rounded-3xl border border-white/14 p-7 shadow-2xl overflow-hidden z-10 animate-in zoom-in-95 duration-200">
-        {/* Glow Accent */}
-        <div className="absolute -top-24 -left-24 w-56 h-56 bg-[#0071e3]/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-24 w-56 h-56 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
-
+      {/* Modal Dialog */}
+      <div className="relative w-full max-w-md bg-[#141517] rounded-xl border border-[#23262a] p-6 shadow-2xl z-10 space-y-5">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/6 hover:bg-white/12 border border-white/10 flex items-center justify-center text-[#86868b] hover:text-[#f5f5f7] transition-all"
+          className="absolute top-4 right-4 w-7 h-7 rounded-md bg-[#181a1d] hover:bg-[#23262a] border border-[#23262a] flex items-center justify-center text-[#9ba1a6] hover:text-[#f4f5f6] transition-all"
         >
-          <X className="w-4 h-4" />
+          <X className="w-3.5 h-3.5" />
         </button>
 
         {/* Current Active Session View */}
         {currentSession ? (
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#0071e3] to-purple-600 flex items-center justify-center text-white font-semibold text-xl shadow-lg ring-2 ring-white/20">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[#5e6ad2] flex items-center justify-center text-white font-semibold text-base shadow-sm">
                 {currentSession.name.charAt(0)}
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-semibold text-[#f5f5f7]">{currentSession.name}</h3>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                  <h3 className="text-sm font-semibold text-[#f4f5f6]">{currentSession.name}</h3>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
                     <ShieldCheck className="w-3 h-3" />
                     Verified
                   </span>
                 </div>
-                <p className="text-xs text-[#86868b]">{currentSession.email}</p>
-                <p className="text-xs text-[#0a84ff] font-medium mt-0.5">{currentSession.organization}</p>
+                <p className="text-xs font-mono text-[#9ba1a6]">{currentSession.email}</p>
+                <p className="text-xs text-[#5e6ad2] font-medium mt-0.5">{currentSession.organization}</p>
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/8 space-y-2.5 text-xs">
+            <div className="p-3.5 rounded-lg bg-[#181a1d] border border-[#23262a] space-y-2 text-xs">
               <div className="flex justify-between items-center">
-                <span className="text-[#86868b]">Role & Governance</span>
-                <span className="text-[#f5f5f7] font-medium">{currentSession.role}</span>
+                <span className="text-[#9ba1a6]">Role &amp; Permissions</span>
+                <span className="text-[#f4f5f6] font-medium">{currentSession.role}</span>
               </div>
-              <div className="hairline-divider" />
               <div className="flex justify-between items-center">
-                <span className="text-[#86868b]">Database Connection</span>
-                <span className="text-emerald-400 font-mono">Neon Postgres (ep-ancient-dew)</span>
+                <span className="text-[#9ba1a6]">Database</span>
+                <span className="text-[#30d158] font-mono">Neon PostgreSQL Active</span>
               </div>
-              <div className="hairline-divider" />
               <div className="flex justify-between items-center">
-                <span className="text-[#86868b]">Authentication Engine</span>
-                <span className="text-emerald-400 font-mono capitalize">Better Auth ({currentSession.authMethod.replace('_', ' ')})</span>
+                <span className="text-[#9ba1a6]">Auth Engine</span>
+                <span className="text-[#30d158] font-mono capitalize">Better Auth ({currentSession.authMethod.replace('_', ' ')})</span>
               </div>
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-2 pt-2">
               <button
                 onClick={onClose}
-                className="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/16 border border-white/10 text-xs font-semibold text-white transition-all"
+                className="flex-1 py-2 rounded-lg bg-[#181a1d] hover:bg-[#23262a] border border-[#23262a] text-xs font-medium text-[#f4f5f6] transition-all"
               >
-                Return to Workspace
+                Close
               </button>
               <button
                 onClick={async () => {
@@ -204,7 +196,7 @@ export function AppleAuthModal({
                   onSignOut();
                   onClose();
                 }}
-                className="px-4 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-xs font-semibold text-red-400 transition-all"
+                className="px-4 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-xs font-medium text-red-400 transition-all"
               >
                 Sign Out
               </button>
@@ -212,86 +204,86 @@ export function AppleAuthModal({
           </div>
         ) : (
           /* Sign In Options */
-          <div className="space-y-6">
-            <div className="text-center space-y-1.5 pt-2">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-white/6 border border-white/10 mb-2">
-                <Fingerprint className="w-6 h-6 text-[#0071e3]" />
+          <div className="space-y-4">
+            <div className="text-center space-y-1">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-[#181a1d] border border-[#23262a] text-[#5e6ad2] mb-1">
+                <Fingerprint className="w-5 h-5" />
               </div>
-              <h2 className="text-xl font-bold tracking-tight text-[#f5f5f7]">Authenticate into BarrierLens</h2>
-              <p className="text-xs text-[#86868b] max-w-sm mx-auto">
-                Protected by Better Auth with native Neon PostgreSQL storage and Apple Passkey biometrics.
+              <h2 className="text-base font-semibold text-[#f4f5f6]">Authenticate into BarrierLens</h2>
+              <p className="text-xs text-[#9ba1a6]">
+                Native Better Auth with Neon PostgreSQL and WebAuthn FIDO2 biometrics.
               </p>
             </div>
 
             {/* Segmented Auth Tab Selector */}
-            <div className="p-1 rounded-2xl bg-[#1c1c1e] border border-white/8 grid grid-cols-4 gap-1">
+            <div className="p-1 rounded-lg bg-[#0c0d0e] border border-[#23262a] grid grid-cols-3 gap-1 text-xs">
               <button
                 onClick={() => setActiveTab('passkey')}
-                className={`py-1.5 rounded-xl text-[11px] font-medium transition-all flex items-center justify-center gap-1 ${
+                className={`py-1.5 rounded-md font-medium transition-all flex items-center justify-center gap-1.5 ${
                   activeTab === 'passkey'
-                    ? 'bg-[#2c2c2e] text-white shadow-sm ring-1 ring-white/10'
-                    : 'text-[#86868b] hover:text-[#f5f5f7]'
+                    ? 'bg-[#23262a] text-[#f4f5f6] shadow-sm'
+                    : 'text-[#9ba1a6] hover:text-[#f4f5f6]'
                 }`}
               >
-                <Fingerprint className="w-3 h-3 text-[#0a84ff]" />
+                <Fingerprint className="w-3.5 h-3.5 text-[#5e6ad2]" />
                 Passkey
               </button>
               <button
                 onClick={() => setActiveTab('github')}
-                className={`py-1.5 rounded-xl text-[11px] font-medium transition-all flex items-center justify-center gap-1 ${
+                className={`py-1.5 rounded-md font-medium transition-all flex items-center justify-center gap-1.5 ${
                   activeTab === 'github'
-                    ? 'bg-[#2c2c2e] text-white shadow-sm ring-1 ring-white/10'
-                    : 'text-[#86868b] hover:text-[#f5f5f7]'
+                    ? 'bg-[#23262a] text-[#f4f5f6] shadow-sm'
+                    : 'text-[#9ba1a6] hover:text-[#f4f5f6]'
                 }`}
               >
-                <GithubIcon className="w-3 h-3 text-white" />
+                <GithubIcon className="w-3.5 h-3.5" />
                 GitHub
               </button>
               <button
                 onClick={() => setActiveTab('sample')}
-                className={`py-1.5 rounded-xl text-[11px] font-medium transition-all flex items-center justify-center gap-1 ${
+                className={`py-1.5 rounded-md font-medium transition-all flex items-center justify-center gap-1.5 ${
                   activeTab === 'sample'
-                    ? 'bg-[#2c2c2e] text-white shadow-sm ring-1 ring-white/10'
-                    : 'text-[#86868b] hover:text-[#f5f5f7]'
+                    ? 'bg-[#23262a] text-[#f4f5f6] shadow-sm'
+                    : 'text-[#9ba1a6] hover:text-[#f4f5f6]'
                 }`}
               >
-                <Sparkles className="w-3 h-3 text-amber-400" />
-                Sample Mode
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                Sample
               </button>
             </div>
 
             {/* Tab 1: Apple Passkey */}
             {activeTab === 'passkey' && (
-              <div className="space-y-4">
-                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/8 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/6 flex items-center justify-center border border-white/8 text-[#0a84ff]">
-                    <Key className="w-5 h-5" />
+              <div className="space-y-3">
+                <div className="p-3.5 rounded-lg bg-[#181a1d] border border-[#23262a] flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-md bg-[#0c0d0e] flex items-center justify-center border border-[#23262a] text-[#5e6ad2]">
+                    <Key className="w-4 h-4" />
                   </div>
                   <div className="text-xs">
-                    <p className="font-semibold text-[#f5f5f7]">Biometric FIDO2 Passkey</p>
-                    <p className="text-[#86868b]">Zero passwords. Stored in Apple Secure Enclave and Neon PostgreSQL.</p>
+                    <p className="font-semibold text-[#f4f5f6]">Biometric Passkey</p>
+                    <p className="text-[#9ba1a6]">Zero passwords. Stored in Apple Secure Enclave &amp; Neon DB.</p>
                   </div>
                 </div>
 
                 <button
                   onClick={handlePasskeyAuth}
                   disabled={isAuthenticating}
-                  className="w-full py-3.5 rounded-2xl bg-[#0071e3] hover:bg-[#0077ed] active:scale-[0.99] text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25 transition-all disabled:opacity-75"
+                  className="w-full py-2.5 rounded-lg bg-[#5e6ad2] hover:bg-[#6875e5] text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-sm transition-all disabled:opacity-75"
                 >
                   {isAuthenticating ? (
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                      <span>{statusMessage || 'Verifying Biometric Token...'}</span>
+                      <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>{statusMessage || 'Verifying Token...'}</span>
                     </div>
                   ) : authSuccess ? (
-                    <div className="flex items-center gap-2 text-white">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                    <div className="flex items-center gap-1.5 text-white">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
                       <span>{statusMessage}</span>
                     </div>
                   ) : (
                     <>
                       <Fingerprint className="w-4 h-4" />
-                      <span>Continue with Touch ID / Face ID Passkey</span>
+                      <span>Continue with Touch ID / Face ID</span>
                     </>
                   )}
                 </button>
@@ -300,21 +292,21 @@ export function AppleAuthModal({
 
             {/* Tab 2: GitHub OAuth */}
             {activeTab === 'github' && (
-              <div className="space-y-4">
-                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/8 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/6 flex items-center justify-center border border-white/8 text-white">
-                    <GithubIcon className="w-5 h-5" />
+              <div className="space-y-3">
+                <div className="p-3.5 rounded-lg bg-[#181a1d] border border-[#23262a] flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-md bg-[#0c0d0e] flex items-center justify-center border border-[#23262a] text-[#f4f5f6]">
+                    <GithubIcon className="w-4 h-4" />
                   </div>
                   <div className="text-xs">
-                    <p className="font-semibold text-[#f5f5f7]">Developer Sign In</p>
-                    <p className="text-[#86868b]">Authenticate securely via GitHub OAuth.</p>
+                    <p className="font-semibold text-[#f4f5f6]">Developer Sign In</p>
+                    <p className="text-[#9ba1a6]">Authenticate securely via GitHub OAuth.</p>
                   </div>
                 </div>
 
                 <button
                   onClick={handleGitHubAuth}
                   disabled={isAuthenticating}
-                  className="w-full py-3.5 rounded-2xl bg-[#24292e] hover:bg-[#2f363d] active:scale-[0.99] text-white text-xs font-semibold flex items-center justify-center gap-2 border border-white/10 shadow-lg transition-all disabled:opacity-75"
+                  className="w-full py-2.5 rounded-lg bg-[#181a1d] hover:bg-[#23262a] text-white text-xs font-semibold flex items-center justify-center gap-2 border border-[#23262a] shadow-sm transition-all disabled:opacity-75"
                 >
                   <GithubIcon className="w-4 h-4" />
                   <span>Continue with GitHub</span>
@@ -324,20 +316,20 @@ export function AppleAuthModal({
 
             {/* Tab 3: Sample Mode */}
             {activeTab === 'sample' && (
-              <div className="space-y-4">
-                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/8 text-xs space-y-1.5">
-                  <p className="font-semibold text-[#f5f5f7]">Sample Evaluation Workspace</p>
-                  <p className="text-[#86868b]">
-                    Explore the interface with pre-loaded sample benchmark runs in read-only mode. No real account created.
+              <div className="space-y-3">
+                <div className="p-3.5 rounded-lg bg-[#181a1d] border border-[#23262a] text-xs space-y-1">
+                  <p className="font-semibold text-[#f4f5f6]">Sample Evaluation Workspace</p>
+                  <p className="text-[#9ba1a6]">
+                    Explore the interface with pre-loaded sample benchmark runs in read-only mode.
                   </p>
                 </div>
 
                 <button
                   onClick={handleExploreSample}
-                  className="w-full py-3.5 rounded-2xl bg-white/10 hover:bg-white/16 active:scale-[0.99] text-white text-xs font-semibold flex items-center justify-center gap-2 border border-white/12 transition-all"
+                  className="w-full py-2.5 rounded-lg bg-[#181a1d] hover:bg-[#23262a] text-white text-xs font-semibold flex items-center justify-center gap-2 border border-[#23262a] transition-all"
                 >
                   <span>Explore Sample Workspace</span>
-                  <ArrowRight className="w-4 h-4 text-[#86868b]" />
+                  <ArrowRight className="w-3.5 h-3.5 text-[#9ba1a6]" />
                 </button>
               </div>
             )}
