@@ -351,7 +351,7 @@ export class AuditorCore {
         const trapCert = this.focusGraph.findKeyboardTraps(keyHistory);
         if (trapCert && !findings.some(f => f.kind === 'keyboard_trap')) {
           const impact = this.impactModel.scoreFinding('keyboard_trap', persona, true, stepIdx);
-          findings.push({
+          const trapFinding: BarrierFinding = {
             id: crypto.randomUUID(),
             runId,
             stepIdx,
@@ -368,7 +368,9 @@ export class AuditorCore {
               trappedComponent: trapCert.componentNodeIds,
               reproducingKeySequence: trapCert.keySequence
             }
-          });
+          };
+          findings.push(trapFinding);
+          onProgress?.({ type: 'finding', data: trapFinding });
         }
 
         // 7. Announcement-Gap Detector (Silent State Changes)
@@ -438,7 +440,7 @@ export class AuditorCore {
           const impact = this.impactModel.scoreFinding('silent_state_change', persona, true, stepIdx);
           const gapCertificate = (silentGap as any).certificate;
 
-          findings.push({
+          const silentFinding: BarrierFinding = {
             id: crypto.randomUUID(),
             runId,
             stepIdx,
@@ -458,7 +460,9 @@ export class AuditorCore {
               activeNameChanged,
               certificate: gapCertificate || null
             }
-          });
+          };
+          findings.push(silentFinding);
+          onProgress?.({ type: 'finding', data: silentFinding });
         }
 
         // 8. ATL* Temporal Logic Verification on Active Modals/Dialogs

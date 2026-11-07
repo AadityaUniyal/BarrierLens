@@ -300,11 +300,27 @@ export default function Home() {
             } else if (data.type === 'step') {
               const st = data.step || data;
               setStreamingStep(st.idx);
-              setStreamingStatus(`Step ${st.idx}: ${st.persona} -> ${st.actionType}`);
+              setStreamingStatus(st.reasoning || `Step ${st.idx}: ${st.persona} -> ${st.actionType} (${st.key || ''})`);
               accumulatedSteps.push(st);
+              setAuditResult(prev => ({
+                id: prev?.id || `run_live_${Date.now()}`,
+                targetUrl,
+                goal,
+                persona,
+                status: 'running',
+                startedAt: prev?.startedAt || new Date().toISOString(),
+                taskSuccess: false,
+                effortRatio: 1.0,
+                steps: [...accumulatedSteps],
+                findings: [...accumulatedFindings],
+                tierMix: prev?.tierMix || { tier0Rules: 0, tier1Ranker: 0, tier2Groq: 0, tier3Gemini: 0 }
+              }));
             } else if (data.type === 'finding') {
               const f = data.finding || data;
               accumulatedFindings.push(f);
+              setHistoricalFindings([...accumulatedFindings]);
+              if (!selectedFinding) setSelectedFinding(f);
+              setAuditResult(prev => prev ? ({ ...prev, findings: [...accumulatedFindings] }) : null);
             } else if (data.type === 'error' || data.error) {
               setStreamingStatus(`Error: ${data.error || 'Execution encountered an issue'}`);
             } else if (data.type === 'complete') {
