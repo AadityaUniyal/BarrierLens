@@ -18,13 +18,15 @@ import {
   Check,
   X,
   CornerDownRight,
-  Sparkles
+  Sparkles,
+  GitPullRequest
 } from 'lucide-react';
 import { BarrierFinding, AuditRun, VerifiedFixResult } from '@/lib/barrierlens/types';
 import { FocusMapView } from './FocusMapView';
 import { ScreenReaderTranscript, SpeechTranscriptItem } from './ScreenReaderTranscript';
 import { BarrierGenomeViz } from './BarrierGenomeViz';
 import { CausalDiffView } from './CausalDiffView';
+import { GitHubPRModal } from './GitHubPRModal';
 
 interface IssuesMasterDetailViewProps {
   findings: BarrierFinding[];
@@ -58,6 +60,7 @@ export function IssuesMasterDetailView({
   // Multi-select state for Linear batch operations
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [batchActionNotice, setBatchActionNotice] = useState<string | null>(null);
+  const [isPRModalOpen, setIsPRModalOpen] = useState(false);
 
   const filteredFindings = useMemo(() => {
     return findings.filter(f => {
@@ -347,16 +350,28 @@ export function IssuesMasterDetailView({
                   </h3>
                 </div>
 
-                {/* Quick Verify Fix Trigger */}
-                <button
-                  type="button"
-                  disabled={verifyingFindingId === activeFinding.id}
-                  onClick={() => onVerifyRepair(activeFinding)}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#30a46c] hover:bg-[#2b9a66] text-[#0c0d0e] text-xs font-bold transition-all shadow-md self-start sm:self-auto"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>{verifyingFindingId === activeFinding.id ? 'Replaying...' : 'Verify Fix in Sandbox (V)'}</span>
-                </button>
+                {/* Actions: Verify Fix & Dispatch PR */}
+                <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+                  <button
+                    type="button"
+                    disabled={verifyingFindingId === activeFinding.id}
+                    onClick={() => onVerifyRepair(activeFinding)}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#30a46c] hover:bg-[#2b9a66] text-[#0c0d0e] text-xs font-bold transition-all shadow-sm"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>{verifyingFindingId === activeFinding.id ? 'Replaying...' : 'Verify Fix (V)'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsPRModalOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#181a1d] hover:bg-[#23262a] border border-[#282c32] text-xs font-medium text-[#f4f5f6] transition-colors"
+                    title="Dispatch 1-Click Remediation Pull Request"
+                  >
+                    <GitPullRequest className="w-3.5 h-3.5 text-[#5e6ad2]" />
+                    <span>Dispatch PR</span>
+                  </button>
+                </div>
               </div>
 
               {/* Segmented Diagnostic Tabs */}
@@ -455,6 +470,15 @@ export function IssuesMasterDetailView({
           </button>
 
           <button
+            onClick={() => setIsPRModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#5e6ad2] text-white font-medium hover:bg-[#6c79e0] transition-colors"
+            title="Dispatch GitHub Pull Request"
+          >
+            <GitPullRequest className="w-3.5 h-3.5" />
+            <span>Open PR</span>
+          </button>
+
+          <button
             onClick={() => setSelectedIds(new Set())}
             className="p-1 rounded-md text-[#9ba1a6] hover:text-[#f4f5f6] hover:bg-[#23262a] transition-colors"
             title="Clear selection (Esc)"
@@ -463,6 +487,21 @@ export function IssuesMasterDetailView({
           </button>
         </div>
       )}
+
+      {/* GitHub 1-Click Pull Request Dispatch Modal */}
+      <GitHubPRModal
+        isOpen={isPRModalOpen}
+        onClose={() => setIsPRModalOpen(false)}
+        finding={activeFinding || null}
+        patch={
+          activeFinding?.kind === 'keyboard_trap'
+            ? `<dialog id="trap-modal" role="dialog" aria-modal="true" onKeyDown={(e) => { if (e.key === 'Escape') closeModal(); }}>`
+            : activeFinding?.kind === 'empty_accessible_name'
+            ? `<button aria-label="Confirm Action" style={{ minWidth: '44px', minHeight: '44px' }}>`
+            : `<div role="status" aria-live="polite" className="sr-only">{statusMessage}</div>`
+        }
+        targetUrl={auditResult?.targetUrl || 'https://barrierlens.ai'}
+      />
 
       {/* Temporary Toast Notice */}
       {batchActionNotice && (

@@ -13,6 +13,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { BarrierFinding, VerifiedFixResult } from '@/lib/barrierlens/types';
+import { GitHubPRModal } from './GitHubPRModal';
 
 interface RemedyFixesViewProps {
   findings: BarrierFinding[];
@@ -30,8 +31,7 @@ export function RemedyFixesView({
   targetUrl
 }: RemedyFixesViewProps) {
   const [selectedFindingId, setSelectedFindingId] = useState<string>(findings[0]?.id || '');
-  const [isCreatingPR, setIsCreatingPR] = useState(false);
-  const [prCreatedUrl, setPrCreatedUrl] = useState<string | null>(null);
+  const [isPRModalOpen, setIsPRModalOpen] = useState(false);
   const [copiedPatch, setCopiedPatch] = useState(false);
 
   const activeFinding = findings.find(f => f.id === selectedFindingId) || findings[0];
@@ -72,14 +72,6 @@ export function RemedyFixesView({
   {statusMessage}
 </div>`;
 
-  const handleCreatePR = () => {
-    setIsCreatingPR(true);
-    setTimeout(() => {
-      setIsCreatingPR(false);
-      setPrCreatedUrl('https://github.com/barrierlens/demo-app/pull/42');
-    }, 1200);
-  };
-
   const handleCopy = () => {
     navigator.clipboard.writeText(patchCode);
     setCopiedPatch(true);
@@ -104,33 +96,14 @@ export function RemedyFixesView({
 
         <button
           type="button"
-          disabled={isCreatingPR || findings.length === 0}
-          onClick={handleCreatePR}
-          className="flex items-center gap-2 px-5 py-2 rounded-lg bg-[#f4f5f6] hover:bg-white text-[#0c0d0e] text-xs font-semibold shadow-md transition-all disabled:opacity-50"
+          disabled={findings.length === 0}
+          onClick={() => setIsPRModalOpen(true)}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#f4f5f6] hover:bg-white text-[#0c0d0e] text-xs font-semibold shadow-md transition-all disabled:opacity-50"
         >
           <GitPullRequest className="w-3.5 h-3.5" />
-          <span>{isCreatingPR ? 'Dispatching PR...' : 'Create GitHub Pull Request'}</span>
+          <span>Dispatch Remediation PR</span>
         </button>
       </div>
-
-      {prCreatedUrl && (
-        <div className="p-4 rounded-xl bg-[#30a46c]/10 border border-[#30a46c]/30 flex items-center justify-between gap-3 animate-in fade-in">
-          <div className="flex items-center gap-2.5 text-xs text-[#f4f5f6]">
-            <CheckCircle2 className="w-4 h-4 text-[#30a46c]" />
-            <span>Pull request dispatched successfully: </span>
-            <span className="font-mono text-[#30a46c]">{prCreatedUrl}</span>
-          </div>
-          <a
-            href={prCreatedUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-1 text-xs text-[#0090ff] hover:underline"
-          >
-            <span>View on GitHub</span>
-            <ExternalLink className="w-3 h-3" />
-          </a>
-        </div>
-      )}
 
       {/* Grid: Findings Selector vs Surgical Diff */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -263,6 +236,15 @@ export function RemedyFixesView({
         </div>
 
       </div>
+
+      {/* GitHub 1-Click Pull Request Dispatch Modal */}
+      <GitHubPRModal
+        isOpen={isPRModalOpen}
+        onClose={() => setIsPRModalOpen(false)}
+        finding={activeFinding || null}
+        patch={patchCode}
+        targetUrl={targetUrl}
+      />
     </div>
   );
 }
