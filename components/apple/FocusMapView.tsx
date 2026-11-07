@@ -62,6 +62,8 @@ interface VisualEdge {
   isTrapCycle?: boolean;
   isFocusLoss?: boolean;
   isEscapeRestore?: boolean;
+  isInversion?: boolean;
+  inversionDetail?: string;
 }
 
 interface ReplayStep {
@@ -149,11 +151,11 @@ const PRESET_FIXTURE_B = {
     { id: 'orphaned-export-btn', selector: '#orphaned-export-btn', label: 'Export Audit Log', role: 'button', tabIndex: -1, x: 380, y: 350, isUnreachable: true, readingOrderRank: 7, tabOrderRank: -1 },
   ] as VisualNode[],
   edges: [
-    { fromId: 'field-zip', toId: 'field-email', key: 'Tab' },
-    { fromId: 'field-email', toId: 'field-first-name', key: 'Tab' },
-    { fromId: 'field-first-name', toId: 'field-city', key: 'Tab' },
-    { fromId: 'field-city', toId: 'field-last-name', key: 'Tab' },
-    { fromId: 'field-last-name', toId: 'field-phone', key: 'Tab' },
+    { fromId: 'field-zip', toId: 'field-email', key: 'Tab', isInversion: true, inversionDetail: 'Jump across rows (tabindex 1 → 2)' },
+    { fromId: 'field-email', toId: 'field-first-name', key: 'Tab', isInversion: true, inversionDetail: 'Backward horizontal jump (tabindex 2 → 3)' },
+    { fromId: 'field-first-name', toId: 'field-city', key: 'Tab', isInversion: true, inversionDetail: 'Diagonal jump (tabindex 3 → 4)' },
+    { fromId: 'field-city', toId: 'field-last-name', key: 'Tab', isInversion: true, inversionDetail: 'Reverse vertical leap (tabindex 4 → 5)' },
+    { fromId: 'field-last-name', toId: 'field-phone', key: 'Tab', isInversion: true, inversionDetail: 'Cross-grid diagonal leap (tabindex 5 → 6)' },
   ] as VisualEdge[],
   replaySteps: [
     { stepIndex: 0, toNodeId: 'field-zip', keyDispatched: 'Initial', description: 'Tab jumps directly to tabindex=1 in bottom-right corner' },
@@ -265,6 +267,7 @@ export function FocusMapView({
   // Selected element for inspection
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isCertificateOpen, setIsCertificateOpen] = useState<boolean>(false);
+  const [showFlowOverlay, setShowFlowOverlay] = useState<boolean>(true);
 
   // Active dataset derived from current preset
   const activeDataset = useMemo(() => {
@@ -409,7 +412,11 @@ export function FocusMapView({
     let markerId = 'marker-tab';
     let strokeDasharray = 'none';
 
-    if (edge.key === 'Shift+Tab') {
+    if (edge.isInversion || (showFlowOverlay && activeDataset.tau < 0.70 && !edge.isEscapeRestore && !edge.key.startsWith('Arrow'))) {
+      strokeColor = '#ff453a'; // Neon Crimson for Inversions
+      markerId = 'marker-inversion';
+      strokeDasharray = '6 3';
+    } else if (edge.key === 'Shift+Tab') {
       strokeColor = '#64d2ff'; // Cyan
       markerId = 'marker-shift-tab';
       strokeDasharray = '4 4';
@@ -430,18 +437,28 @@ export function FocusMapView({
       strokeDasharray = '4 4';
     }
 
+    const isInversionEdge = edge.isInversion || (showFlowOverlay && activeDataset.tau < 0.70 && !edge.isEscapeRestore && !edge.key.startsWith('Arrow'));
+
     return (
       <g key={`edge-${index}-${edge.fromId}-${edge.toId}`}>
         <path
           d={pathD}
           fill="none"
           stroke={strokeColor}
-          strokeWidth={edge.isTrapCycle ? 2.5 : 2}
+          strokeWidth={edge.isTrapCycle || isInversionEdge ? 2.5 : 2}
           strokeDasharray={strokeDasharray}
           markerEnd={`url(#${markerId})`}
-          className={edge.isTrapCycle ? 'animate-pulse' : ''}
-          opacity={0.85}
+          className={edge.isTrapCycle || isInversionEdge ? 'animate-pulse' : ''}
+          opacity={0.9}
         />
+        {isInversionEdge && showFlowOverlay && (
+          <g transform={`translate(${(from.x + to.x) / 2}, ${(from.y + to.y) / 2})`}>
+            <rect x="-42" y="-9" width="84" height="18" rx="4" fill="#0c0d0e" stroke="#ff453a" strokeWidth="1" />
+            <text x="0" y="3" textAnchor="middle" fill="#ff453a" fontSize="9" fontFamily="monospace" fontWeight="bold">
+              Inversion ⚠️
+            </text>
+          </g>
+        )}
       </g>
     );
   };
@@ -533,26 +550,39 @@ export function FocusMapView({
         <div className="lg:col-span-8 bg-[#141517] rounded-xl p-5 border border-[#23262a] space-y-4 flex flex-col justify-between">
           
           {/* Canvas Sub-header & Legend */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-hairline text-xs">
-            <div className="flex items-center gap-2 text-[#f5f5f7] font-semibold">
-              <Layers className="w-4 h-4 text-[#0a84ff]" />
-              <span>2D Focus Path Geometry & State Engine</span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#23262a] text-xs">
+            <div className="flex items-center gap-2 text-[#f4f5f6] font-semibold">
+              <Layers className="w-4 h-4 text-[#5e6ad2]" />
+              <span>2D Focus Path Geometry &amp; State Engine</span>
             </div>
 
-            {/* Path Key Legend */}
-            <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono text-[#86868b]">
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-1 rounded-full bg-[#0a84ff]" /> Tab
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-1 rounded-full bg-[#64d2ff]" /> Shift+Tab
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-1 rounded-full bg-[#bf5af2]" /> Arrow Keys
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-1 rounded-full bg-[#ff453a] animate-pulse" /> Tarjan SCC Trap
-              </span>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Flow Overlay Toggle */}
+              <button
+                type="button"
+                onClick={() => setShowFlowOverlay(!showFlowOverlay)}
+                className={`px-2.5 py-1 rounded text-[11px] font-mono flex items-center gap-1.5 transition-all border ${
+                  showFlowOverlay
+                    ? 'bg-[#5e6ad2]/20 text-[#5e6ad2] border-[#5e6ad2]/40 shadow-sm'
+                    : 'bg-[#181a1d] text-[#9ba1a6] border-[#23262a] hover:text-[#f4f5f6]'
+                }`}
+              >
+                <Eye className="w-3 h-3" />
+                <span>Kendall&apos;s &tau; Flow Overlay ({showFlowOverlay ? 'ON' : 'OFF'})</span>
+              </button>
+
+              {/* Path Key Legend */}
+              <div className="flex flex-wrap items-center gap-2.5 text-[11px] font-mono text-[#9ba1a6]">
+                <span className="flex items-center gap-1">
+                  <span className="w-2.5 h-1 rounded-full bg-[#0a84ff]" /> Tab
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2.5 h-1 rounded-full bg-[#ff453a] animate-pulse" /> &tau; Inversion (Crimson)
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-2.5 h-1 rounded-full bg-[#30d158]" /> Esc Restore
+                </span>
+              </div>
             </div>
           </div>
 
@@ -615,6 +645,10 @@ export function FocusMapView({
                 <marker id="marker-trap" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
                   <path d="M 0 1 L 9 5 L 0 9 z" fill="#ff453a" />
                 </marker>
+                {/* Inversion marker */}
+                <marker id="marker-inversion" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                  <path d="M 0 1 L 9 5 L 0 9 z" fill="#ff453a" />
+                </marker>
                 {/* Escape restore marker */}
                 <marker id="marker-esc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
                   <path d="M 0 1 L 9 5 L 0 9 z" fill="#30d158" />
@@ -661,6 +695,20 @@ export function FocusMapView({
                     isActive ? 'scale-105 z-30 ring-2 ring-[#5e6ad2] shadow-lg' : 'z-10'
                   } ${isSelected ? 'ring-2 ring-white/50' : ''}`}
                 >
+                  {/* Floating Numbered Tab Stop Badge */}
+                  {showFlowOverlay && (
+                    <div 
+                      title={`Sequential Tab Stop #${node.tabOrderRank ?? '?'}`}
+                      className={`absolute -top-2.5 -left-2.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-mono font-bold border shadow-md z-40 ${
+                        node.isTrapped || (activeDataset.tau < 0.70 && node.tabOrderRank !== node.readingOrderRank)
+                          ? 'bg-[#ff453a] text-white border-red-300 shadow-red-950/60'
+                          : 'bg-[#5e6ad2] text-white border-indigo-300 shadow-indigo-950/60'
+                      }`}
+                    >
+                      {node.tabOrderRank || node.readingOrderRank}
+                    </div>
+                  )}
+
                   <div className={`px-2.5 py-1.5 rounded-lg border flex items-center gap-2 text-xs font-mono font-normal shadow-md ${cardStyle}`}>
                     {/* Index badge */}
                     <span className={`w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold shrink-0 ${badgeStyle}`}>

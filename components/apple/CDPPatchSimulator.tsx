@@ -88,6 +88,7 @@ export function CDPPatchSimulator({
   const [patchMode, setPatchMode] = useState<PatchMode>('unpatched');
   const [selectedFindingIdx, setSelectedFindingIdx] = useState<number>(0);
   const [showDiff, setShowDiff] = useState<boolean>(true);
+  const [showFlowVectors, setShowFlowVectors] = useState<boolean>(true);
 
   // Active findings list with fallback
   const availableFindings = findings.length > 0 ? findings : [DEFAULT_TRAP_FINDING];
@@ -255,6 +256,19 @@ export function CDPPatchSimulator({
             <Columns className="w-3.5 h-3.5" />
             <span>Split Comparison</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setShowFlowVectors(!showFlowVectors)}
+            className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 font-medium transition-all ${
+              showFlowVectors
+                ? 'bg-[#5e6ad2]/20 text-[#5e6ad2] border border-[#5e6ad2]/30 shadow-sm'
+                : 'text-[#9ba1a6] hover:text-[#f4f5f6]'
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>Flow Lines ({showFlowVectors ? 'ON' : 'OFF'})</span>
+          </button>
         </div>
 
         {/* Shortcut Tip & Finding Badges */}
@@ -393,8 +407,29 @@ export function CDPPatchSimulator({
           ) : (
             /* SINGLE CARD: Unpatched or Patched with Live Interactivity */
             <div className="w-full max-w-lg space-y-4">
+
+              {/* Kendall's Tau Flow Status Header when flow overlay is active */}
+              {showFlowVectors && (
+                <div className={`p-3 rounded-xl border flex items-center justify-between text-xs font-mono transition-all duration-200 ${
+                  patchMode === 'unpatched'
+                    ? 'bg-red-950/20 border-red-500/30 text-[#ff453a]'
+                    : 'bg-emerald-950/20 border-emerald-500/30 text-[#30d158]'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${
+                      patchMode === 'unpatched' ? 'bg-[#ff453a] animate-ping' : 'bg-[#30d158]'
+                    }`} />
+                    <span className="font-semibold">
+                      {patchMode === 'unpatched' ? "Kendall's τ = 0.52 (Disoriented Flow)" : "Kendall's τ = 1.00 (Harmonious Flow)"}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-bold">
+                    {patchMode === 'unpatched' ? '⚠️ 4 Inversions (Loop: 2 ⇄ 3)' : '✓ 0 Inversions · WCAG 2.4.3'}
+                  </span>
+                </div>
+              )}
               
-              {/* The Live Interactive Dialog Box */}
+              {/* The Live Interactive Dialog Box with Floating Tab Stop Badges & SVG Vector Overlay */}
               <div 
                 className={`p-6 rounded-2xl transition-all duration-300 relative shadow-2xl ${
                   patchMode === 'unpatched'
@@ -404,6 +439,13 @@ export function CDPPatchSimulator({
                     : 'bg-[#141517] border-2 border-emerald-500/50 shadow-emerald-950/20'
                 }`}
               >
+                {/* Floating Tab Stop #2 for Dialog Container */}
+                {showFlowVectors && (
+                  <div className="absolute -top-3 -left-3 w-7 h-7 rounded-full bg-[#5e6ad2] text-white border-2 border-indigo-300 flex items-center justify-center font-mono font-bold text-xs shadow-lg z-30">
+                    2
+                  </div>
+                )}
+
                 {/* Active Focus Tag */}
                 <div className="flex items-center justify-between pb-3 border-b border-[#23262a]">
                   <div className="flex items-center gap-2">
@@ -411,7 +453,7 @@ export function CDPPatchSimulator({
                       patchMode === 'unpatched' ? 'bg-[#ff453a] animate-ping' : 'bg-[#30d158]'
                     }`} />
                     <span className="text-xs font-mono font-medium text-[#f4f5f6]">
-                      Focus: {focusStep === 0 ? '#newsletter-email (Origin Trigger)' : focusStep === 1 ? '#trap-modal (Container)' : '#claim-btn (Action)'}
+                      Focus: {focusStep === 0 ? '#newsletter-email (Stop 1)' : focusStep === 1 ? '#trap-modal (Stop 2)' : '#claim-btn (Stop 3)'}
                     </span>
                   </div>
 
@@ -436,21 +478,30 @@ export function CDPPatchSimulator({
                   </p>
 
                   {/* Focus Elements Buttons */}
-                  <div className="pt-2 flex flex-wrap items-center gap-2.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFocusStep(2);
-                        setActiveElementSelector('#claim-btn');
-                      }}
-                      className={`px-4 py-2 rounded-lg text-xs font-medium font-mono transition-all ${
-                        focusStep === 2
-                          ? 'bg-[#5e6ad2] text-white ring-2 ring-[#5e6ad2] shadow-lg'
-                          : 'bg-[#181a1d] hover:bg-[#23262a] text-[#f4f5f6] border border-[#23262a]'
-                      }`}
-                    >
-                      #claim-btn (Confirm Action)
-                    </button>
+                  <div className="pt-2 flex flex-wrap items-center gap-2.5 relative">
+                    <div className="relative inline-block">
+                      {showFlowVectors && (
+                        <div className={`absolute -top-2.5 -left-2.5 w-5 h-5 rounded-full flex items-center justify-center font-mono font-bold text-[10px] text-white border shadow-md z-30 ${
+                          patchMode === 'unpatched' ? 'bg-[#ff453a] border-red-300' : 'bg-[#30d158] border-emerald-300'
+                        }`}>
+                          3
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFocusStep(2);
+                          setActiveElementSelector('#claim-btn');
+                        }}
+                        className={`px-4 py-2 rounded-lg text-xs font-medium font-mono transition-all ${
+                          focusStep === 2
+                            ? 'bg-[#5e6ad2] text-white ring-2 ring-[#5e6ad2] shadow-lg'
+                            : 'bg-[#181a1d] hover:bg-[#23262a] text-[#f4f5f6] border border-[#23262a]'
+                        }`}
+                      >
+                        #claim-btn (Confirm Action)
+                      </button>
+                    </div>
 
                     {patchMode === 'patched' && (
                       <button
@@ -464,6 +515,71 @@ export function CDPPatchSimulator({
                     )}
                   </div>
                 </div>
+
+                {/* SVG Visual Flow Vectors Overlay */}
+                {showFlowVectors && (
+                  <div className="my-2 p-3 rounded-xl bg-[#0c0d0e] border border-[#23262a] space-y-2">
+                    <div className="flex items-center justify-between text-[10px] font-mono text-[#9ba1a6]">
+                      <span className="font-semibold uppercase tracking-wider text-[#62676d]">
+                        Visual Focus Vector Flow (Kendall&apos;s &tau;)
+                      </span>
+                      <span className={patchMode === 'unpatched' ? 'text-[#ff453a] font-bold' : 'text-[#30d158] font-bold'}>
+                        {patchMode === 'unpatched' ? 'Discordant Inversion (Loop 2 ⇄ 3)' : 'Harmonious Sequence (1 → 2 → 3 ──▶ 1)'}
+                      </span>
+                    </div>
+
+                    <svg className="w-full h-16" viewBox="0 0 440 60">
+                      <defs>
+                        <marker id="sim-marker-tab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                          <path d="M 0 1 L 9 5 L 0 9 z" fill="#0a84ff" />
+                        </marker>
+                        <marker id="sim-marker-inversion" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                          <path d="M 0 1 L 9 5 L 0 9 z" fill="#ff453a" />
+                        </marker>
+                        <marker id="sim-marker-esc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                          <path d="M 0 1 L 9 5 L 0 9 z" fill="#30d158" />
+                        </marker>
+                      </defs>
+
+                      {/* Node Stops */}
+                      {/* Stop 1: Origin */}
+                      <circle cx="60" cy="30" r="14" fill="#141517" stroke="#5e6ad2" strokeWidth="2" />
+                      <text x="60" y="34" textAnchor="middle" fill="#f4f5f6" fontSize="10" fontFamily="monospace" fontWeight="bold">1</text>
+                      <text x="60" y="54" textAnchor="middle" fill="#9ba1a6" fontSize="9" fontFamily="monospace">#trigger</text>
+
+                      {/* Path 1 -> 2 */}
+                      <path d="M 76 30 L 184 30" stroke="#0a84ff" strokeWidth="2" markerEnd="url(#sim-marker-tab)" />
+
+                      {/* Stop 2: Modal */}
+                      <circle cx="200" cy="30" r="14" fill="#141517" stroke={patchMode === 'unpatched' ? '#ff453a' : '#30d158'} strokeWidth="2" />
+                      <text x="200" y="34" textAnchor="middle" fill="#f4f5f6" fontSize="10" fontFamily="monospace" fontWeight="bold">2</text>
+                      <text x="200" y="54" textAnchor="middle" fill="#9ba1a6" fontSize="9" fontFamily="monospace">#modal</text>
+
+                      {/* Path 2 -> 3 */}
+                      <path d="M 216 26 L 324 26" stroke="#0a84ff" strokeWidth="2" markerEnd="url(#sim-marker-tab)" />
+
+                      {/* Stop 3: Button */}
+                      <circle cx="340" cy="30" r="14" fill="#141517" stroke={patchMode === 'unpatched' ? '#ff453a' : '#30d158'} strokeWidth="2" />
+                      <text x="340" y="34" textAnchor="middle" fill="#f4f5f6" fontSize="10" fontFamily="monospace" fontWeight="bold">3</text>
+                      <text x="340" y="54" textAnchor="middle" fill="#9ba1a6" fontSize="9" fontFamily="monospace">#button</text>
+
+                      {/* Reverse or Escape Edge */}
+                      {patchMode === 'unpatched' ? (
+                        /* Reverse Inversion Loop 3 -> 2 in Crimson */
+                        <g>
+                          <path d="M 324 38 Q 270 48 216 38" fill="none" stroke="#ff453a" strokeWidth="2.5" strokeDasharray="5 3" markerEnd="url(#sim-marker-inversion)" className="animate-pulse" />
+                          <text x="270" y="47" textAnchor="middle" fill="#ff453a" fontSize="8" fontFamily="monospace" fontWeight="bold">⟳ SCC Trap</text>
+                        </g>
+                      ) : (
+                        /* Escape Restoration Edge 3 -> 1 in Emerald */
+                        <g>
+                          <path d="M 340 16 Q 200 -12 70 18" fill="none" stroke="#30d158" strokeWidth="2" strokeDasharray="4 2" markerEnd="url(#sim-marker-esc)" />
+                          <text x="200" y="10" textAnchor="middle" fill="#30d158" fontSize="8" fontFamily="monospace" fontWeight="bold">Esc Exit ✓</text>
+                        </g>
+                      )}
+                    </svg>
+                  </div>
+                )}
 
                 {/* Traversal Pathway Graphic */}
                 <div className="p-3 rounded-lg bg-[#0c0d0e] border border-[#23262a] flex items-center justify-between text-[11px] font-mono">
