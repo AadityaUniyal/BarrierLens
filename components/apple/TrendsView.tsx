@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { LineChart, AlertCircle, ArrowUpRight, CheckCircle2, GitCommit, ShieldAlert, Activity } from 'lucide-react';
+import { LineChart, AlertCircle, ArrowUpRight, CheckCircle2, ShieldAlert, Activity } from 'lucide-react';
 import { DriftSentinelEngine, CUSUMResult } from '@/lib/barrierlens/engines/drift-sentinel';
 
 interface RunRecord {
@@ -38,27 +38,27 @@ export function TrendsView({ runs }: TrendsViewProps) {
   const deltaEffort = (currentEffort - initialEffort).toFixed(1);
 
   return (
-    <div className="w-full space-y-8 animate-in fade-in duration-300">
+    <div className="w-full space-y-6 animate-in fade-in duration-200 text-[#f4f5f6]">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#23262a]">
         <div>
-          <h2 className="text-[22px] font-bold tracking-[-0.017em] text-white flex items-center gap-2.5">
-            <LineChart className="w-5 h-5 text-[#0a84ff]" />
+          <h2 className="text-xl font-semibold tracking-tight text-[#f4f5f6] flex items-center gap-2.5">
+            <LineChart className="w-5 h-5 text-[#5e6ad2]" />
             Trends &amp; Flow Drift Sentinel
           </h2>
-          <p className="text-[13px] text-[#86868b] tracking-[0.005em] mt-0.5">
+          <p className="text-xs text-[#9ba1a6] mt-0.5">
             CUSUM change-point detection on Effort Ratio time series &amp; regression tracking across deployments
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           {driftResult.hasDrift ? (
-            <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-rose-500/10 text-[#ff453a] border-hairline border-rose-500/30 flex items-center gap-1.5 animate-pulse">
+            <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-[#e5484d]/10 text-[#e5484d] border border-[#e5484d]/30 flex items-center gap-1.5 animate-pulse">
               <ShieldAlert className="w-3.5 h-3.5" />
               Critical Drift Alert: CUSUM {driftResult.cumulativeSum} &gt; {driftResult.threshold}
             </span>
           ) : (
-            <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-emerald-500/10 text-[#30d158] border-hairline border-emerald-500/30 flex items-center gap-1.5">
+            <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-[#30a46c]/10 text-[#30a46c] border border-[#30a46c]/30 flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5" />
               Flow Stability Nominal (CUSUM {driftResult.cumulativeSum})
             </span>
@@ -67,35 +67,35 @@ export function TrendsView({ runs }: TrendsViewProps) {
       </div>
 
       {/* Main Sparkline Card */}
-      <div className="apple-vibrancy-regular rounded-3xl p-8 border-hairline shadow-2xl space-y-6">
+      <div className="bg-[#141517] rounded-xl p-6 sm:p-8 border border-[#23262a] shadow-xl space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <span className="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider font-mono">
+            <span className="text-[11px] font-medium text-[#9ba1a6] uppercase tracking-wider font-mono">
               Checkout Flow Effort Ratio History
             </span>
-            <div className="text-3xl font-extrabold text-white mt-1 flex items-baseline gap-2">
+            <div className="text-3xl font-extrabold text-[#f4f5f6] mt-1 flex items-baseline gap-2">
               {currentEffort.toFixed(1)}x
               {Number(deltaEffort) > 0 ? (
-                <span className="text-xs font-mono text-[#ff453a] font-normal flex items-center">
+                <span className="text-xs font-mono text-[#e5484d] font-normal flex items-center">
                   <ArrowUpRight className="w-3 h-3" /> +{deltaEffort}x regression
                 </span>
               ) : (
-                <span className="text-xs font-mono text-[#30d158] font-normal flex items-center">
+                <span className="text-xs font-mono text-[#30a46c] font-normal flex items-center">
                   nominal stability
                 </span>
               )}
             </div>
           </div>
 
-          <div className="text-right text-xs font-mono text-[#86868b] space-y-0.5">
+          <div className="text-right text-xs font-mono text-[#9ba1a6] space-y-0.5">
             <div>Detection Engine: CUSUM Change-Point</div>
-            <div className="text-[#30d158]">Baseline Target: &le; {driftResult.baselineEffortRatio}x</div>
-            <div className="text-[#0a84ff]">Threshold (h): {driftResult.threshold} | Allowance (k): 0.5</div>
+            <div className="text-[#30a46c]">Baseline Target: &le; {driftResult.baselineEffortRatio}x</div>
+            <div className="text-[#5e6ad2]">Threshold (h): {driftResult.threshold} | Allowance (k): 0.5</div>
           </div>
         </div>
 
-        {/* CSS Sparkline Visualization */}
-        <div className="h-44 w-full bg-[#090a0f] rounded-2xl p-6 border border-white/[0.05] flex items-end justify-between gap-4">
+        {/* Linear Sparkline Chart Visualization */}
+        <div className="h-44 w-full bg-[#0c0d0e] rounded-lg p-6 border border-[#23262a] flex items-end justify-between gap-4">
           {points.map((val, idx) => {
             const maxVal = Math.max(...points, 5.0);
             const heightPercent = Math.min(100, Math.max(15, (val / maxVal) * 100));
@@ -104,20 +104,20 @@ export function TrendsView({ runs }: TrendsViewProps) {
 
             return (
               <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-                <span className={`text-[11px] font-mono font-semibold ${isDriftExceeded ? 'text-[#ff453a]' : 'text-slate-400'}`}>
+                <span className={`text-[11px] font-mono font-medium ${isDriftExceeded ? 'text-[#e5484d]' : 'text-[#9ba1a6]'}`}>
                   {val.toFixed(1)}x
                 </span>
                 <div
                   style={{ height: `${heightPercent}%` }}
-                  className={`w-full max-w-[48px] rounded-t-lg transition-all ${
+                  className={`w-full max-w-[48px] rounded-t transition-all ${
                     isChangePoint
-                      ? 'bg-gradient-to-t from-rose-950 via-rose-600 to-rose-400 border-t-2 border-rose-300 shadow-xl shadow-rose-500/40 ring-1 ring-rose-400'
+                      ? 'bg-[#e5484d] shadow-lg shadow-[#e5484d]/40'
                       : isDriftExceeded
-                      ? 'bg-gradient-to-t from-rose-950 to-rose-500 border-t-2 border-rose-400 shadow-lg shadow-rose-500/20'
-                      : 'bg-gradient-to-t from-[#1c1c1e] to-[#0a84ff]/60 border-t-2 border-[#0a84ff]'
+                      ? 'bg-[#e5484d]/80'
+                      : 'bg-[#5e6ad2]/70 hover:bg-[#5e6ad2]'
                   }`}
                 />
-                <span className={`text-[10px] font-mono ${isChangePoint ? 'text-rose-400 font-bold' : 'text-[#6e6e73]'}`}>
+                <span className={`text-[10px] font-mono ${isChangePoint ? 'text-[#e5484d] font-bold' : 'text-[#6b7280]'}`}>
                   {idx === 4 ? 'PR #42' : `Run #${idx + 1}`}
                 </span>
               </div>
@@ -126,21 +126,21 @@ export function TrendsView({ runs }: TrendsViewProps) {
         </div>
 
         {/* Sentinel Alert Box */}
-        <div className={`p-4 rounded-2xl border flex items-start gap-3 ${
+        <div className={`p-4 rounded-lg border flex items-start gap-3 ${
           driftResult.hasDrift
-            ? 'bg-rose-950/30 border-rose-500/30'
-            : 'bg-emerald-950/20 border-emerald-500/30'
+            ? 'bg-[#241315] border-[#e5484d]/30 text-[#f4f5f6]'
+            : 'bg-[#141a16] border-[#30a46c]/30 text-[#f4f5f6]'
         }`}>
           {driftResult.hasDrift ? (
-            <AlertCircle className="w-5 h-5 text-[#ff453a] shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-[#e5484d] shrink-0 mt-0.5" />
           ) : (
-            <CheckCircle2 className="w-5 h-5 text-[#30d158] shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-5 h-5 text-[#30a46c] shrink-0 mt-0.5" />
           )}
           <div className="text-xs space-y-1">
-            <div className={`font-semibold ${driftResult.hasDrift ? 'text-rose-300' : 'text-emerald-300'}`}>
+            <div className={`font-semibold ${driftResult.hasDrift ? 'text-[#e5484d]' : 'text-[#30a46c]'}`}>
               {driftResult.hasDrift ? 'Flow Drift Detected: Significant Interaction Effort Jump' : 'Flow Stability Confirmed'}
             </div>
-            <p className="text-slate-400 leading-relaxed">
+            <p className="text-[#9ba1a6] leading-relaxed">
               {driftResult.summary}
             </p>
           </div>
@@ -148,44 +148,44 @@ export function TrendsView({ runs }: TrendsViewProps) {
       </div>
 
       {/* Audit History Table from Neon Postgres */}
-      <div className="apple-vibrancy-regular rounded-3xl p-6 border-hairline shadow-2xl space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-hairline">
-          <h3 className="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider font-mono">
+      <div className="bg-[#141517] rounded-xl p-6 border border-[#23262a] shadow-xl space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-[#23262a]">
+          <h3 className="text-xs font-semibold text-[#9ba1a6] uppercase tracking-wider font-mono">
             Recorded Audit History (Neon Postgres)
           </h3>
-          <span className="text-[11px] font-mono text-[#0a84ff]">
+          <span className="text-xs font-mono text-[#5e6ad2]">
             {runs.length} Runs Logged
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left font-mono">
-            <thead className="text-[#6e6e73] border-b border-hairline">
+            <thead className="text-[#6b7280] border-b border-[#23262a]">
               <tr>
-                <th className="pb-3 font-medium">Run ID</th>
-                <th className="pb-3 font-medium">Persona</th>
-                <th className="pb-3 font-medium">Effort Ratio</th>
-                <th className="pb-3 font-medium">Result</th>
-                <th className="pb-3 font-medium">Timestamp</th>
+                <th className="pb-2.5 font-medium">Run ID</th>
+                <th className="pb-2.5 font-medium">Persona</th>
+                <th className="pb-2.5 font-medium">Effort Ratio</th>
+                <th className="pb-2.5 font-medium">Result</th>
+                <th className="pb-2.5 font-medium">Timestamp</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.04]">
+            <tbody className="divide-y divide-[#23262a]">
               {runs.length > 0 ? (
                 runs.map((r, i) => (
-                  <tr key={i} className="hover:bg-white/[0.02]">
-                    <td className="py-3 text-white truncate max-w-[120px]">{r.id}</td>
-                    <td className="py-3 text-[#86868b]">{r.persona}</td>
-                    <td className="py-3 text-white font-bold">{r.effort_ratio}x</td>
-                    <td className="py-3">
+                  <tr key={i} className="hover:bg-[#181a1d] transition-colors">
+                    <td className="py-2.5 text-[#f4f5f6] truncate max-w-[120px]">{r.id}</td>
+                    <td className="py-2.5 text-[#9ba1a6]">{r.persona}</td>
+                    <td className="py-2.5 text-[#f4f5f6] font-bold">{r.effort_ratio}x</td>
+                    <td className="py-2.5">
                       <span className={`px-2 py-0.5 rounded text-[10px] ${
                         r.task_success
-                          ? 'bg-emerald-500/10 text-[#30d158]'
-                          : 'bg-rose-500/10 text-[#ff453a]'
+                          ? 'bg-[#30a46c]/10 text-[#30a46c] border border-[#30a46c]/20'
+                          : 'bg-[#e5484d]/10 text-[#e5484d] border border-[#e5484d]/20'
                       }`}>
                         {r.task_success ? 'PASSED' : 'BLOCKED'}
                       </span>
                     </td>
-                    <td className="py-3 text-[#6e6e73]">{r.started_at ? new Date(r.started_at).toLocaleDateString() : 'Recent'}</td>
+                    <td className="py-2.5 text-[#6b7280]">{r.started_at ? new Date(r.started_at).toLocaleDateString() : 'Recent'}</td>
                   </tr>
                 ))
               ) : (
@@ -195,20 +195,20 @@ export function TrendsView({ runs }: TrendsViewProps) {
                   { id: 'run_baseline_03', persona: 'keyboard', effort_ratio: 1.3, task_success: true, started_at: '2026-11-02' },
                   { id: 'run_drift_04', persona: 'keyboard', effort_ratio: 4.2, task_success: false, started_at: '2026-11-02' },
                 ].map((r, i) => (
-                  <tr key={i} className="hover:bg-white/[0.02]">
-                    <td className="py-3 text-white truncate max-w-[120px]">{r.id}</td>
-                    <td className="py-3 text-[#86868b]">{r.persona}</td>
-                    <td className="py-3 text-white font-bold">{r.effort_ratio}x</td>
-                    <td className="py-3">
+                  <tr key={i} className="hover:bg-[#181a1d] transition-colors">
+                    <td className="py-2.5 text-[#f4f5f6] truncate max-w-[120px]">{r.id}</td>
+                    <td className="py-2.5 text-[#9ba1a6]">{r.persona}</td>
+                    <td className="py-2.5 text-[#f4f5f6] font-bold">{r.effort_ratio}x</td>
+                    <td className="py-2.5">
                       <span className={`px-2 py-0.5 rounded text-[10px] ${
                         r.task_success
-                          ? 'bg-emerald-500/10 text-[#30d158]'
-                          : 'bg-rose-500/10 text-[#ff453a]'
+                          ? 'bg-[#30a46c]/10 text-[#30a46c] border border-[#30a46c]/20'
+                          : 'bg-[#e5484d]/10 text-[#e5484d] border border-[#e5484d]/20'
                       }`}>
                         {r.task_success ? 'PASSED' : 'BLOCKED'}
                       </span>
                     </td>
-                    <td className="py-3 text-[#6e6e73]">{r.started_at}</td>
+                    <td className="py-2.5 text-[#6b7280]">{r.started_at}</td>
                   </tr>
                 ))
               )}
