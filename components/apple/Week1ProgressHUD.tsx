@@ -78,13 +78,13 @@ export function Week1ProgressHUD() {
     {
       id: 'r3-neon-postgres',
       reqCode: 'R3',
-      name: 'Neon Postgres & Jobs Queue',
+      name: 'Cloud Ledger & Distributed Queue',
       category: 'Data & Queue',
       status: 'verified',
-      summary: '15 relational tables provisioned, pgvector HNSW index, and FOR UPDATE SKIP LOCKED job queue',
+      summary: '15 relational tables provisioned, vector embeddings HNSW index, and FOR UPDATE SKIP LOCKED job queue',
       details: [
         '15 relational tables: runs, steps, findings, audit_events, verified_fixes, triage_feedback, etc.',
-        'pgvector extension with HNSW index for high-dimensional semantic barrier retrieval',
+        'High-dimensional vector extension with HNSW index for semantic barrier retrieval',
         'Transactional concurrency queue utilizing SELECT ... FOR UPDATE SKIP LOCKED worker pools',
         'Instant multi-region serverless connectivity with connection pooling'
       ],
@@ -238,7 +238,7 @@ export function Week1ProgressHUD() {
               { id: 'all', label: 'All Modules' },
               { id: 'r1', label: 'R1 AX-Tree' },
               { id: 'r2', label: 'R2 Trace Engine' },
-              { id: 'r3', label: 'R3 Neon Postgres' },
+              { id: 'r3', label: 'R3 Cloud Ledger' },
               { id: 'r4', label: 'R4 Cupertino UI' },
               { id: 'r5', label: 'R5 Constraints' },
             ].map(tab => (
@@ -311,7 +311,7 @@ export function Week1ProgressHUD() {
 
           {/* Footer note */}
           <div className="flex items-center justify-between text-[11px] text-[#6e6e73] font-mono pt-2">
-            <span>Verified against live CDP Chromium & Neon Postgres instance</span>
+            <span>Verified against live CDP Chromium &amp; Cloud Ledger instance</span>
             <span>Last checked: {lastVerifiedTime}</span>
           </div>
         </div>

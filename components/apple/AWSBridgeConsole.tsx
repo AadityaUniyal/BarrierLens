@@ -18,19 +18,19 @@ import {
 
 export function AWSBridgeConsole() {
   const [isChecking, setIsChecking] = useState(false);
-  const [bedrockPrompt, setBedrockPrompt] = useState('Synthesize minimal surgical ARIA fix for missing button label');
-  const [bedrockResponse, setBedrockResponse] = useState<string | null>(null);
+  const [reasonerPrompt, setReasonerPrompt] = useState('Synthesize minimal surgical ARIA fix for missing button label');
+  const [reasonerResponse, setReasonerResponse] = useState<string | null>(null);
   const [isInferring, setIsInferring] = useState(false);
 
-  // AWS CLI Detected State
+  // Cloud CLI Detected State
   const [awsStatus, setAwsStatus] = useState({
     installed: true,
-    version: 'aws-cli/2.37.12 Python/3.14.6',
-    region: 'ap-south-1 (Asia Pacific Mumbai)',
-    account: '145023097151 (Aaditya Uniyal)',
+    version: 'cloud-cli/2.37.12 Node/v22',
+    region: 'ap-south-1 (Production Primary)',
+    account: '145023097151 (Production Org)',
     authenticated: true,
-    authNote: 'Active & Authenticated via IAM credentials. Bedrock & S3 ready.',
-    bucket: 'barrierlens-audit-artifacts-145023097151'
+    authNote: 'Active & Authenticated via enterprise credentials. Neural inference & Evidence Vault ready.',
+    bucket: 'barrierlens-audit-artifacts-prod'
   });
 
   const [budget, setBudget] = useState({
@@ -38,20 +38,20 @@ export function AWSBridgeConsole() {
     remaining: 119.98,
     spent: 0.02,
     estimatedRuns: 19850,
-    modelCascade: 'Amazon Nova Micro ($0.000035/1K) + Claude 3.5 Sonnet'
+    modelCascade: 'Fast Reasoning Tier ($0.000035/1K) + Deep Reasoner'
   });
 
-  const handleTestBedrock = async () => {
+  const handleTestReasoner = async () => {
     setIsInferring(true);
     setTimeout(() => {
       setIsInferring(false);
-      setBedrockResponse(JSON.stringify({
-        model: 'anthropic.claude-3-5-sonnet-20241022-v2:0 (AWS Bedrock)',
+      setReasonerResponse(JSON.stringify({
+        model: 'barrierlens-reasoner-v2 (Autonomous Tier)',
         thought: 'Identified root cause in missing accessible name. Recommending minimal attribute injection.',
         patch: 'aria-label="Confirm Action" role="button" tabindex="0"',
         latencyMs: 312,
         tokens: { input: 142, output: 68 },
-        provider: 'AWS Bedrock Engine'
+        provider: 'Barrier Intelligence Engine'
       }, null, 2));
     }, 1200);
   };
@@ -74,13 +74,13 @@ export function AWSBridgeConsole() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold text-[#f4f5f6]">AWS CLI &amp; Cloud Sandbox Bridge</h2>
+                <h2 className="text-base font-semibold text-[#f4f5f6]">Cloud Replay Sandbox Bridge</h2>
                 <span className="px-2 py-0.5 text-[10px] font-mono rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                  AWS CLI v2.37.12
+                  CLI Runtime v2.37
                 </span>
               </div>
               <p className="text-[12px] text-[#9ba1a6]">
-                Bridge connecting IAM credentials, Bedrock foundation models, and Firecracker microVM sandboxes.
+                Runtime bridge connecting cryptographic credentials, continuous foundation models, and zero-egress microVM sandboxes.
               </p>
             </div>
           </div>
@@ -97,9 +97,9 @@ export function AWSBridgeConsole() {
         </div>
       </div>
 
-      {/* 2. Grid: AWS CLI & Budget Status Cards */}
+      {/* 2. Grid: CLI & Budget Status Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {/* Card 1: AWS CLI Environment */}
+        {/* Card 1: CLI Environment */}
         <div className="rounded-xl p-4 bg-[#141517] border border-[#23262a] space-y-2.5">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-mono uppercase text-[#62676d] tracking-wider block">
@@ -142,11 +142,11 @@ export function AWSBridgeConsole() {
           </p>
 
           <div className="p-2 rounded bg-[#0c0d0e] border border-[#23262a] text-[10px] font-mono text-emerald-400 truncate">
-            arn:aws:iam::145023097151:root
+            iam::credentials:active-session
           </div>
         </div>
 
-        {/* Card 3: $120 Budget Sentinel & Free Tier */}
+        {/* Card 3: $120 Budget Sentinel & Quota */}
         <div className="rounded-xl p-4 bg-[#141517] border border-[#23262a] space-y-2.5">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-mono uppercase text-[#62676d] tracking-wider block">
@@ -167,17 +167,17 @@ export function AWSBridgeConsole() {
               <span className="text-[#f4f5f6]">~{budget.estimatedRuns.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#62676d]">S3 &amp; Lambda:</span>
-              <span className="text-emerald-400 font-semibold">$0.00 Free Tier</span>
+              <span className="text-[#62676d]">Vault Storage:</span>
+              <span className="text-emerald-400 font-semibold">$0.00 Active Tier</span>
             </div>
           </div>
         </div>
 
-        {/* Card 4: Firecracker Sandbox Egress */}
+        {/* Card 4: Zero-Egress Sandbox */}
         <div className="rounded-xl p-4 bg-[#141517] border border-[#23262a] space-y-2.5">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-mono uppercase text-[#62676d] tracking-wider block">
-              Firecracker Sandbox
+              Zero-Egress Sandbox
             </span>
             <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
               <Lock className="w-3 h-3" /> ISOLATED
@@ -201,42 +201,42 @@ export function AWSBridgeConsole() {
         </div>
       </div>
 
-      {/* 3. Bedrock Foundation Model Interactive Test */}
+      {/* 3. Foundation Model Interactive Test */}
       <div className="rounded-xl p-5 bg-[#141517] border border-[#23262a] space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Cpu className="w-4 h-4 text-[#5e6ad2]" />
             <h3 className="text-xs font-mono uppercase tracking-wider text-[#f4f5f6]">
-              AWS Bedrock Foundation Model Playground
+              Autonomous Reasoning Model Playground
             </h3>
           </div>
           <span className="text-[11px] font-mono text-[#62676d]">
-            Claude 3.5 Sonnet &bull; Amazon Nova Pro
+            Fast Reasoning Tier &bull; Deep Reasoning Tier
           </span>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2.5">
           <input
             type="text"
-            value={bedrockPrompt}
-            onChange={(e) => setBedrockPrompt(e.target.value)}
-            placeholder="Enter prompt for Bedrock Foundation Model..."
+            value={reasonerPrompt}
+            onChange={(e) => setReasonerPrompt(e.target.value)}
+            placeholder="Enter prompt for Autonomous Reasoning Model..."
             className="flex-1 bg-[#0c0d0e] border border-[#23262a] rounded-lg px-3 py-2 text-xs font-mono text-[#f4f5f6] focus:outline-none focus:border-[#5e6ad2]"
           />
           <button
             type="button"
             disabled={isInferring}
-            onClick={handleTestBedrock}
+            onClick={handleTestReasoner}
             className="px-4 py-2 rounded-lg bg-[#5e6ad2] hover:bg-[#6875e5] text-white font-medium text-xs font-mono flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
           >
             {isInferring ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-            Invoke Bedrock
+            Invoke Reasoner
           </button>
         </div>
 
-        {bedrockResponse && (
+        {reasonerResponse && (
           <div className="p-3.5 rounded-lg bg-[#0c0d0e] border border-[#23262a] text-[11px] font-mono text-emerald-300 overflow-x-auto leading-relaxed">
-            <pre>{bedrockResponse}</pre>
+            <pre>{reasonerResponse}</pre>
           </div>
         )}
       </div>
@@ -248,21 +248,21 @@ export function AWSBridgeConsole() {
           Terminal Agent CLI Commands
         </h3>
         <p className="text-[12px] text-[#9ba1a6]">
-          Run the multi-agent mesh and AWS Bedrock directly from terminal or CI/CD pipelines:
+          Run the multi-agent mesh and reasoning engine directly from terminal or CI/CD pipelines:
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 pt-1">
           <div className="p-3 rounded-lg bg-[#0c0d0e] border border-[#23262a] space-y-1">
             <span className="text-[10px] font-mono uppercase text-[#62676d]">Status Check</span>
-            <code className="text-xs font-mono text-[#f4f5f6] block">npm run aws:status</code>
+            <code className="text-xs font-mono text-[#f4f5f6] block">npm run status:check</code>
           </div>
           <div className="p-3 rounded-lg bg-[#0c0d0e] border border-[#23262a] space-y-1">
-            <span className="text-[10px] font-mono uppercase text-[#62676d]">Bedrock Inference</span>
-            <code className="text-xs font-mono text-[#f4f5f6] block">npm run aws:bedrock</code>
+            <span className="text-[10px] font-mono uppercase text-[#62676d]">Neural Inference</span>
+            <code className="text-xs font-mono text-[#f4f5f6] block">npm run agent:reason</code>
           </div>
           <div className="p-3 rounded-lg bg-[#0c0d0e] border border-[#23262a] space-y-1">
             <span className="text-[10px] font-mono uppercase text-[#62676d]">Sandbox Audit</span>
-            <code className="text-xs font-mono text-[#f4f5f6] block">npm run aws:audit</code>
+            <code className="text-xs font-mono text-[#f4f5f6] block">npm run sandbox:verify</code>
           </div>
         </div>
       </div>

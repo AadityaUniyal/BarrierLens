@@ -11,13 +11,13 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: 'BarrierLens 2.0 — Autonomous Agentic Accessibility Verification',
-  description: 'Prove and repair web accessibility barriers before code ships. Combines deterministic Tarjan SCC focus graphs, acoustic screen reader simulation, and autonomous AWS Bedrock multi-agent swarms.',
+  description: 'Prove and repair web accessibility barriers before code ships. Combines deterministic Tarjan SCC focus graphs, acoustic screen reader simulation, and autonomous multi-agent reasoning swarms.',
   keywords: [
     'accessibility',
     'WCAG 2.2',
     'EAA compliance',
     'agentic AI',
-    'AWS Bedrock',
+    'autonomous reasoning mesh',
     'Tarjan SCC',
     'keyboard trap proof',
     'screen reader acoustic simulation',

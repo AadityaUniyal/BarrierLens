@@ -246,7 +246,7 @@ export function WebsitesManagerView({ onStartAuditForSite }: WebsitesManagerView
       {loading && (
         <div className="p-12 text-center text-[#9ba1a6] flex flex-col items-center justify-center gap-3 bg-[#141517] border border-[#23262a] rounded-xl">
           <RefreshCw className="w-5 h-5 animate-spin text-[#5e6ad2]" />
-          <span className="text-xs font-mono">Syncing property ledger from Neon PostgreSQL...</span>
+          <span className="text-xs font-mono">Syncing property ledger from cloud database...</span>
         </div>
       )}
 

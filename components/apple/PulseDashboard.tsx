@@ -298,7 +298,7 @@ export function PulseDashboard({
             </div>
             <h3 className="text-sm font-semibold text-[#f4f5f6]">Barrier Genome</h3>
             <p className="text-xs text-[#9ba1a6] leading-relaxed">
-              768-dimensional pgvector dense heatmaps and cross-site fix transfer learning.
+              768-dimensional barrier embeddings and cross-site fix transfer learning.
             </p>
           </div>
           <div className="pt-4 border-t border-[#23262a] flex items-center justify-between text-xs font-medium text-[#ff9f0a] mt-4">
@@ -313,7 +313,7 @@ export function PulseDashboard({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-sm font-semibold text-[#f4f5f6]">Recent Task Audits</h2>
-            <p className="text-xs text-[#9ba1a6]">Continuous execution history stored in Neon PostgreSQL</p>
+            <p className="text-xs text-[#9ba1a6]">Continuous execution history recorded in encrypted audit ledger</p>
           </div>
 
           <button

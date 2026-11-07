@@ -74,9 +74,9 @@ export function TraceTheater({ steps, findings, targetUrl }: TraceTheaterProps) 
       case 1:
         return { label: 'Tier 1: Ranker', color: 'bg-purple-500/10 text-[#bf5af2] border-purple-500/20' };
       case 2:
-        return { label: 'Tier 2: Groq LLaMA', color: 'bg-blue-500/10 text-[#0a84ff] border-blue-500/20' };
+        return { label: 'Tier 2: Fast Neural Reasoner', color: 'bg-blue-500/10 text-[#0a84ff] border-blue-500/20' };
       case 3:
-        return { label: 'Tier 3: Gemini Flash', color: 'bg-amber-500/10 text-[#ff9f0a] border-amber-500/20' };
+        return { label: 'Tier 3: Deep Multimodal Reasoner', color: 'bg-amber-500/10 text-[#ff9f0a] border-amber-500/20' };
       default:
         return { label: 'Tier 0: Rule', color: 'bg-white/10 text-[#f4f5f6] border-white/20' };
     }

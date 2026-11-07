@@ -173,11 +173,11 @@ export function AppleAuthModal({
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-[#9ba1a6]">Database</span>
-                <span className="text-[#30d158] font-mono">Neon PostgreSQL Active</span>
+                <span className="text-[#30d158] font-mono">Encrypted Cloud Ledger</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-[#9ba1a6]">Auth Engine</span>
-                <span className="text-[#30d158] font-mono capitalize">Better Auth ({currentSession.authMethod.replace('_', ' ')})</span>
+                <span className="text-[#30d158] font-mono capitalize">Enterprise Passkey ({currentSession.authMethod.replace('_', ' ')})</span>
               </div>
             </div>
 
@@ -211,7 +211,7 @@ export function AppleAuthModal({
               </div>
               <h2 className="text-base font-semibold text-[#f4f5f6]">Authenticate into BarrierLens</h2>
               <p className="text-xs text-[#9ba1a6]">
-                Native Better Auth with Neon PostgreSQL and WebAuthn FIDO2 biometrics.
+                Hardware-backed FIDO2 Passkey authentication with encrypted cryptographic ledger.
               </p>
             </div>
 
@@ -261,7 +261,7 @@ export function AppleAuthModal({
                   </div>
                   <div className="text-xs">
                     <p className="font-semibold text-[#f4f5f6]">Biometric Passkey</p>
-                    <p className="text-[#9ba1a6]">Zero passwords. Stored in Apple Secure Enclave &amp; Neon DB.</p>
+                    <p className="text-[#9ba1a6]">Zero passwords. Stored in Apple Secure Enclave &amp; Encrypted Cloud Vault.</p>
                   </div>
                 </div>
 

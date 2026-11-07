@@ -110,20 +110,20 @@ export function LiveMissionControl({ onOpenGenome, onOpenCausalDiff, onOpenAwsCo
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border-hairline border-blue-500/30 text-blue-400 text-xs font-medium">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>AWS Strands Agents SDK v1.23 • Amazon Bedrock • pgvector HNSW</span>
+              <span>Autonomous Agent Mesh • Continuous Reasoning Engine • 768-D Vector Embeddings</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#f5f5f7]">
               Autonomous Accessibility Reliability Engine
             </h1>
             <p className="text-sm text-[#86868b] leading-relaxed">
-              Dispatches multi-agent swarms using Amazon Nova Micro and Claude 3.5 Sonnet to discover dynamic interaction traps, derive minimal Pearl counterfactual fixes <code className="font-mono text-blue-300">do(X = x&apos;)</code>, and sign cryptographically immutable Causal Certificates.
+              Dispatches multi-agent cognitive swarms to discover dynamic interaction traps, derive minimal Pearl counterfactual fixes <code className="font-mono text-blue-300">do(X = x&apos;)</code>, and sign cryptographically immutable Causal Certificates.
             </p>
           </div>
 
           {/* Quick Stats Pill */}
           <div className="flex items-center gap-3 bg-black/40 backdrop-blur-xl p-3 rounded-2xl border-hairline border-white/10">
             <div className="text-center px-3 border-r border-white/10">
-              <div className="text-[11px] text-[#86868b] uppercase tracking-wider">AWS Credit</div>
+              <div className="text-[11px] text-[#86868b] uppercase tracking-wider">Cloud Credit</div>
               <div className="text-base font-semibold font-mono text-emerald-400">$120.00</div>
             </div>
             <div className="text-center px-3 border-r border-white/10">
@@ -308,7 +308,7 @@ export function LiveMissionControl({ onOpenGenome, onOpenCausalDiff, onOpenAwsCo
             </div>
 
             <p className="text-xs text-[#86868b]">
-              Encoded structural, semantic, and behavioral fingerprint into Neon pgvector HNSW index.
+              Encoded structural, semantic, and behavioral fingerprint into 768-dimensional latent vector index.
             </p>
 
             <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-2">
@@ -331,12 +331,12 @@ export function LiveMissionControl({ onOpenGenome, onOpenCausalDiff, onOpenAwsCo
             </button>
           </div>
 
-          {/* Card 3: AWS Budget & Sentinel */}
+          {/* Card 3: Compute Budget & Sentinel */}
           <div className="p-6 rounded-3xl apple-glass border-hairline border-blue-500/30 space-y-4 shadow-xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-blue-400 text-xs font-medium">
                 <DollarSign className="w-4 h-4" />
-                <span>AWS Budget Sentinel</span>
+                <span>Compute Budget Sentinel</span>
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
                 Safe
@@ -372,7 +372,7 @@ export function LiveMissionControl({ onOpenGenome, onOpenCausalDiff, onOpenAwsCo
               onClick={onOpenAwsConsole}
               className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-medium text-[#f5f5f7] flex items-center justify-center gap-1.5 transition-colors border border-white/10"
             >
-              <span>Manage AWS Models & CLI</span>
+              <span>Manage Models &amp; Sandbox</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>

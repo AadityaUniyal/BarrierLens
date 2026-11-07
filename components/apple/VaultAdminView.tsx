@@ -208,7 +208,7 @@ export function VaultAdminView({ userSession, onOpenAuth }: VaultAdminViewProps)
             Administration & Policy
           </h1>
           <p className="text-xs text-[#9ba1a6] mt-0.5">
-            Manage organization credentials, role-based access, signed webhooks, and Bedrock quotas.
+            Manage organization credentials, role-based access, signed webhooks, and inference token quotas.
           </p>
         </div>
 
@@ -218,7 +218,7 @@ export function VaultAdminView({ userSession, onOpenAuth }: VaultAdminViewProps)
             { id: 'team', label: 'Team & RBAC', icon: Users },
             { id: 'api-keys', label: 'API Keys', icon: Key },
             { id: 'webhooks', label: 'Webhooks', icon: Webhook },
-            { id: 'quota', label: 'Bedrock Quota', icon: Cloud },
+            { id: 'quota', label: 'Token Quota', icon: Cloud },
             { id: 'compliance', label: 'EAA Export', icon: FileCheck2 },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -406,22 +406,22 @@ export function VaultAdminView({ userSession, onOpenAuth }: VaultAdminViewProps)
         </div>
       )}
 
-      {/* 5. Bedrock Quota Tab */}
+      {/* 5. Token Quota Tab */}
       {activeTab === 'quota' && (
         <div className="bg-[#141517] rounded-xl p-6 border border-[#23262a] shadow-xl space-y-5">
           <div className="pb-3 border-b border-[#23262a]">
-            <h2 className="text-sm font-semibold text-[#f4f5f6]">AWS Bedrock Nova Metering</h2>
+            <h2 className="text-sm font-semibold text-[#f4f5f6]">Inference Engine Token Metering</h2>
             <p className="text-xs text-[#9ba1a6]">Real-time token utilization across multi-agent swarm milestones</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-4 rounded-lg bg-[#0c0d0e] border border-[#23262a] space-y-1">
-              <span className="text-[11px] font-semibold text-[#9ba1a6] uppercase font-mono">Amazon Nova Micro</span>
+              <span className="text-[11px] font-semibold text-[#9ba1a6] uppercase font-mono">Fast Reasoning Tier</span>
               <p className="text-2xl font-bold text-[#f4f5f6] tabular-nums font-mono">12,480</p>
               <p className="text-[10px] text-[#6b7280]">Tokens ($0.000035/1K tokens)</p>
             </div>
             <div className="p-4 rounded-lg bg-[#0c0d0e] border border-[#23262a] space-y-1">
-              <span className="text-[11px] font-semibold text-[#9ba1a6] uppercase font-mono">Amazon Nova Pro</span>
+              <span className="text-[11px] font-semibold text-[#9ba1a6] uppercase font-mono">Deep Reasoning Tier</span>
               <p className="text-2xl font-bold text-[#f4f5f6] tabular-nums font-mono">48,200</p>
               <p className="text-[10px] text-[#6b7280]">Tokens ($0.0008/1K tokens)</p>
             </div>

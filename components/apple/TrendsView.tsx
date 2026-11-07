@@ -147,11 +147,11 @@ export function TrendsView({ runs }: TrendsViewProps) {
         </div>
       </div>
 
-      {/* Audit History Table from Neon Postgres */}
+      {/* Audit History Table from Continuous Ledger */}
       <div className="bg-[#141517] rounded-xl p-6 border border-[#23262a] shadow-xl space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-[#23262a]">
           <h3 className="text-xs font-semibold text-[#9ba1a6] uppercase tracking-wider font-mono">
-            Recorded Audit History (Neon Postgres)
+            Recorded Continuous Audit History
           </h3>
           <span className="text-xs font-mono text-[#5e6ad2]">
             {runs.length} Runs Logged

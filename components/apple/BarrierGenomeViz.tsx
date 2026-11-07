@@ -77,7 +77,7 @@ export function BarrierGenomeViz({
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-semibold text-[#f4f5f6]">Barrier Genome</h2>
                 <span className="px-2 py-0.5 text-[10px] font-mono rounded bg-[#5e6ad2]/10 text-[#5e6ad2] border border-[#5e6ad2]/20">
-                  768-DIM pgvector
+                  768-DIM Vector Embeddings
                 </span>
               </div>
               <p className="text-[12px] text-[#9ba1a6]">

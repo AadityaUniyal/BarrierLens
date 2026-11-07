@@ -609,7 +609,7 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-4 font-mono text-[11px] text-[#6b7280]">
             <span>Playwright CDP</span>
-            <span>Neon Postgres</span>
+            <span>Encrypted Ledger</span>
             <span>WCAG 2.2 Level AAA</span>
           </div>
         </div>

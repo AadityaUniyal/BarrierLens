@@ -455,9 +455,9 @@ export function TeamIntegrationsView({ userSession, onOpenAuth }: TeamIntegratio
           <div className="apple-card p-6 rounded-3xl border border-white/8 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-[#0a84ff]">Better Auth Organization</span>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-[#0a84ff]">Enterprise Identity Organization</span>
                 <h3 className="text-xl font-bold text-[#f5f5f7]">Cupertino Design Systems</h3>
-                <p className="text-xs text-[#86868b]">Tier: Enterprise Swarm • AWS Bedrock Region: us-east-1</p>
+                <p className="text-xs text-[#86868b]">Tier: Enterprise Swarm • Primary Cluster: US-East</p>
               </div>
               <button
                 onClick={onOpenAuth}
@@ -514,7 +514,7 @@ export function TeamIntegrationsView({ userSession, onOpenAuth }: TeamIntegratio
             </div>
 
             <div className="apple-card p-5 rounded-2xl border border-white/8 space-y-2">
-              <span className="text-xs text-[#86868b]">Bedrock Token Budget</span>
+              <span className="text-xs text-[#86868b]">Inference Token Budget</span>
               <div className="text-2xl font-bold text-purple-400 tabular-nums">1.2M / 10.0M</div>
               <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
                 <div className="bg-purple-500 h-full rounded-full" style={{ width: '12%' }} />

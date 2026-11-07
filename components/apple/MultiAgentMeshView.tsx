@@ -36,19 +36,19 @@ export function MultiAgentMeshView() {
   const [activeChaos, setActiveChaos] = useState(true);
 
   const [agentLogs, setAgentLogs] = useState<Array<{ from: string; to: string; text: string; time: string; color: string }>>([
-    { from: 'Orchestrator', to: 'Broadcast', text: 'Decomposing task goal into topological milestones via AWS Bedrock Claude 3.5 Sonnet.', time: '16:54:02', color: 'text-blue-400' },
-    { from: 'Navigator', to: 'Forensic Auditor', text: 'Dispatched sequential Tab navigation inside isolated AWS Firecracker sandbox context.', time: '16:54:03', color: 'text-purple-400' },
+    { from: 'Orchestrator', to: 'Broadcast', text: 'Decomposing task goal into topological milestones via Barrier Intelligence Engine.', time: '16:54:02', color: 'text-blue-400' },
+    { from: 'Navigator', to: 'Forensic Auditor', text: 'Dispatched sequential Tab navigation inside isolated zero-egress sandbox context.', time: '16:54:03', color: 'text-purple-400' },
     { from: 'Forensic Auditor', to: 'Causal Repair', text: 'Tarjan SCC cycle detected on #modal-terms (Inversion tau = 0.42). Empty label on <button>.', time: '16:54:04', color: 'text-amber-400' },
     { from: 'Red-Team Chaos', to: 'Navigator', text: 'Injected 320px responsive reflow + Windows High Contrast Mode filter.', time: '16:54:05', color: 'text-rose-400' },
     { from: 'Causal Repair', to: 'Sandbox Judge', text: 'Synthesized minimal do(aria-label="Submit") patch (Invasiveness Level 1).', time: '16:54:06', color: 'text-emerald-400' },
-    { from: 'Sandbox Judge', to: 'Orchestrator', text: 'Sandboxed replay verified 0 regressions. SHA-256 certificate signed & uploaded to S3.', time: '16:54:07', color: 'text-teal-400' },
+    { from: 'Sandbox Judge', to: 'Orchestrator', text: 'Sandboxed replay verified 0 regressions. SHA-256 certificate signed & uploaded to Evidence Vault.', time: '16:54:07', color: 'text-teal-400' },
   ]);
 
   const agents: AgentCardInfo[] = [
     {
       role: 'orchestrator',
       name: 'Orchestrator Conductor',
-      strand: 'AWS EventBridge & Bedrock Router',
+      strand: 'Distributed Event Bus & Intelligence Router',
       status: isRunning ? 'active' : 'idle',
       description: 'Coordinates agent task assignment, token budgets, and consensus verification.',
       icon: Network,
@@ -95,7 +95,7 @@ export function MultiAgentMeshView() {
       name: 'Sandbox Judge Agent',
       strand: 'Isolated Replay Gatekeeper',
       status: isRunning ? 'active' : 'certified',
-      description: 'Executes within AWS Firecracker container, certifying 0 regressions with SHA-256 proofs.',
+      description: 'Executes within zero-egress security sandbox, certifying 0 regressions with SHA-256 proofs.',
       icon: ShieldCheck,
       accent: 'border-teal-500/20 text-teal-400 bg-teal-500/10'
     }
@@ -110,7 +110,7 @@ export function MultiAgentMeshView() {
         {
           from: 'Orchestrator',
           to: 'Broadcast',
-          text: `Mission Accomplished for ${targetUrl}. All 6 agents reached consensus. Signed certificate stored in S3.`,
+          text: `Mission Accomplished for ${targetUrl}. All 6 agents reached consensus. Signed certificate stored in Evidence Vault.`,
           time: new Date().toLocaleTimeString(),
           color: 'text-emerald-400'
         }
@@ -120,7 +120,7 @@ export function MultiAgentMeshView() {
 
   return (
     <div className="space-y-5">
-      {/* 1. Top Banner: AWS Strands & Sandbox Overview */}
+      {/* 1. Top Banner: Multi-Agent Mesh & Sandbox Overview */}
       <div className="rounded-xl p-5 bg-[#141517] border border-[#23262a] relative overflow-hidden">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -131,11 +131,11 @@ export function MultiAgentMeshView() {
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-semibold text-[#f4f5f6]">Multi-Agent Cognitive Mesh</h2>
                 <span className="px-2 py-0.5 text-[10px] font-mono rounded bg-[#5e6ad2]/10 text-[#5e6ad2] border border-[#5e6ad2]/20">
-                  AWS Strands + Firecracker MicroVMs
+                  Distributed Swarm + Zero-Egress Sandbox
                 </span>
               </div>
               <p className="text-[12px] text-[#9ba1a6]">
-                6 autonomous agents orchestrated via AWS EventBridge, Bedrock inference, S3 artifact persistence, and isolated replay sandboxes.
+                6 autonomous agents orchestrated via distributed event bus, continuous neural inference, cryptographic evidence vault, and isolated replay sandboxes.
               </p>
             </div>
           </div>
@@ -164,15 +164,15 @@ export function MultiAgentMeshView() {
         </div>
       </div>
 
-      {/* 2. AWS Strands Telemetry Pill Bar */}
+      {/* 2. Cognitive Swarm Telemetry Pill Bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="p-3.5 rounded-lg bg-[#141517] border border-[#23262a] flex items-center gap-3">
           <div className="w-8 h-8 rounded-md bg-[#181a1d] border border-[#23262a] flex items-center justify-center text-blue-400">
             <Cpu className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[10px] font-mono uppercase text-[#62676d] block">AWS Bedrock</span>
-            <span className="text-xs font-semibold text-[#f4f5f6]">Claude 3.5 Sonnet</span>
+            <span className="text-[10px] font-mono uppercase text-[#62676d] block">Cognitive Reasoner</span>
+            <span className="text-xs font-semibold text-[#f4f5f6]">Intelligence Engine</span>
           </div>
         </div>
 
@@ -181,8 +181,8 @@ export function MultiAgentMeshView() {
             <Network className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[10px] font-mono uppercase text-[#62676d] block">AWS EventBridge</span>
-            <span className="text-xs font-semibold text-[#f4f5f6]">SQS Event Bus</span>
+            <span className="text-[10px] font-mono uppercase text-[#62676d] block">Distributed Bus</span>
+            <span className="text-xs font-semibold text-[#f4f5f6]">Continuous Pub/Sub</span>
           </div>
         </div>
 
@@ -191,7 +191,7 @@ export function MultiAgentMeshView() {
             <HardDrive className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[10px] font-mono uppercase text-[#62676d] block">AWS S3 Vault</span>
+            <span className="text-[10px] font-mono uppercase text-[#62676d] block">Evidence Vault</span>
             <span className="text-xs font-semibold text-[#f4f5f6]">Artifacts &amp; Traces</span>
           </div>
         </div>
@@ -201,8 +201,8 @@ export function MultiAgentMeshView() {
             <Lock className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[10px] font-mono uppercase text-[#62676d] block">Firecracker Sandbox</span>
-            <span className="text-xs font-semibold text-emerald-400">Egress Blocked</span>
+            <span className="text-[10px] font-mono uppercase text-[#62676d] block">Zero-Egress Sandbox</span>
+            <span className="text-xs font-semibold text-emerald-400">Isolated Replay</span>
           </div>
         </div>
       </div>
@@ -252,11 +252,11 @@ export function MultiAgentMeshView() {
           <div className="flex items-center gap-2">
             <Terminal className="w-4 h-4 text-[#5e6ad2]" />
             <h3 className="text-xs font-mono uppercase tracking-wider text-[#f4f5f6]">
-              AWS EventBridge Inter-Agent Message Stream
+              Distributed Inter-Agent Event Stream
             </h3>
           </div>
           <span className="text-xs font-mono text-emerald-400 flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5" /> Zero-Loss SQS Delivery
+            <CheckCircle2 className="w-3.5 h-3.5" /> Zero-Loss Event Delivery
           </span>
         </div>
 
