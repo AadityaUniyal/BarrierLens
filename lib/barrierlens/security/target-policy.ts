@@ -95,10 +95,16 @@ export async function resolvePublicTargetUrl(
   }
 
   let parsed: URL;
+  const isRelativeInternal = raw.startsWith('/');
   try {
-    parsed = raw.startsWith('/') ? new URL(raw, requestOrigin) : new URL(raw);
+    parsed = isRelativeInternal ? new URL(raw, requestOrigin) : new URL(raw);
   } catch {
     throw new TargetPolicyError('Enter a valid http or https URL.', 'invalid_url');
+  }
+
+  // Relative internal paths (e.g. /benchmark, /fixtures/...) are native testbed routes and always allowed
+  if (isRelativeInternal) {
+    return parsed.toString();
   }
 
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {

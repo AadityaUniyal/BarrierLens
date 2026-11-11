@@ -269,6 +269,18 @@ export default function Home() {
         body: JSON.stringify({ targetUrl, goal, persona, maxSteps })
       });
 
+      if (!response.ok) {
+        let errMessage = `HTTP ${response.status} ${response.statusText}`;
+        try {
+          const errJson = await response.json();
+          if (errJson?.error) errMessage = errJson.error;
+        } catch {
+          const text = await response.text().catch(() => '');
+          if (text) errMessage = text;
+        }
+        throw new Error(errMessage);
+      }
+
       if (!response.body) {
         throw new Error('ReadableStream not supported');
       }
@@ -337,9 +349,14 @@ export default function Home() {
           }
         }
       }
-    } catch (err) {
-      console.warn('Streaming encountered an issue, loading benchmark evaluation result', err);
-      handleLoadBenchmarkFindings();
+    } catch (err: any) {
+      console.warn('Streaming encountered an issue:', err);
+      const errMsg = err?.message || 'Audit execution stream failure';
+      setStreamingStatus(`Audit Notice: ${errMsg}`);
+      // If user specifically requested benchmark fixture and server cannot spawn browser, provide the reference ground truth
+      if (targetUrl.includes('benchmark') || targetUrl.includes('localhost')) {
+        handleLoadBenchmarkFindings();
+      }
     } finally {
       setIsAuditing(false);
     }

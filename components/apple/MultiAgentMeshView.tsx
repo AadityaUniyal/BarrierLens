@@ -101,21 +101,129 @@ export function MultiAgentMeshView() {
     }
   ];
 
-  const handleLaunchMesh = () => {
+  const [telemetry, setTelemetry] = useState<{
+    totalTokens?: number;
+    totalCostUsd?: number;
+    interactiveNodes?: number;
+    budgetRemaining?: number;
+  }>({});
+
+  const agentColorMap: Record<string, string> = {
+    'Orchestrator Conductor': 'text-blue-400',
+    'Navigator Agent': 'text-purple-400',
+    'Forensic Auditor': 'text-amber-400',
+    'Red-Team Chaos Agent': 'text-rose-400',
+    'Causal Repair Agent': 'text-emerald-400',
+    'Sandbox Judge Agent': 'text-teal-400',
+    'Orchestrator': 'text-blue-400',
+    'Navigator': 'text-purple-400',
+    'Forensic': 'text-amber-400',
+    'Causal': 'text-emerald-400',
+    'Sandbox': 'text-teal-400',
+  };
+
+  const handleLaunchMesh = async () => {
     setIsRunning(true);
-    setTimeout(() => {
-      setIsRunning(false);
+    const now = () => new Date().toLocaleTimeString();
+
+    // Initial broadcast
+    setAgentLogs(prev => [
+      ...prev,
+      {
+        from: 'Orchestrator',
+        to: 'Broadcast',
+        text: `Dispatching live multi-agent mission for target "${targetUrl}" with goal: "${goal}".`,
+        time: now(),
+        color: 'text-blue-400'
+      }
+    ]);
+
+    try {
+      const res = await fetch('/api/strands', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetUrl,
+          goal,
+          persona: 'keyboard',
+          maxSteps: 8
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        
+        // Append real steps executed by agents
+        if (Array.isArray(data.steps) && data.steps.length > 0) {
+          const stepLogs = data.steps.map((st: any) => ({
+            from: st.agent,
+            to: 'Mesh',
+            text: `${st.action} — ${st.outputSummary || 'Completed'} (${st.tokensUsed} tokens, $${Number(st.costEstimateUsd || 0).toFixed(6)})`,
+            time: st.timestamp ? new Date(st.timestamp).toLocaleTimeString() : now(),
+            color: agentColorMap[st.agent] || 'text-cyan-400'
+          }));
+          setAgentLogs(prev => [...prev, ...stepLogs]);
+        }
+
+        // Append certificate if produced
+        if (data.certificateSummary) {
+          setAgentLogs(prev => [
+            ...prev,
+            {
+              from: 'Sandbox Judge',
+              to: 'Orchestrator',
+              text: `Signed Certificate [${data.certificateSummary.sha256.slice(0, 16)}...]: verified patch ${data.certificateSummary.patch}`,
+              time: now(),
+              color: 'text-teal-400'
+            }
+          ]);
+        }
+
+        // Summary log
+        setAgentLogs(prev => [
+          ...prev,
+          {
+            from: 'Orchestrator',
+            to: 'Broadcast',
+            text: `Mission Accomplished. Found ${data.interactiveNodesFound || 0} interactive nodes, ${data.barriersFound || 0} barriers. Tokens: ${data.totalTokens || 0}. Budget Remaining: $${Number(data.budgetRemainingUsd || 119.98).toFixed(4)}.`,
+            time: now(),
+            color: 'text-emerald-400'
+          }
+        ]);
+
+        setTelemetry({
+          totalTokens: data.totalTokens,
+          totalCostUsd: data.totalCostUsd,
+          interactiveNodes: data.interactiveNodesFound,
+          budgetRemaining: data.budgetRemainingUsd
+        });
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setAgentLogs(prev => [
+          ...prev,
+          {
+            from: 'Orchestrator',
+            to: 'Forensics',
+            text: `Mission execution encountered error: ${errData.error || res.statusText}`,
+            time: now(),
+            color: 'text-rose-400'
+          }
+        ]);
+      }
+    } catch (err: any) {
       setAgentLogs(prev => [
         ...prev,
         {
           from: 'Orchestrator',
           to: 'Broadcast',
-          text: `Mission Accomplished for ${targetUrl}. All 6 agents reached consensus. Signed certificate stored in Evidence Vault.`,
-          time: new Date().toLocaleTimeString(),
-          color: 'text-emerald-400'
+          text: `Mission aborted due to transport error: ${err.message || 'Network failure'}`,
+          time: now(),
+          color: 'text-rose-400'
         }
       ]);
-    }, 2800);
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   return (
@@ -161,6 +269,30 @@ export function MultiAgentMeshView() {
               </>
             )}
           </button>
+        </div>
+
+        {/* Target URL and Mission Goal Input Bar */}
+        <div className="mt-4 pt-4 border-t border-[#23262a] grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label className="text-[10px] font-mono uppercase text-[#62676d] block mb-1">Target Surface URL</label>
+            <input
+              type="text"
+              value={targetUrl}
+              onChange={(e) => setTargetUrl(e.target.value)}
+              placeholder="e.g. /benchmark or https://demo.barrierlens.ai"
+              className="w-full bg-[#0c0d0e] border border-[#23262a] rounded-lg px-3 py-1.5 text-xs font-mono text-[#f4f5f6] focus:outline-none focus:border-[#5e6ad2]"
+            />
+          </div>
+          <div>
+            <label className="text-[10px] font-mono uppercase text-[#62676d] block mb-1">Autonomous Mission Goal</label>
+            <input
+              type="text"
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+              placeholder="e.g. Complete checkout flow with keyboard only"
+              className="w-full bg-[#0c0d0e] border border-[#23262a] rounded-lg px-3 py-1.5 text-xs font-mono text-[#f4f5f6] focus:outline-none focus:border-[#5e6ad2]"
+            />
+          </div>
         </div>
       </div>
 

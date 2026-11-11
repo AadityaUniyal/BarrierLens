@@ -43,24 +43,49 @@ export function AWSBridgeConsole() {
 
   const handleTestReasoner = async () => {
     setIsInferring(true);
-    setTimeout(() => {
-      setIsInferring(false);
+    try {
+      const res = await fetch('/api/reasoner', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: reasonerPrompt })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setReasonerResponse(JSON.stringify(data, null, 2));
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setReasonerResponse(JSON.stringify({
+          error: errData.error || 'Inference execution failed',
+          status: res.status
+        }, null, 2));
+      }
+    } catch (err: any) {
       setReasonerResponse(JSON.stringify({
-        model: 'barrierlens-reasoner-v2 (Autonomous Tier)',
-        thought: 'Identified root cause in missing accessible name. Recommending minimal attribute injection.',
-        patch: 'aria-label="Confirm Action" role="button" tabindex="0"',
-        latencyMs: 312,
-        tokens: { input: 142, output: 68 },
-        provider: 'Barrier Intelligence Engine'
+        error: err.message || 'Network error communicating with reasoner endpoint',
+        status: 'connection_failure'
       }, null, 2));
-    }, 1200);
+    } finally {
+      setIsInferring(false);
+    }
   };
 
-  const handleRefreshStatus = () => {
+  const handleRefreshStatus = async () => {
     setIsChecking(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/strands');
+      if (res.ok) {
+        const data = await res.json();
+        setAwsStatus(prev => ({
+          ...prev,
+          version: data.framework || prev.version,
+          authNote: `Runtime status: ${data.status || 'operational'}. Active models: ${data.models?.reasoning || 'Nova Pro / LLaMA 3.3'}`
+        }));
+      }
+    } catch {
+      // Keep baseline on connection hiccup
+    } finally {
       setIsChecking(false);
-    }, 800);
+    }
   };
 
   return (
