@@ -316,8 +316,8 @@ export class AuditorCore {
           };
           tierMix.tier1Ranker++;
         } else {
-          // Escalate to Tier 2 (Groq LLaMA 3.3) or Tier 3 (Gemini Flash) with Reflexion Guidance
-          decision = await this.router.decideNextAction(goal, persona, compactAX, keyHistory, reflexionContext);
+          // Escalate to Tier 2 (Local GPU SLM / Groq LLaMA 3.3) or Tier 3 (Gemini Flash) with Reflexion Guidance
+          decision = await this.router.decideNextAction(goal, persona, compactAX, keyHistory, reflexionContext, previousActiveSelector);
           if (decision.tierUsed === 0) tierMix.tier0Rules++;
           else if (decision.tierUsed === 2) tierMix.tier2Groq++;
           else if (decision.tierUsed === 3) tierMix.tier3Gemini++;

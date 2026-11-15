@@ -5,28 +5,43 @@ export interface LLMDecision {
   text?: string;
   targetSelector?: string;
   isGoalReached: boolean;
-  tierUsed: 0 | 2 | 3; // 0=rule fallback, 2=Groq, 3=Gemini
+  tierUsed: 0 | 1 | 2 | 3; // 0=rule fallback, 1=ranker, 2=Local SLM / Groq, 3=Gemini
+  engine?: string;
 }
 
 export class LLMRouter {
   private groqApiKey: string;
   private geminiApiKey: string;
+  private backendUrl: string;
 
   constructor() {
     this.groqApiKey = process.env.GROQ_API_KEY || '';
     this.geminiApiKey = process.env.GEMINI_API_KEY || '';
+    this.backendUrl = process.env.PYTHON_BACKEND_URL || 'http://127.0.0.1:8000';
   }
 
   /**
-   * Fast Tier 2 Decision via Groq (LLaMA 3.3 70B) over the compact AX-tree
+   * Fast Tier 2 Decision via Local GPU SLM (Qwen2.5-Coder on RTX 4050)
+   * or Cloud Groq (LLaMA 3.3 70B) over the compact AX-tree
    */
   async decideNextAction(
     goal: string,
     persona: string,
     compactAXTree: string,
     history: string[],
-    reflexionContext?: string
+    reflexionContext?: string,
+    currentFocusSelector?: string
   ): Promise<LLMDecision> {
+    // 1. Try Local GPU SLM First (100% Offline, Private, Runs on RTX 4050)
+    try {
+      const slmResult = await this.queryLocalSLM(goal, persona, currentFocusSelector || '', compactAXTree, history, reflexionContext);
+      if (slmResult) {
+        return slmResult;
+      }
+    } catch (slmErr) {
+      console.warn('[LLM Router] Local GPU SLM unavailable, trying cloud routers:', slmErr);
+    }
+
     const prompt = `You are BarrierLens, an autonomous task-conditioned accessibility auditor.
 Goal: "${goal}"
 Persona: "${persona}" (Keyboard-only: You CANNOT click. You can only navigate with Tab, Shift+Tab, Enter, Space, Escape, or Type text into focused fields).
@@ -136,6 +151,78 @@ Output format:
       isGoalReached: false,
       tierUsed: 0
     };
+  }
+
+  /**
+   * Fast Tier 2 Local SLM Decision via Python backend on RTX 4050 CUDA
+   */
+  private async queryLocalSLM(
+    goal: string,
+    persona: string,
+    currentFocus: string,
+    compactAXTree: string,
+    history: string[],
+    reflexionHint?: string
+  ): Promise<LLMDecision | null> {
+    try {
+      const res = await fetch(`${this.backendUrl}/api/ml/slm-reason`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          goal,
+          persona,
+          currentFocus,
+          compactAXTree,
+          history,
+          reflexionHint: reflexionHint || ''
+        }),
+        signal: AbortSignal.timeout(4000)
+      });
+
+      if (!res.ok) return null;
+      const data = await res.json();
+      return {
+        thought: data.thought || 'Local GPU SLM reasoning step',
+        action: data.action || 'press_key',
+        key: data.key || 'Tab',
+        text: data.text,
+        isGoalReached: !!data.isGoalReached,
+        tierUsed: 2,
+        engine: 'qwen2.5_coder_gpu'
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Local GPU SLM AST Code Remediation
+   */
+  async synthesizeRemediationCode(
+    defectKind: string,
+    targetSelector: string,
+    targetSnippet: string = '',
+    proofExplanation: string = ''
+  ): Promise<string | null> {
+    try {
+      const res = await fetch(`${this.backendUrl}/api/ml/slm-remediate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          defectKind,
+          targetSelector,
+          targetSnippet,
+          proofExplanation
+        }),
+        signal: AbortSignal.timeout(6000)
+      });
+
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.patchedCode || null;
+    } catch {
+      return null;
+    }
   }
 
   /**

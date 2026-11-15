@@ -14,6 +14,7 @@
     "test:week5": "node scripts/verify-week5-state-graph.mjs",
     "test:phase2": "npx tsx scripts/verify-phase2-ml-pipeline.mjs",
     "test:phase3": "npx tsx scripts/verify-phase3-developer-ecosystem.mjs",
+    "test:phase4": "npx tsx scripts/verify-phase4-local-slm.mjs",
     "barrierlens:ci": "npx tsx scripts/barrierlens-ci.mjs",
     "test:differentiators": "npx tsx --env-file=.env.local scripts/verify-novel-differentiators.mjs",
     "test:multiagent": "npx tsx --env-file=.env.local scripts/verify-aws-multiagent-sandbox.mjs",

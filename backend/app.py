@@ -35,6 +35,8 @@ from vault.api_keys import ApiKeyManager
 from vault.webhooks import WebhookSigner, WebhookDispatcher
 from ml.gpu_inference import GPUInferenceEngine
 from ml.action_ranker import LightGBMActionRanker
+from ml.slm_engine import LocalSLMEngine
+from ml.ocr_engine import VisualTextRecoveryEngine
 
 app = FastAPI(
     title="BarrierLens GPU-Accelerated Backend",
@@ -53,6 +55,8 @@ app.add_middleware(
 
 gpu_engine = GPUInferenceEngine()
 action_ranker = LightGBMActionRanker()
+slm_engine = LocalSLMEngine()
+ocr_engine = VisualTextRecoveryEngine()
 
 
 # ----------------- Request Models -----------------
@@ -110,6 +114,25 @@ class WebhookDispatchRequest(BaseModel):
     eventType: str = "audit.completed"
     data: Dict[str, Any]
 
+class SLMReasonRequest(BaseModel):
+    goal: str
+    persona: Optional[str] = "keyboard"
+    currentFocus: Optional[str] = ""
+    compactAXTree: Optional[str] = ""
+    history: Optional[List[str]] = None
+    reflexionHint: Optional[str] = ""
+
+class SLMRemediateRequest(BaseModel):
+    defectKind: str
+    targetSelector: str
+    targetSnippet: Optional[str] = ""
+    proofExplanation: Optional[str] = ""
+
+class VisualTextRequest(BaseModel):
+    screenshot_b64: str
+    computed_name: Optional[str] = ""
+    role: Optional[str] = "button"
+
 
 # ----------------- Endpoints -----------------
 
@@ -118,11 +141,13 @@ class WebhookDispatchRequest(BaseModel):
 @app.get("/")
 async def health_check():
     gpu_stats = gpu_engine.get_gpu_stats()
+    slm_stats = slm_engine.get_stats()
     return {
         "status": "operational",
         "service": "BarrierLens Unified Modular Python Backend",
         "version": "2.6.0",
         "gpu": gpu_stats,
+        "slm": slm_stats,
         "awsBedrockConfigured": CoreConfig.is_aws_configured(),
         "neonPostgresConfigured": CoreConfig.is_neon_configured(),
         "models": {
@@ -130,7 +155,8 @@ async def health_check():
             "routine": CoreConfig.MODEL_ROUTINE,
             "embedding": "all-MiniLM-L6-v2 (CUDA)",
             "vision": "CLIP ViT-B/32 (CUDA)",
-            "actionRanker": "LightGBM LambdaMART"
+            "actionRanker": "LightGBM LambdaMART",
+            "localSLM": "Qwen/Qwen2.5-Coder-0.5B-Instruct (CUDA)"
         }
     }
 
@@ -309,6 +335,61 @@ async def dispatch_webhook_event(req: WebhookDispatchRequest):
         return res
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Webhook dispatch failed: {str(e)}")
+
+# 11. Local SLM: Autonomous Web Journey Reasoning (Local Tier 2 Decision Maker)
+@app.post("/api/ml/slm-reason")
+async def slm_reason_step(req: SLMReasonRequest):
+    try:
+        loop = asyncio.get_event_loop()
+        res = await loop.run_in_executor(
+            None,
+            lambda: slm_engine.reason_next_action(
+                goal=req.goal,
+                persona=req.persona or "keyboard",
+                current_focus=req.currentFocus or "",
+                compact_ax_tree=req.compactAXTree or "",
+                history=req.history,
+                reflexion_hint=req.reflexionHint or ""
+            )
+        )
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"SLM reasoning failed: {str(e)}")
+
+# 12. Local SLM: Surgical AST Accessibility Remediation & Patch Synthesis
+@app.post("/api/ml/slm-remediate")
+async def slm_remediate_code(req: SLMRemediateRequest):
+    try:
+        loop = asyncio.get_event_loop()
+        res = await loop.run_in_executor(
+            None,
+            lambda: slm_engine.synthesize_remediation_code(
+                defect_kind=req.defectKind,
+                target_selector=req.targetSelector,
+                target_snippet=req.targetSnippet or "",
+                proof_explanation=req.proofExplanation or ""
+            )
+        )
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"SLM remediation synthesis failed: {str(e)}")
+
+# 13. Visual Text Recovery & Screen Reader Silence Engine (M5)
+@app.post("/api/ml/visual-text-recovery")
+async def analyze_visual_text(req: VisualTextRequest):
+    try:
+        loop = asyncio.get_event_loop()
+        res = await loop.run_in_executor(
+            None,
+            lambda: ocr_engine.analyze_element_visual_text(
+                screenshot_b64=req.screenshot_b64,
+                computed_name=req.computed_name or "",
+                role=req.role or "button"
+            )
+        )
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Visual text analysis failed: {str(e)}")
 
 
 def run_server(host: str = CoreConfig.HOST, port: int = CoreConfig.PORT):
