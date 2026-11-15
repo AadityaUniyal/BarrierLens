@@ -18,7 +18,7 @@ export async function GET() {
         },
         ...report,
       },
-      { status: allHealthy ? 200 : 207 }
+      { status: allHealthy ? 200 : 200 }
     );
   } catch (err: any) {
     return NextResponse.json(

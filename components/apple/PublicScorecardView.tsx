@@ -99,7 +99,7 @@ export function PublicScorecardView({ auditRun }: PublicScorecardViewProps) {
           <div className="flex items-center gap-2">
             <Share2 className="w-4 h-4 text-[#0090ff]" />
             <h2 className="text-xl font-bold tracking-tight text-[#f4f5f6]">
-              Executive Compliance Scorecard
+              Public Verifiable Scorecard
             </h2>
           </div>
           <p className="text-xs text-[#9ba1a6]">
@@ -211,7 +211,7 @@ export function PublicScorecardView({ auditRun }: PublicScorecardViewProps) {
         {/* 4-Pillars of WCAG 2.2 AA Breakdown */}
         <div className="space-y-3 pt-2 border-t border-[#23262a]">
           <div className="text-[11px] font-semibold text-[#6b7280] uppercase tracking-wider font-mono">
-            WCAG 2.2 Level AA Core Pillar Compliance
+            WCAG 2.2 Level AA Core Pillar Compliance & Detailed Metric Breakdown
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">

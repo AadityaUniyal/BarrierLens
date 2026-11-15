@@ -19,6 +19,8 @@ import { MultiAgentMeshView } from '@/components/apple/MultiAgentMeshView';
 import { AWSBridgeConsole } from '@/components/apple/AWSBridgeConsole';
 import { VisualTwinSimulator } from '@/components/apple/VisualTwinSimulator';
 import { VaultAdminView } from '@/components/apple/VaultAdminView';
+import { ComposeView } from '@/components/apple/ComposeView';
+import { TraceTheater } from '@/components/apple/TraceTheater';
 import { LandingStory } from '@/components/apple/LandingStory';
 import { AppleAuthModal, UserSession } from '@/components/apple/AppleAuthModal';
 import { authClient } from '@/lib/auth-client';
@@ -482,7 +484,7 @@ export default function Home() {
         )}
 
         {/* Hub 3: Audit Studio (Dual-Mode Live Cockpit) */}
-        {(activeScreen === 'audits' || activeScreen === 'inspector' || activeScreen === 'studio') && (
+        {(activeScreen === 'audits' || activeScreen === 'inspector') && (
           <AuditStudioView
             targetUrl={targetUrl}
             setTargetUrl={setTargetUrl}
@@ -503,6 +505,33 @@ export default function Home() {
             }}
             onLoadBenchmarkFindings={handleLoadBenchmarkFindings}
           />
+        )}
+
+        {/* Dedicated Flow Composition & Keystroke Theater View */}
+        {activeScreen === 'studio' && (
+          <div className="space-y-8 animate-in fade-in duration-300">
+            <ComposeView
+              targetUrl={targetUrl}
+              setTargetUrl={setTargetUrl}
+              goal={goal}
+              setGoal={setGoal}
+              persona={persona}
+              setPersona={setPersona}
+              maxSteps={maxSteps}
+              setMaxSteps={setMaxSteps}
+              isAuditing={isAuditing}
+              onRunAudit={handleRunAudit}
+              streamingStatus={streamingStatus}
+              streamingStep={streamingStep}
+            />
+            {auditResult?.steps && auditResult.steps.length > 0 && (
+              <TraceTheater
+                steps={auditResult.steps}
+                findings={currentFindings}
+                targetUrl={targetUrl}
+              />
+            )}
+          </div>
         )}
 
         {/* Hub 4: Issues Intelligence & Deep-Inspection Split-Sheet */}
