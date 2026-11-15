@@ -557,7 +557,7 @@ export default function Home() {
                 startedAt: new Date(Date.now() - 3600000).toISOString(),
                 finishedAt: new Date().toISOString(),
                 tierMix: { tier0Rules: 3, tier1Ranker: 4, tier2Groq: 2, tier3Gemini: 1 },
-                findings: currentFindings.length > 0 ? currentFindings : BENCHMARK_SAMPLE_FINDINGS,
+                findings: currentFindings,
                 steps: [
                   { idx: 1, actionType: 'press_key', key: 'Tab', persona: persona, activeElementAfter: '#nav-home', tier: 0, timestamp: Date.now() - 3000 },
                   { idx: 2, actionType: 'press_key', key: 'Tab', persona: persona, activeElementAfter: '#trap-modal', tier: 1, timestamp: Date.now() - 2000 },

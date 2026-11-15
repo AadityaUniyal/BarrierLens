@@ -1,183 +1,319 @@
 """
-BarrierLens Unified Python Backend Server
-Integrates all modular feature packages:
+BarrierLens Unified Python Backend Server (FastAPI + CUDA Inference + LightGBM Ranker)
+Integrates:
 - core (Config, Reactive EventBus, Strands Coordinator)
 - inspector (InspectorAgent, TarjanFocusGraph, ReadingOrderAnalyzer, AnnouncementGapDetector)
 - remedy (CausalCritic, AstSynthesizer, ReplayVerifier)
 - genome (GenomeVectorizer, PgvectorStore)
 - arena (MetamorphicFuzzer)
 - vault (RbacValidator, ApiKeyManager, WebhookSigner)
+- ml.gpu_inference (CUDA MiniLM, CLIP, MAPIE Conformal Intervals)
+- ml.action_ranker (LightGBM Tier 1 Action Ranker)
 """
 
 import os
 import sys
-import json
-import time
-import urllib.parse
-from http.server import HTTPServer, BaseHTTPRequestHandler
-from socketserver import ThreadingMixIn
+import asyncio
 from pathlib import Path
 from typing import Optional, List, Dict, Any
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+import uvicorn
 
 # Ensure backend directory is in sys.path
 backend_dir = Path(__file__).resolve().parent
 if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
-# Import modular feature packages
 from core.config import CoreConfig
-from core.event_bus import event_bus
 from inspector.agent import InspectorAgent
 from remedy.replay_verifier import ReplayVerifier
-from genome.vectorizer import GenomeVectorizer
-from genome.pgvector_store import PgvectorStore
 from arena.metamorphic_fuzzer import MetamorphicFuzzer
 from vault.api_keys import ApiKeyManager
-from vault.webhooks import WebhookSigner
+from vault.webhooks import WebhookSigner, WebhookDispatcher
+from ml.gpu_inference import GPUInferenceEngine
+from ml.action_ranker import LightGBMActionRanker
+
+app = FastAPI(
+    title="BarrierLens GPU-Accelerated Backend",
+    version="2.6.0",
+    description="Unified API for Behavioral Accessibility Agent, GPU Models, and LightGBM Ranker"
+)
+
+# CORS configuration for Next.js frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+gpu_engine = GPUInferenceEngine()
+action_ranker = LightGBMActionRanker()
 
 
-class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
-    daemon_threads = True
-    allow_reuse_address = True
+# ----------------- Request Models -----------------
+
+class AuditRunRequest(BaseModel):
+    targetUrl: str = "http://localhost:3000/benchmark"
+    goal: str = "Complete primary interaction flow using only keyboard"
+    persona: str = "keyboard"
+    maxSteps: int = 8
+
+class ReplayVerifyRequest(BaseModel):
+    targetUrl: str = "http://localhost:3000/benchmark"
+    findingKind: str = "keyboard_trap"
+    patch: str = 'role="dialog" aria-modal="true"'
+    traceKeys: List[str] = ["Tab", "Tab", "Tab"]
+
+class StressRunRequest(BaseModel):
+    targetUrl: str = "http://localhost:3000/benchmark"
+    iterations: int = 5
+
+class ApiKeyGenerateRequest(BaseModel):
+    name: str = "CI/CD Pipeline Runner"
+    scope: str = "audit:run, pr:create"
+
+class GenomeEmbedRequest(BaseModel):
+    text: str
+
+class LabelQualityRequest(BaseModel):
+    role: str
+    name: str
+    surroundingText: Optional[str] = ""
+
+class VisualAffordanceRequest(BaseModel):
+    screenshot_b64: str
+    accessible_name: str
+    candidate_labels: Optional[List[str]] = None
+
+class ConformalCalibrateRequest(BaseModel):
+    kind: str
+    persona: str
+    blocks_task: bool
+    step_index: int
+    point_estimate: float
+    calibration_data: Optional[List[Dict[str, float]]] = None
+
+class ActionRankRequest(BaseModel):
+    goal: str
+    nodes: List[Dict[str, Any]]
+    currentFocusSelector: Optional[str] = ""
+    history: Optional[List[str]] = None
+
+class WebhookDispatchRequest(BaseModel):
+    webhookUrl: str
+    secret: Optional[str] = "barrierlens-default-secret"
+    eventType: str = "audit.completed"
+    data: Dict[str, Any]
 
 
-class BarrierLensHandler(BaseHTTPRequestHandler):
-    def _send_cors_headers(self):
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+# ----------------- Endpoints -----------------
 
-    def _send_json(self, status_code: int, data: Dict[str, Any]):
-        response_bytes = json.dumps(data, indent=2).encode("utf-8")
-        self.send_response(status_code)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(response_bytes)))
-        self._send_cors_headers()
-        self.end_headers()
-        self.wfile.write(response_bytes)
+@app.get("/health")
+@app.get("/api/status")
+@app.get("/")
+async def health_check():
+    gpu_stats = gpu_engine.get_gpu_stats()
+    return {
+        "status": "operational",
+        "service": "BarrierLens Unified Modular Python Backend",
+        "version": "2.6.0",
+        "gpu": gpu_stats,
+        "awsBedrockConfigured": CoreConfig.is_aws_configured(),
+        "neonPostgresConfigured": CoreConfig.is_neon_configured(),
+        "models": {
+            "planning": CoreConfig.MODEL_PLANNING,
+            "routine": CoreConfig.MODEL_ROUTINE,
+            "embedding": "all-MiniLM-L6-v2 (CUDA)",
+            "vision": "CLIP ViT-B/32 (CUDA)",
+            "actionRanker": "LightGBM LambdaMART"
+        }
+    }
 
-    def do_OPTIONS(self):
-        self.send_response(204)
-        self._send_cors_headers()
-        self.end_headers()
+# 1. Inspector / Swarm Execution
+@app.post("/api/strands/run")
+@app.post("/api/audit/run")
+@app.post("/api/inspector/run")
+async def run_inspector(req: AuditRunRequest):
+    try:
+        loop = asyncio.get_event_loop()
+        agent = InspectorAgent()
+        result = await loop.run_in_executor(
+            None,
+            lambda: agent.run_audit(
+                target_url=req.targetUrl,
+                goal=req.goal,
+                persona=req.persona,
+                max_steps=req.maxSteps
+            )
+        )
+        return {"success": True, **result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Inspector Agent audit failed: {str(e)}")
 
-    def do_GET(self):
-        parsed = urllib.parse.urlparse(self.path)
-        path = parsed.path
+# 2. Remedy / Replay Verifier
+@app.post("/api/repair/verify")
+@app.post("/api/remedy/verify")
+async def run_repair_verify(req: ReplayVerifyRequest):
+    try:
+        loop = asyncio.get_event_loop()
+        verifier = ReplayVerifier()
+        result = await loop.run_in_executor(
+            None,
+            lambda: verifier.verify_patch(
+                target_url=req.targetUrl,
+                finding_kind=req.findingKind,
+                patch_snippet=req.patch,
+                trace_keys=req.traceKeys
+            )
+        )
+        return {"success": True, **result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Remedy replay failed: {str(e)}")
 
-        if path in ("/health", "/api/status", "/"):
-            self._send_json(200, {
-                "status": "operational",
-                "service": "BarrierLens Unified Modular Python Backend",
-                "version": "2.1.0",
-                "architecture": "Modular iOS App Feature Packages",
-                "packages": ["core", "inspector", "remedy", "genome", "arena", "vault"],
-                "awsBedrockConfigured": CoreConfig.is_aws_configured(),
-                "neonPostgresConfigured": CoreConfig.is_neon_configured(),
-                "region": CoreConfig.BEDROCK_REGION,
-                "models": {
-                    "planning": CoreConfig.MODEL_PLANNING,
-                    "routine": CoreConfig.MODEL_ROUTINE
-                }
-            })
-        else:
-            self._send_json(404, {"error": "Not Found", "path": path})
+# 3. Arena / Metamorphic Stress Fuzzer
+@app.post("/api/arena/stress")
+@app.post("/api/stress/run")
+async def run_stress_suite(req: StressRunRequest):
+    try:
+        loop = asyncio.get_event_loop()
+        fuzzer = MetamorphicFuzzer()
+        result = await loop.run_in_executor(
+            None,
+            lambda: fuzzer.run_stress_suite(
+                target_url=req.targetUrl,
+                iterations=req.iterations
+            )
+        )
+        return {"success": True, **result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Arena fuzzer failed: {str(e)}")
 
-    def do_POST(self):
-        parsed = urllib.parse.urlparse(self.path)
-        path = parsed.path
+# 4. Vault / Scoped API Key Generator
+@app.post("/api/vault/keys/generate")
+@app.post("/api/keys/generate")
+async def generate_api_key(req: ApiKeyGenerateRequest):
+    try:
+        raw_key, prefix, key_hash = ApiKeyManager.generate_api_key(name=req.name, scope=req.scope)
+        return {
+            "success": True,
+            "apiKey": raw_key,
+            "prefix": prefix,
+            "keyHash": key_hash,
+            "scope": req.scope
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"API Key generation failed: {str(e)}")
 
-        content_len = int(self.headers.get("Content-Length", 0))
-        body = {}
-        if content_len > 0:
-            try:
-                raw_body = self.rfile.read(content_len).decode("utf-8")
-                body = json.loads(raw_body)
-            except Exception as e:
-                self._send_json(400, {"error": "Invalid JSON body", "detail": str(e)})
-                return
+# 5. GPU ML: Text & Genome Embedding
+@app.post("/api/genome/embed")
+async def embed_genome_text(req: GenomeEmbedRequest):
+    try:
+        loop = asyncio.get_event_loop()
+        vector = await loop.run_in_executor(None, lambda: gpu_engine.encode_text(req.text))
+        return {
+            "vector": vector,
+            "dims": len(vector),
+            "device": str(gpu_engine.device)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Genome embedding failed: {str(e)}")
 
-        # 1. Inspector / Strands Swarm Execution
-        if path in ("/api/strands/run", "/api/audit/run", "/api/inspector/run"):
-            target_url = body.get("targetUrl", "http://localhost:3000/benchmark")
-            goal = body.get("goal", "Complete primary interaction flow using only keyboard")
-            persona = body.get("persona", "keyboard")
-            max_steps = int(body.get("maxSteps", 8))
+# 6. GPU ML: Label Quality Semantic Analysis
+@app.post("/api/ml/label-quality")
+async def evaluate_label_quality(req: LabelQualityRequest):
+    try:
+        loop = asyncio.get_event_loop()
+        res = await loop.run_in_executor(
+            None,
+            lambda: gpu_engine.classify_label_quality(
+                role=req.role,
+                name=req.name,
+                surrounding_text=req.surroundingText or ""
+            )
+        )
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Label quality inference failed: {str(e)}")
 
-            try:
-                agent = InspectorAgent()
-                result = agent.run_audit(
-                    target_url=target_url,
-                    goal=goal,
-                    persona=persona,
-                    max_steps=max_steps
-                )
-                self._send_json(200, {"success": True, **result})
-            except Exception as e:
-                self._send_json(500, {"error": "Inspector Agent audit failed", "detail": str(e)})
+# 7. GPU ML: CLIP Visual Affordance Checking
+@app.post("/api/ml/visual-affordance")
+async def evaluate_visual_affordance(req: VisualAffordanceRequest):
+    try:
+        loop = asyncio.get_event_loop()
+        res = await loop.run_in_executor(
+            None,
+            lambda: gpu_engine.classify_visual_affordance(
+                screenshot_b64=req.screenshot_b64,
+                accessible_name=req.accessible_name,
+                candidate_labels=req.candidate_labels or []
+            )
+        )
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Visual affordance inference failed: {str(e)}")
 
-        # 2. Remedy / Sandbox Replay Verifier
-        elif path in ("/api/repair/verify", "/api/remedy/verify"):
-            target_url = body.get("targetUrl", "http://localhost:3000/benchmark")
-            finding_kind = body.get("findingKind", "keyboard_trap")
-            patch_snippet = body.get("patch", 'role="dialog" aria-modal="true"')
-            trace_keys = body.get("traceKeys", ["Tab", "Tab", "Tab"])
+# 8. Conformal Impact Calibration
+@app.post("/api/impact/calibrate")
+async def calibrate_impact(req: ConformalCalibrateRequest):
+    try:
+        loop = asyncio.get_event_loop()
+        res = await loop.run_in_executor(
+            None,
+            lambda: gpu_engine.calibrate_conformal_impact(
+                kind=req.kind,
+                persona=req.persona,
+                blocks_task=req.blocks_task,
+                step_index=req.step_index,
+                point_estimate=req.point_estimate,
+                calibration_data=req.calibration_data
+            )
+        )
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Conformal calibration failed: {str(e)}")
 
-            try:
-                verifier = ReplayVerifier()
-                result = verifier.verify_patch(
-                    target_url=target_url,
-                    finding_kind=finding_kind,
-                    patch_snippet=patch_snippet,
-                    trace_keys=trace_keys
-                )
-                self._send_json(200, {"success": True, **result})
-            except Exception as e:
-                self._send_json(500, {"error": "Remedy replay failed", "detail": str(e)})
+# 9. LightGBM Action Ranker (M3 Tier 1 Inference)
+@app.post("/api/ml/rank-action")
+async def rank_action_candidates(req: ActionRankRequest):
+    try:
+        loop = asyncio.get_event_loop()
+        res = await loop.run_in_executor(
+            None,
+            lambda: action_ranker.rank_candidates(
+                goal=req.goal,
+                nodes=req.nodes,
+                current_focus_selector=req.currentFocusSelector or "",
+                history=req.history
+            )
+        )
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Action ranking failed: {str(e)}")
 
-        # 3. Arena / Adversarial Stress Fuzzer
-        elif path in ("/api/arena/stress", "/api/stress/run"):
-            target_url = body.get("targetUrl", "http://localhost:3000/benchmark")
-            iterations = int(body.get("iterations", 5))
 
-            try:
-                fuzzer = MetamorphicFuzzer()
-                result = fuzzer.run_stress_suite(target_url=target_url, iterations=iterations)
-                self._send_json(200, {"success": True, **result})
-            except Exception as e:
-                self._send_json(500, {"error": "Arena fuzzer failed", "detail": str(e)})
-
-        # 4. Vault / Scoped API Key Generator
-        elif path in ("/api/vault/keys/generate", "/api/keys/generate"):
-            key_name = body.get("name", "CI/CD Pipeline Runner")
-            scope = body.get("scope", "audit:run, pr:create")
-
-            try:
-                raw_key, prefix, key_hash = ApiKeyManager.generate_api_key(name=key_name, scope=scope)
-                self._send_json(200, {
-                    "success": True,
-                    "apiKey": raw_key,
-                    "prefix": prefix,
-                    "keyHash": key_hash,
-                    "scope": scope
-                })
-            except Exception as e:
-                self._send_json(500, {"error": "API Key generation failed", "detail": str(e)})
-
-        else:
-            self._send_json(404, {"error": "Not Found", "path": path})
+# 10. Vault: Webhook Signature and Dispatch
+@app.post("/api/vault/webhooks/dispatch")
+async def dispatch_webhook_event(req: WebhookDispatchRequest):
+    try:
+        res = await WebhookDispatcher.dispatch(
+            url=req.webhookUrl,
+            secret=req.secret or "barrierlens-default-secret",
+            event_type=req.eventType,
+            data=req.data
+        )
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Webhook dispatch failed: {str(e)}")
 
 
 def run_server(host: str = CoreConfig.HOST, port: int = CoreConfig.PORT):
-    server = ThreadingHTTPServer((host, port), BarrierLensHandler)
-    print(f"[BarrierLens Unified Backend] Serving at http://{host}:{port}")
-    print(f"[BarrierLens Unified Backend] Health check: http://{host}:{port}/health")
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        print("\n[BarrierLens] Shutting down backend...")
-        server.server_close()
-
+    print(f"[BarrierLens FastAPI GPU Backend] Serving at http://{host}:{port}")
+    uvicorn.run(app, host=host, port=port, workers=1, log_level="info")
 
 if __name__ == "__main__":
     host = os.environ.get("HOST", "127.0.0.1")

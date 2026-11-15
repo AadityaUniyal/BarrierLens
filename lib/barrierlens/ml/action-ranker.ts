@@ -6,19 +6,23 @@ export interface ActionRankScore {
   key: string;
   confidence: number;
   isHighConfidence: boolean;
-  featureWeights: {
+  featureWeights?: {
     semanticMatch: number;
     focusOrderWeight: number;
     rolePriority: number;
   };
+  source?: 'gpu_lightgbm' | 'heuristic_fallback';
   reasoning: string;
 }
 
 /**
  * M3 Distilled Action Ranker (Tier 1 Inference)
  * Predicts the next interactive element directly from features, bypassing LLM API calls on routine steps.
+ * Calls Python LightGBM LambdaMART ranker when backend is available.
  */
 export class ActionRanker {
+  private backendUrl: string;
+
   private rolePriorities: Record<string, number> = {
     input: 0.9,
     button: 0.85,
@@ -27,11 +31,59 @@ export class ActionRanker {
     textarea: 0.85,
   };
 
+  constructor(backendUrl = process.env.PYTHON_BACKEND_URL || 'http://127.0.0.1:8000') {
+    this.backendUrl = backendUrl;
+  }
+
+  /**
+   * Asynchronous Tier 1 Ranker backed by Python LightGBM
+   */
+  async rankNextActionAsync(
+    goal: string,
+    nodes: SerializedAXNode[],
+    currentFocusSelector: string,
+    history: string[] = []
+  ): Promise<ActionRankScore> {
+    try {
+      const response = await fetch(`${this.backendUrl}/api/ml/rank-action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          goal,
+          nodes,
+          currentFocusSelector,
+          history
+        }),
+        signal: AbortSignal.timeout(3000),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return {
+          bestNode: data.bestNode,
+          recommendedAction: data.recommendedAction,
+          key: data.key,
+          confidence: data.confidence,
+          isHighConfidence: data.isHighConfidence,
+          source: 'gpu_lightgbm',
+          reasoning: data.reasoning
+        };
+      }
+    } catch {
+      // Backend offline -> continue with in-process formula
+    }
+
+    return this.rankNextAction(goal, nodes, currentFocusSelector, history);
+  }
+
+  /**
+   * Synchronous in-process mathematical formula fallback
+   */
   rankNextAction(
     goal: string,
     nodes: SerializedAXNode[],
     currentFocusSelector: string,
-    history: string[]
+    history: string[] = []
   ): ActionRankScore {
     if (nodes.length === 0) {
       return {
@@ -41,6 +93,7 @@ export class ActionRanker {
         confidence: 0.4,
         isHighConfidence: false,
         featureWeights: { semanticMatch: 0, focusOrderWeight: 0, rolePriority: 0 },
+        source: 'heuristic_fallback',
         reasoning: 'No interactive nodes available, default Tab.'
       };
     }
@@ -104,6 +157,7 @@ export class ActionRanker {
       confidence: roundedConfidence,
       isHighConfidence,
       featureWeights: bestWeights,
+      source: 'heuristic_fallback',
       reasoning: isHighConfidence
         ? `M3 Learned Ranker selected <${bestCandidate?.role} "${bestCandidate?.name}"> with high confidence (${roundedConfidence}). Advancing with ${key}.`
         : `M3 Ranker confidence (${roundedConfidence}) below threshold (0.78). Escalating to LLM Router.`

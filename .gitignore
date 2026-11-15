@@ -34,3 +34,12 @@ pdf_text.txt
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Test output
+test-results/

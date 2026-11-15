@@ -7,6 +7,7 @@ export interface MCTSNode {
   depth: number;
   costSoFar: number;          // Steps taken from root
   visits: number;             // N(s)
+  visitedCount?: number;      // Compatibility alias for visits
   totalReward: number;        // W(s)
   meanValue: number;          // Q(s) = W(s) / N(s)
   parentStep?: {
@@ -50,7 +51,7 @@ export class ExplorationStateGraph {
     // 1. Check for exact hash match
     if (this.nodes.has(fingerprint.hash)) {
       const existing = this.nodes.get(fingerprint.hash)!;
-      existing.visits++;
+      existing.visitedCount = (existing.visitedCount || 1) + 1;
       this.backpropagate(existing.id, initialReward);
       return { node: existing, isNewState: false };
     }
@@ -59,7 +60,7 @@ export class ExplorationStateGraph {
     for (const [id, existing] of this.nodes.entries()) {
       const distance = this.fingerprintEngine.compareStates(fingerprint, existing.fingerprint);
       if (distance.shouldMerge) {
-        existing.visits++;
+        existing.visitedCount = (existing.visitedCount || 1) + 1;
         this.backpropagate(id, initialReward);
         return { node: existing, isNewState: false, mergedWithNodeId: id };
       }
@@ -72,6 +73,7 @@ export class ExplorationStateGraph {
       depth: parentTransition ? (this.nodes.get(parentTransition.fromNodeId)?.depth || 0) + 1 : 0,
       costSoFar: currentStepCost,
       visits: 1,
+      visitedCount: 1,
       totalReward: initialReward,
       meanValue: initialReward,
       parentStep: parentTransition,

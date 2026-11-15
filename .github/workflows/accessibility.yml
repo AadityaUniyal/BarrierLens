@@ -36,6 +36,15 @@ jobs:
       - name: Run AccName Provenance & Static WCAG Checks
         run: node scripts/verify-week3-accname-wcag.mjs
 
+      - name: Run Announcement-Gap & Silent Error Detection
+        run: node scripts/verify-week4-announcement-gaps.mjs
+
+      - name: Run State Fingerprinting & Exploration Graph
+        run: node scripts/verify-week5-state-graph.mjs
+
+      - name: Verify Novel Differentiators & Causal Engine
+        run: npm run test:differentiators
+
       - name: Publish Self-Audit Status Badge
         if: success()
         run: echo "BarrierLens self-audit passed with 100% mathematical certainty."

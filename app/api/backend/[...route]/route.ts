@@ -1,136 +1,58 @@
-import { NextResponse } from 'next/server';
-import { FocusGraphEngine } from '@/lib/barrierlens/engines/focus-graph';
-import { BarrierGenomeEncoder } from '@/lib/barrierlens/genome/barrier-encoder';
-import { ChaosInjector } from '@/lib/barrierlens/adversarial/chaos-injector';
+import { NextRequest, NextResponse } from 'next/server';
 
-export const dynamic = 'force-dynamic';
+const PYTHON_BACKEND = process.env.PYTHON_BACKEND_URL ?? 'http://127.0.0.1:8000';
 
-const PYTHON_BACKEND_URL = process.env.PYTHON_BACKEND_URL || 'http://127.0.0.1:8000';
+async function proxy(request: NextRequest, segments: string[]) {
+  const path = '/' + (segments || []).join('/');
+  const targetUrl = `${PYTHON_BACKEND}${path}`;
 
-/**
- * Hybrid Reverse Proxy Gateway
- * Forwards requests to the Python modular backend (port 8000) when running,
- * and gracefully falls back to local TypeScript engines if Python is offline.
- */
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ route: string[] }> }
-) {
-  const resolvedParams = await params;
-  const path = resolvedParams.route.join('/');
-  
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2000);
-
-    const res = await fetch(`${PYTHON_BACKEND_URL}/${path}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-
-    if (res.ok) {
-      const data = await res.json();
-      return NextResponse.json({ ...data, source: 'python_backend_port_8000' });
+  let body: string | undefined;
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    try {
+      body = await request.text();
+    } catch {
+      body = undefined;
     }
-  } catch (err: any) {
-    // Python backend offline, handle fallback
   }
 
-  // Graceful Local Fallback
-  if (path === 'health' || path === 'status') {
-    return NextResponse.json({
-      status: 'operational',
-      service: 'BarrierLens Hybrid Engine',
-      version: '2.1.0',
-      activeRuntime: 'Local TypeScript Engine (Python service standby)',
-      packages: ['core', 'inspector', 'remedy', 'genome', 'arena', 'vault'],
-      neonPostgresConfigured: Boolean(process.env.DATABASE_URL),
-      awsBedrockConfigured: Boolean(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
+  try {
+    const upstream = await fetch(targetUrl, {
+      method: request.method,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Forwarded-From': 'barrierlens-nextjs'
+      },
+      body,
+      signal: AbortSignal.timeout(60_000),
     });
-  }
 
-  return NextResponse.json({ error: 'Endpoint not found', path }, { status: 404 });
+    const data = await upstream.json();
+    return NextResponse.json(data, { status: upstream.status });
+  } catch (err: any) {
+    if (err.name === 'TimeoutError') {
+      return NextResponse.json(
+        { error: 'Python backend timeout after 60s', backend: PYTHON_BACKEND },
+        { status: 504 }
+      );
+    }
+    return NextResponse.json(
+      { error: 'Python backend unavailable', detail: err.message, backend: PYTHON_BACKEND },
+      { status: 503 }
+    );
+  }
 }
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ route: string[] }> }
-) {
-  const resolvedParams = await params;
-  const path = resolvedParams.route.join('/');
-  const body = await req.json().catch(() => ({}));
+export async function GET(req: NextRequest, context: { params: Promise<{ route: string[] }> }) {
+  const { route } = await context.params;
+  return proxy(req, route);
+}
 
-  // 1. Attempt delegation to Python service
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2500);
+export async function POST(req: NextRequest, context: { params: Promise<{ route: string[] }> }) {
+  const { route } = await context.params;
+  return proxy(req, route);
+}
 
-    const res = await fetch(`${PYTHON_BACKEND_URL}/${path}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-
-    if (res.ok) {
-      const data = await res.json();
-      return NextResponse.json({ ...data, source: 'python_backend_port_8000' });
-    }
-  } catch (err: any) {
-    // Proceed to local fallback
-  }
-
-  // 2. Intelligent Local TypeScript Engine Fallbacks
-  if (path === 'inspector/focus-traps') {
-    const engine = new FocusGraphEngine();
-    // Return certified trap detection
-    return NextResponse.json({
-      status: 'analyzed',
-      source: 'local_ts_engine',
-      trapDetected: true,
-      kind: 'keyboard_trap',
-      wcag: ['WCAG 2.1.2'],
-      componentNodeIds: ['#trap-modal', '#claim-btn'],
-      certificate: {
-        hash: 'sha256_mock_trap_cert_local',
-        trapType: 'sink_scc_cycle',
-        shortestEscapeAttempt: ['Escape', 'Shift+Tab'],
-        timestamp: new Date().toISOString()
-      }
-    });
-  }
-
-  if (path === 'genome/encode') {
-    const encoder = new BarrierGenomeEncoder();
-    const vec = Array.from({ length: 768 }, (_, i) => Math.sin(i / 15) * 0.5 + 0.5);
-    const norm = Math.sqrt(vec.reduce((s, x) => s + x * x, 0));
-    const normalized = vec.map(x => x / (norm || 1));
-    return NextResponse.json({
-      status: 'encoded',
-      source: 'local_ts_engine',
-      vector: normalized,
-      dimension: 768,
-      magnitude: 1.0
-    });
-  }
-
-  if (path === 'arena/fuzz') {
-    return NextResponse.json({
-      status: 'fuzzed',
-      source: 'local_ts_engine',
-      mutationsApplied: 4,
-      resilienceScore: 94.5,
-      latentBarriersFound: 1
-    });
-  }
-
-  return NextResponse.json({
-    status: 'completed',
-    source: 'local_ts_engine',
-    message: `Processed ${path} via fallback engine`,
-    data: body
-  });
+export async function DELETE(req: NextRequest, context: { params: Promise<{ route: string[] }> }) {
+  const { route } = await context.params;
+  return proxy(req, route);
 }

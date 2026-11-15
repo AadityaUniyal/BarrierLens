@@ -19,8 +19,22 @@ import { BarrierGenomeEncoder } from '../genome/barrier-encoder';
 import { INJECTED_OBSERVER_SCRIPT } from '../cdp/observer-script';
 import { EXTRACT_AX_NODES_SCRIPT, serializeAXTree, SerializedAXNode } from '../cdp/ax-serializer';
 import { extractCDPAXTree } from '../cdp/cdp-ax-extractor';
+import { AxeBaselineRunner } from '../engines/axe-baseline-runner';
 import { AuditRun, BarrierFinding, ActionStep, PersonaType, FocusNode } from '../types';
 import { sql } from '../../neon/db';
+import { trajectoryLogger } from './trajectory-logger';
+
+const ROLE_PRIORITIES: Record<string, number> = {
+  input: 0.9, button: 0.85, textarea: 0.85, select: 0.8, a: 0.7
+};
+
+function computeGoalOverlap(goal: string, name: string): number {
+  const goalWords = goal.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+  const nameWords = name.toLowerCase().split(/\s+/);
+  if (goalWords.length === 0) return 0;
+  const matches = goalWords.filter(w => nameWords.some(n => n.includes(w)));
+  return matches.length / goalWords.length;
+}
 
 export class AuditorCore {
   private router = new LLMRouter();
@@ -40,6 +54,7 @@ export class AuditorCore {
   private setOfMarks = new SetOfMarksEngine();
   private genomeStore = new GenomeStore();
   private genomeEncoder = new BarrierGenomeEncoder();
+  private axeRunner = new AxeBaselineRunner();
 
   /**
    * Execute an autonomous task-conditioned accessibility audit run
@@ -170,7 +185,18 @@ export class AuditorCore {
         });
       }
 
-        // Check Accessible Name Quality on all interactive nodes
+      // Baseline in-session axe-core execution in live CDP browser context
+      try {
+        const axeOutput = await this.axeRunner.runEvaluation(page, { runId, stepIdx: 0 });
+        for (const af of axeOutput.normalizedFindings) {
+          findings.push(af);
+          onProgress?.({ type: 'finding', data: af });
+        }
+      } catch (axeErr) {
+        console.warn('[AuditorCore] axe-core in-session evaluation non-blocking error:', axeErr);
+      }
+
+      // Check Accessible Name Quality on all interactive nodes
       for (const node of initialNodes) {
         const nameEval = this.accNameEngine.evaluateName(node.selector, node.role, node.name);
         if (!nameEval.isAdequate) {
@@ -277,7 +303,7 @@ export class AuditorCore {
         const reflexionContext = this.reflexionEngine.getReflexionPromptContext();
 
         // 2. Cascade Router: Evaluate Tier 1 Action Ranker before invoking LLMs
-        const rankResult = this.actionRanker.rankNextAction(goal, currentNodes, previousActiveSelector, keyHistory);
+        const rankResult = await this.actionRanker.rankNextActionAsync(goal, currentNodes, previousActiveSelector, keyHistory);
         let decision: any;
 
         if (rankResult.isHighConfidence && !reflexionContext.includes('Δ=0')) {
@@ -296,6 +322,28 @@ export class AuditorCore {
           else if (decision.tierUsed === 2) tierMix.tier2Groq++;
           else if (decision.tierUsed === 3) tierMix.tier3Gemini++;
         }
+
+        // Log trajectory entry for LightGBM training data
+        const focusedNode = currentNodes.find(n => n.selector === previousActiveSelector) ?? currentNodes[0];
+        await trajectoryLogger.log({
+          runId,
+          stepIndex: steps.length,
+          goal,
+          persona,
+          currentUrl: page.url(),
+          axNodeCount: currentNodes.length,
+          focusedRole: focusedNode?.role,
+          focusedName: focusedNode?.name,
+          historyLength: keyHistory.length,
+          goalWordOverlap: computeGoalOverlap(goal, focusedNode?.name ?? ''),
+          rolePriority: ROLE_PRIORITIES[focusedNode?.role?.toLowerCase() ?? ''] ?? 0.5,
+          chosenAction: `${decision.action}:${decision.key ?? decision.text ?? ''}`,
+          chosenSelector: decision.targetSelector,
+          tierUsed: decision.tierUsed as 0 | 1 | 2 | 3,
+          llmConfidence: decision.tierUsed === 0 ? 1.0 : 0.85,
+          resultedInFinding: false,  // updated later when finding is detected
+          resultedInTaskSuccess: taskSuccess,
+        });
 
         // 3. Execute Action strictly inside Persona bounds
         const actionTimestamp = Date.now();

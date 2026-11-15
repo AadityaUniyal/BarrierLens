@@ -5,13 +5,67 @@ export interface VisualAffordanceResult {
   hasSemanticContradiction: boolean;
   confidence: number;
   explanation: string;
+  source?: 'gpu_clip' | 'heuristic_fallback';
+  topLabel?: string;
+  scores?: Record<string, number>;
 }
 
 /**
  * Visual-Semantic Affordance Mismatch Detector
  * Evaluates whether an icon's visual metaphor contradicts its programmatic accessible name.
+ * Uses CLIP ViT-B/32 zero-shot image classification when element screenshot is available,
+ * with deterministic SVG/CSS structural analysis as fallback.
  */
 export class VisualAffordanceEngine {
+  private backendUrl: string;
+
+  constructor(backendUrl = process.env.PYTHON_BACKEND_URL || 'http://127.0.0.1:8000') {
+    this.backendUrl = backendUrl;
+  }
+
+  async evaluateScreenshotAffordance(
+    selector: string,
+    accessibleName: string,
+    screenshotBase64: string,
+    candidateLabels?: string[]
+  ): Promise<VisualAffordanceResult> {
+    try {
+      const response = await fetch(`${this.backendUrl}/api/ml/visual-affordance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          screenshot_b64: screenshotBase64,
+          accessible_name: accessibleName,
+          candidate_labels: candidateLabels || [
+            accessibleName,
+            'trash', 'delete', 'cart', 'search', 'close', 'save', 'submit'
+          ],
+        }),
+        signal: AbortSignal.timeout(5000),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return {
+          selector,
+          accessibleName,
+          hasSemanticContradiction: data.hasSemanticContradiction,
+          confidence: data.topScore,
+          explanation: data.hasSemanticContradiction
+            ? `CLIP Zero-Shot detected visual icon matches '${data.topLabel}' (score: ${data.topScore}) but programmatic name is '${accessibleName}'.`
+            : `Visual icon matches expected semantic context (top classification: '${data.topLabel}').`,
+          source: 'gpu_clip',
+          topLabel: data.topLabel,
+          scores: data.scores,
+        };
+      }
+    } catch {
+      // Backend offline -> continue with fallback
+    }
+
+    return this.evaluateIconAffordance(selector, accessibleName, '');
+  }
+
   evaluateIconAffordance(
     selector: string,
     accessibleName: string,
@@ -39,7 +93,8 @@ export class VisualAffordanceEngine {
         accessibleName,
         hasSemanticContradiction: false,
         confidence: 0.5,
-        explanation: 'No conflicting visual icon affordance detected.'
+        explanation: 'No conflicting visual icon affordance detected.',
+        source: 'heuristic_fallback',
       };
     }
 
@@ -63,8 +118,9 @@ export class VisualAffordanceEngine {
       detectedIconType: detectedIcon,
       accessibleName,
       hasSemanticContradiction: contradiction,
-      confidence: contradiction ? 0.96 : 0.85,
-      explanation: contradiction ? explanation : `Visual icon (${detectedIcon}) matches accessible name semantics.`
+      confidence: contradiction ? 0.92 : 0.65,
+      explanation: contradiction ? explanation : `Visual icon affordance '${detectedIcon}' appears aligned with function.`,
+      source: 'heuristic_fallback',
     };
   }
 }

@@ -275,6 +275,38 @@ export class BarrierGenomeEncoder {
   }
 
   /**
+   * Encodes a barrier finding into a real 384-dim MiniLM vector via GPU backend.
+   * Falls back to the SHA-256-based encodeBarrier vector on backend error.
+   */
+  async encodeBarrierReal(finding: any, context: any): Promise<number[]> {
+    const description = [
+      `finding: ${finding.kind}`,
+      `element: ${finding.selector || 'unknown'}`,
+      `title: ${finding.title || finding.kind}`,
+      `wcag: ${(finding.wcagRules || []).join(', ')}`,
+      `persona: ${context?.persona || 'keyboard'}`,
+      `task: ${context?.goal || ''}`,
+    ].join('. ');
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/genome/embed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: description }),
+        signal: AbortSignal.timeout(5000),
+      });
+      if (response.ok) {
+        const { vector } = await response.json();
+        return vector as number[];
+      }
+    } catch {}
+
+    // Fallback to existing heuristic encoding
+    const genome = this.encode(finding, context);
+    return genome.vector;
+  }
+
+  /**
    * Encodes all findings in an entire AuditRun
    */
   encodeRun(run: AuditRun): BarrierGenome[] {
