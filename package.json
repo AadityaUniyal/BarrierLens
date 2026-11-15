@@ -19,6 +19,7 @@
     "test:differentiators": "npx tsx scripts/verify-novel-differentiators.mjs",
     "test:multiagent": "npx tsx scripts/verify-aws-multiagent-sandbox.mjs",
     "test:phase5": "npx tsx scripts/verify-phase5-cupertino-deploy.mjs",
+    "test:phase6": "npx tsx scripts/verify-phase6-multiagent-arena.mjs",
     "mcp": "npx tsx scripts/barrierlens-mcp.mjs",
     "aws:status": "npx tsx scripts/aws-agent-cli.mjs status",
     "aws:bedrock": "npx tsx scripts/aws-agent-cli.mjs bedrock",

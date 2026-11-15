@@ -16,7 +16,6 @@ if (!process.env.RUNNING_UNDER_TSX) {
 import { neon } from '@neondatabase/serverless';
 import https from 'node:https';
 import fs from 'node:fs';
-import path from 'node:path';
 import hello from '../hello.ts';
 
 // Auto-load .env.local if DATABASE_URL is not set in environment
@@ -162,7 +161,8 @@ async function runTests() {
   total++;
   console.log('TEST 5: Neon Functions Handler (hello.ts)...');
   try {
-    const response = await hello();
+    const fn = typeof hello === 'function' ? hello : (hello?.default || hello);
+    const response = await fn();
     const text = await response.text();
     console.log('   ✓ Function executed successfully!');
     console.log(`   Output   : "${text}"\n`);
