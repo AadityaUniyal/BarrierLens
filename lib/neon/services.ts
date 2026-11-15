@@ -30,11 +30,11 @@ async function retry<T>(fn: () => Promise<T>, retries = 2, delayMs = 1000): Prom
 
 export const neonServices = {
   config: {
-    projectId: process.env.NEON_PROJECT_ID || 'lingering-star-28476607',
-    orgId: process.env.NEON_ORG_ID || 'org-ancient-wildflower-07117017',
+    projectId: process.env.NEON_PROJECT_ID || '',
+    orgId: process.env.NEON_ORG_ID || '',
     branch: process.env.NEON_BRANCH || 'production',
-    dataApiUrl: process.env.NEON_DATA_API_URL || 'https://ep-ancient-dew-b4x5v2sp.apirest.c-6.us-east-2.aws.neon.tech/neondb/rest/v1',
-    realtimeUrl: process.env.NEON_REALTIME_URL || 'https://ep-ancient-dew-b4x5v2sp.rt.c-6.us-east-2.aws.neon.tech/',
+    dataApiUrl: process.env.NEON_DATA_API_URL || '',
+    realtimeUrl: process.env.NEON_REALTIME_URL || '',
     databaseUrl: process.env.DATABASE_URL || '',
   },
 
@@ -48,10 +48,18 @@ export const neonServices = {
         return await sql`SELECT version(), current_database(), current_user, NOW() as current_time`;
       });
       const latencyMs = Math.round(performance.now() - start);
+      let endpointName = 'neon-postgres-pooler';
+      try {
+        const dbUrl = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
+        if (dbUrl) {
+          const match = dbUrl.match(/@([^:\/?#]+)/);
+          if (match) endpointName = match[1];
+        }
+      } catch {}
       return {
         service: 'Neon Postgres',
         status: 'operational',
-        endpoint: 'ep-ancient-dew-b4x5v2sp-pooler',
+        endpoint: endpointName,
         latencyMs,
         details: {
           database: result[0]?.current_database,

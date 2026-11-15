@@ -1,6 +1,32 @@
 import { neon } from '@neondatabase/serverless';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_gcTZU8Fekq0V@ep-ancient-dew-b4x5v2sp-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+// Auto-load .env.local if DATABASE_URL is not set in environment
+if (!process.env.DATABASE_URL) {
+  try {
+    const envPath = path.resolve(process.cwd(), '.env.local');
+    if (fs.existsSync(envPath)) {
+      const lines = fs.readFileSync(envPath, 'utf8').split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const idx = trimmed.indexOf('=');
+        if (idx > 0) {
+          const k = trimmed.slice(0, idx).trim();
+          const v = trimmed.slice(idx + 1).trim().replace(/^['"]|['"]$/g, '');
+          if (!process.env[k]) process.env[k] = v;
+        }
+      }
+    }
+  } catch {}
+}
+
+const DATABASE_URL = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
+if (!DATABASE_URL) {
+  console.error('[Error] DATABASE_URL environment variable is required.');
+  process.exit(1);
+}
 
 async function migrate() {
   console.log('[Neon Migration] Connecting to Neon Database...');

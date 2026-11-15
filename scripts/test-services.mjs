@@ -15,11 +15,33 @@ if (!process.env.RUNNING_UNDER_TSX) {
 
 import { neon } from '@neondatabase/serverless';
 import https from 'node:https';
+import fs from 'node:fs';
+import path from 'node:path';
 import hello from '../hello.ts';
 
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_gcTZU8Fekq0V@ep-ancient-dew-b4x5v2sp-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
-const DATA_API_URL = process.env.NEON_DATA_API_URL || 'https://ep-ancient-dew-b4x5v2sp.apirest.c-6.us-east-2.aws.neon.tech/neondb/rest/v1';
-const REALTIME_URL = process.env.NEON_REALTIME_URL || 'https://ep-ancient-dew-b4x5v2sp.rt.c-6.us-east-2.aws.neon.tech/';
+// Auto-load .env.local if DATABASE_URL is not set in environment
+if (!process.env.DATABASE_URL) {
+  try {
+    const envPath = path.resolve(process.cwd(), '.env.local');
+    if (fs.existsSync(envPath)) {
+      const lines = fs.readFileSync(envPath, 'utf8').split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const idx = trimmed.indexOf('=');
+        if (idx > 0) {
+          const k = trimmed.slice(0, idx).trim();
+          const v = trimmed.slice(idx + 1).trim().replace(/^['"]|['"]$/g, '');
+          if (!process.env[k]) process.env[k] = v;
+        }
+      }
+    }
+  } catch {}
+}
+
+const DATABASE_URL = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL || '';
+const DATA_API_URL = process.env.NEON_DATA_API_URL || '';
+const REALTIME_URL = process.env.NEON_REALTIME_URL || '';
 
 console.log('====================================================');
 console.log('       BARRIERLENS - NEON SERVICES TEST SUITE       ');
