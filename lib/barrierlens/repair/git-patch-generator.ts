@@ -24,6 +24,16 @@ export interface PatchResult {
   isVerifiable: boolean;
 }
 
+export interface GitPatchBundle {
+  combinedPatch: string;
+  patches: Array<{
+    findingId: string;
+    filePath: string;
+    unifiedDiff: string;
+    astFixStrategy: string;
+  }>;
+}
+
 export class GitPatchGenerator {
   /**
    * Generates a standard unified git diff format string.
@@ -241,5 +251,29 @@ export class GitPatchGenerator {
       ``,
       ...patches
     ].join('\n');
+  }
+
+  /**
+   * Creates a structured patch bundle object with metadata for each patch.
+   */
+  createStructuredPatchBundle(findings: BarrierFinding[], defaultFilePath = 'src/components/AuditedView.tsx'): GitPatchBundle {
+    const patchItems: GitPatchBundle['patches'] = [];
+    const validFindings = findings.filter(f => f.trustTier === 'proven' || f.trustTier === 'observed');
+
+    validFindings.forEach((f, idx) => {
+      const filePath = `src/components/audited-component-${idx + 1}.tsx`;
+      const res = this.generatePatchForFinding(f, filePath);
+      patchItems.push({
+        findingId: f.id,
+        filePath: res.filePath,
+        unifiedDiff: res.unifiedDiff,
+        astFixStrategy: `AST Remediation for ${f.kind} on ${f.evidence?.selector || 'component'}`
+      });
+    });
+
+    return {
+      combinedPatch: this.createPatchBundle(findings, defaultFilePath),
+      patches: patchItems
+    };
   }
 }
