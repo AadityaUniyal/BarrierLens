@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:all": "npx tsx scripts/dev-all.mjs",
+    "backend": "python backend/app.py",
+    "audit:live": "npx tsx scripts/run-live-audit.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
