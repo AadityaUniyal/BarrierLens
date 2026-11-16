@@ -21,6 +21,7 @@ import { EXTRACT_AX_NODES_SCRIPT, serializeAXTree, SerializedAXNode } from '../c
 import { extractCDPAXTree } from '../cdp/cdp-ax-extractor';
 import { AxeBaselineRunner } from '../engines/axe-baseline-runner';
 import { AutonomousReconEngine } from './recon-engine';
+import { ContextAwareInputFuzzer } from './input-fuzzer';
 import { AuditRun, BarrierFinding, ActionStep, PersonaType, FocusNode } from '../types';
 import { sql } from '../../neon/db';
 import { trajectoryLogger } from './trajectory-logger';
@@ -57,6 +58,7 @@ export class AuditorCore {
   private genomeEncoder = new BarrierGenomeEncoder();
   private axeRunner = new AxeBaselineRunner();
   private reconEngine = new AutonomousReconEngine();
+  private inputFuzzer = new ContextAwareInputFuzzer();
 
   /**
    * Execute an autonomous task-conditioned accessibility audit run
@@ -380,10 +382,17 @@ export class AuditorCore {
           break;
         }
 
-        if (decision.action === 'type_text' && decision.text) {
+        if (decision.action === 'type_text') {
           actionType = 'type_text';
-          await page.keyboard.type(decision.text, { delay: 30 });
-          keyHistory.push(`Type: "${decision.text}"`);
+          let textToType = decision.text;
+          if (!textToType || textToType === 'test' || textToType === 'hello@example.com') {
+            textToType = await this.inputFuzzer.generateInputValue(page, {
+              targetSelector: decision.targetSelector,
+              activeGoal
+            });
+          }
+          await page.keyboard.type(textToType, { delay: 30 });
+          keyHistory.push(`Type: "${textToType}"`);
         } else {
           const keyToPress = decision.key || 'Tab';
           actionType = 'press_key';
