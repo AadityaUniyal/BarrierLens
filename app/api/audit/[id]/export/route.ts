@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/neon/db';
 import { BarrierFinding, AuditRun } from '@/lib/barrierlens/types';
+import { VPATGenerator } from '@/lib/barrierlens/compliance/vpat-generator';
 
 export const runtime = 'nodejs';
 
@@ -353,39 +354,26 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       }
     }
 
-    const vpat = buildVPATMatrix(findings);
+    const vpatGen = new VPATGenerator();
+    const vpatBundle = vpatGen.generateVPATBundle(finalRun, findings);
 
     if (format === 'json' || format === 'vpat') {
-      return NextResponse.json({
-        reportId: id,
-        generatedAt: new Date().toISOString(),
-        engine: 'BarrierLens v2.6.0',
-        metadata: {
-          targetUrl: finalRun.targetUrl,
-          goal: finalRun.goal,
-          persona: finalRun.persona,
-          taskSuccess: finalRun.taskSuccess,
-          effortRatio: finalRun.effortRatio
-        },
-        vpatTable: vpat,
-        findingsCount: findings.length,
-        findings
-      });
+      return NextResponse.json(vpatBundle);
     }
 
     if (format === 'markdown') {
-      let md = `# BarrierLens Accessibility Conformance Report\n\n`;
-      md += `**Target:** ${finalRun.targetUrl}\n**Status:** ${finalRun.taskSuccess ? 'PASSED' : 'FAILED'}\n**Effort Ratio:** ${finalRun.effortRatio}x\n\n`;
+      let md = `# BarrierLens Accessibility Conformance Report (VPAT® 2.5)\n\n`;
+      md += `**Target:** ${finalRun.targetUrl}\n**Status:** ${vpatBundle.conformanceSummary.overallStatus}\n**Effort Ratio:** ${finalRun.effortRatio}x\n**Audit Signature:** \`${vpatBundle.cryptographicSignature}\`\n\n`;
       md += `## VPAT Conformance Matrix\n\n`;
-      md += `| Criteria | Name | Status | Remarks |\n|---|---|---|---|\n`;
-      for (const v of vpat) {
-        md += `| ${v.criteria} | ${v.name} | ${v.conformance} | ${v.remarks} |\n`;
+      md += `| Standard | Clause | Name | Conformance | Remarks |\n|---|---|---|---|---|\n`;
+      for (const v of vpatBundle.tableEntries) {
+        md += `| ${v.standard} | ${v.clauseId} | ${v.name} | **${v.conformance}** | ${v.remarks} |\n`;
       }
       return new NextResponse(md, { headers: { 'Content-Type': 'text/markdown' } });
     }
 
-    // Default: Return high-res Apple-styled printable HTML
-    const html = generateExecutiveHtml(finalRun, findings, vpat);
+    // Default: Return high-res official VPAT 2.5 printable HTML
+    const html = vpatGen.generatePrintableHTML(vpatBundle, finalRun);
     return new NextResponse(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Export failed' }, { status: 500 });
