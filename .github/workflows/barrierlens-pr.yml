@@ -49,7 +49,7 @@ jobs:
 
       - name: Run BarrierLens Autonomous PR Gatekeeper
         run: |
-          node scripts/barrierlens-ci.mjs \
+          npx tsx scripts/barrierlens-ci.mjs \
             --url="http://127.0.0.1:3000/benchmark" \
             --goal="Navigate primary flows, test keyboard trap escape, and ensure accessible names" \
             --persona="keyboard" \

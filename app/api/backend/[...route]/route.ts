@@ -52,6 +52,16 @@ export async function POST(req: NextRequest, context: { params: Promise<{ route:
   return proxy(req, route);
 }
 
+export async function PUT(req: NextRequest, context: { params: Promise<{ route: string[] }> }) {
+  const { route } = await context.params;
+  return proxy(req, route);
+}
+
+export async function PATCH(req: NextRequest, context: { params: Promise<{ route: string[] }> }) {
+  const { route } = await context.params;
+  return proxy(req, route);
+}
+
 export async function DELETE(req: NextRequest, context: { params: Promise<{ route: string[] }> }) {
   const { route } = await context.params;
   return proxy(req, route);

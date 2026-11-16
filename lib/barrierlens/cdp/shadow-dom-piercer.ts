@@ -115,9 +115,11 @@ export class DeepShadowDOMPiercer {
 
         traverseTree(document);
         return discovered;
-      })()`);
+      })()`) as any;
 
-      results.push(...shadowNodes);
+      if (Array.isArray(shadowNodes)) {
+        results.push(...(shadowNodes as PiercedElementInfo[]));
+      }
     } catch (evalErr) {
       console.error('[DeepShadowDOMPiercer] Main frame shadow evaluation error:', evalErr);
     }

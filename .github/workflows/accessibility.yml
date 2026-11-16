@@ -10,7 +10,7 @@ jobs:
   accessibility-audit:
     name: Autonomous Accessibility Audit & Trap Certification
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout Code
@@ -28,25 +28,45 @@ jobs:
       - name: Install Playwright Browsers & OS Dependencies
         run: npx playwright install --with-deps chromium
 
-      - name: Build Next.js Application
-        run: npm run build
+      - name: Type Check & Build Next.js Application
+        run: |
+          npx tsc --noEmit
+          npm run build
         env:
           NEXT_TELEMETRY_DISABLED: 1
 
       - name: Run Focus Graph & Keyboard Trap Certifications
-        run: node scripts/verify-week2-focus-engine.mjs
+        run: npx tsx scripts/verify-week2-focus-engine.mjs
 
       - name: Run AccName Provenance & Static WCAG Checks
-        run: node scripts/verify-week3-accname-wcag.mjs
+        run: npx tsx scripts/verify-week3-accname-wcag.mjs
 
       - name: Run Announcement-Gap & Silent Error Detection
-        run: node scripts/verify-week4-announcement-gaps.mjs
+        run: npx tsx scripts/verify-week4-announcement-gaps.mjs
 
       - name: Run State Fingerprinting & Exploration Graph
-        run: node scripts/verify-week5-state-graph.mjs
+        run: npx tsx scripts/verify-week5-state-graph.mjs
 
       - name: Verify Novel Differentiators & Causal Engine
         run: npm run test:differentiators
+
+      - name: Verify Machine Learning & Conformal Impact
+        run: npm run test:phase2
+
+      - name: Verify Context-Aware Input & Form Fuzzer
+        run: npx tsx scripts/verify-input-fuzzer.mjs
+
+      - name: Verify Deep Shadow DOM & iFrame Piercer
+        run: npx tsx scripts/verify-shadow-piercer.mjs
+
+      - name: Verify Official VPAT 2.5 Legal Defense Vault
+        run: npx tsx scripts/verify-vpat-generator.mjs
+
+      - name: Verify Autonomous GitHub PR Self-Healing Bot
+        run: npx tsx scripts/verify-github-bot.mjs
+
+      - name: Verify Multi-Agent Arena & Metamorphic Chaos
+        run: npm run test:phase6
 
       - name: Publish Self-Audit Status Badge
         if: success()
