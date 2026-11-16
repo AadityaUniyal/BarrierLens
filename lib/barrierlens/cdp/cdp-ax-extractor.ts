@@ -1,4 +1,5 @@
 import { CDPSession, Page } from 'playwright';
+import { DeepShadowDOMPiercer } from './shadow-dom-piercer';
 
 export interface CDPAXProperty {
   name: string;
@@ -55,6 +56,7 @@ export interface CDPAXTreeResult {
 export interface CDPAXExtractorOptions {
   resolveDOM?: boolean;
   filterInteractiveOnly?: boolean;
+  pierce?: boolean;
 }
 
 /**
@@ -265,6 +267,32 @@ export async function extractCDPAXTree(
     for (const axNode of allNodes) {
       if (isInteractiveNode(axNode)) {
         interactiveNodes.push(axNode);
+      }
+    }
+
+    // 5. Deep Shadow DOM & iFrame Piercing (Lit, Stencil, LWC, Payment Iframes)
+    if (options.pierce !== false) {
+      try {
+        const piercer = new DeepShadowDOMPiercer();
+        const piercedElements = await piercer.extractPiercedInteractiveNodes(page);
+        for (const pe of piercedElements) {
+          if (!interactiveNodes.some((n) => n.selector === pe.selector)) {
+            const pNode: CDPAXNode = {
+              nodeId: `pierced_${pe.selector}`,
+              role: pe.role,
+              name: pe.name,
+              value: pe.value,
+              disabled: pe.disabled,
+              focusable: pe.focusable,
+              focused: false,
+              selector: pe.selector
+            };
+            interactiveNodes.push(pNode);
+            allNodes.push(pNode);
+          }
+        }
+      } catch {
+        // Non-blocking fallback
       }
     }
 
