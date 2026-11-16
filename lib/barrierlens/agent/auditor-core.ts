@@ -20,6 +20,7 @@ import { INJECTED_OBSERVER_SCRIPT } from '../cdp/observer-script';
 import { EXTRACT_AX_NODES_SCRIPT, serializeAXTree, SerializedAXNode } from '../cdp/ax-serializer';
 import { extractCDPAXTree } from '../cdp/cdp-ax-extractor';
 import { AxeBaselineRunner } from '../engines/axe-baseline-runner';
+import { AutonomousReconEngine } from './recon-engine';
 import { AuditRun, BarrierFinding, ActionStep, PersonaType, FocusNode } from '../types';
 import { sql } from '../../neon/db';
 import { trajectoryLogger } from './trajectory-logger';
@@ -55,6 +56,7 @@ export class AuditorCore {
   private genomeStore = new GenomeStore();
   private genomeEncoder = new BarrierGenomeEncoder();
   private axeRunner = new AxeBaselineRunner();
+  private reconEngine = new AutonomousReconEngine();
 
   /**
    * Execute an autonomous task-conditioned accessibility audit run
@@ -86,6 +88,7 @@ export class AuditorCore {
 
     let taskSuccess = false;
     let kendallTauResult = undefined;
+    let activeGoal = (goal || '').trim();
 
     try {
       browser = await chromium.launch({ headless: true });
@@ -102,6 +105,21 @@ export class AuditorCore {
       await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await page.addInitScript({ content: INJECTED_OBSERVER_SCRIPT });
       await page.waitForTimeout(1000);
+
+      // Autonomous Reconnaissance: If goal is empty or default generic, deduce mission dynamically from DOM landmarks
+      activeGoal = (goal || '').trim();
+      if (!activeGoal || activeGoal.toLowerCase().includes('primary task') || activeGoal.toLowerCase().includes('primary interaction flow')) {
+        try {
+          const mission = await this.reconEngine.deduceMission(page);
+          activeGoal = mission.primaryGoal;
+          onProgress?.({
+            type: 'status',
+            data: { message: `Autonomous Reconnaissance: Inferred mission goal: "${activeGoal}" (${mission.landmarks.pageGenre})` }
+          });
+        } catch {
+          activeGoal = goal || 'Navigate sequential interactive controls and verify keyboard focus accessibility';
+        }
+      }
 
       // Register root state in MCTS exploration graph
       const initialFp = await this.stateFingerprinter.captureFromPage(page);
@@ -303,7 +321,7 @@ export class AuditorCore {
         const reflexionContext = this.reflexionEngine.getReflexionPromptContext();
 
         // 2. Cascade Router: Evaluate Tier 1 Action Ranker before invoking LLMs
-        const rankResult = await this.actionRanker.rankNextActionAsync(goal, currentNodes, previousActiveSelector, keyHistory);
+        const rankResult = await this.actionRanker.rankNextActionAsync(activeGoal, currentNodes, previousActiveSelector, keyHistory);
         let decision: any;
 
         if (rankResult.isHighConfidence && !reflexionContext.includes('Δ=0')) {
@@ -317,7 +335,7 @@ export class AuditorCore {
           tierMix.tier1Ranker++;
         } else {
           // Escalate to Tier 2 (Local GPU SLM / Groq LLaMA 3.3) or Tier 3 (Gemini Flash) with Reflexion Guidance
-          decision = await this.router.decideNextAction(goal, persona, compactAX, keyHistory, reflexionContext, previousActiveSelector);
+          decision = await this.router.decideNextAction(activeGoal, persona, compactAX, keyHistory, reflexionContext, previousActiveSelector);
           if (decision.tierUsed === 0) tierMix.tier0Rules++;
           else if (decision.tierUsed === 2) tierMix.tier2Groq++;
           else if (decision.tierUsed === 3) tierMix.tier3Gemini++;
@@ -328,14 +346,14 @@ export class AuditorCore {
         await trajectoryLogger.log({
           runId,
           stepIndex: steps.length,
-          goal,
+          goal: activeGoal,
           persona,
           currentUrl: page.url(),
           axNodeCount: currentNodes.length,
           focusedRole: focusedNode?.role,
           focusedName: focusedNode?.name,
           historyLength: keyHistory.length,
-          goalWordOverlap: computeGoalOverlap(goal, focusedNode?.name ?? ''),
+          goalWordOverlap: computeGoalOverlap(activeGoal, focusedNode?.name ?? ''),
           rolePriority: ROLE_PRIORITIES[focusedNode?.role?.toLowerCase() ?? ''] ?? 0.5,
           chosenAction: `${decision.action}:${decision.key ?? decision.text ?? ''}`,
           chosenSelector: decision.targetSelector,
@@ -687,7 +705,7 @@ export class AuditorCore {
     const auditRunResult: AuditRun = {
       id: runId,
       targetUrl,
-      goal,
+      goal: activeGoal,
       persona,
       status: 'completed',
       startedAt,
@@ -718,7 +736,7 @@ export class AuditorCore {
             ${effortRatio}, 
             ${JSON.stringify(tierMix)},
             ${targetUrl},
-            ${goal},
+            ${activeGoal},
             ${JSON.stringify(auditRunResult)}
           );
         `;
@@ -743,7 +761,7 @@ export class AuditorCore {
       for (const finding of findings) {
         try {
           const genome = this.genomeEncoder.encode(finding, {
-            goal,
+            goal: activeGoal,
             persona,
             targetUrl,
             effortRatio,
