@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { AuditRun, BarrierFinding, ActionStep, PersonaType } from '@/lib/barrierlens/types';
 import { TraceTheater } from './TraceTheater';
+import { TimeTravelReplayPlayer } from './TimeTravelReplayPlayer';
 import { ScreenReaderTranscript } from './ScreenReaderTranscript';
 import { FocusMapView } from './FocusMapView';
 import { CDPPatchSimulator } from './CDPPatchSimulator';
@@ -412,13 +413,14 @@ export function AuditStudioView({
               </div>
             )}
 
-            {/* Tab 2: Trace Theater Replay */}
+            {/* Tab 2: Cinematic Time-Travel Replay Player */}
             {activeTab === 'theater' && (
               <div className="p-4 flex-1">
-                <TraceTheater
+                <TimeTravelReplayPlayer
                   steps={steps}
                   findings={findings}
                   targetUrl={targetUrl}
+                  onSelectFinding={onSelectFinding}
                 />
               </div>
             )}
