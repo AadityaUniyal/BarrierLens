@@ -314,40 +314,49 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     if (process.env.DATABASE_URL) {
       try {
-        const rows = await sql`SELECT * FROM audit_runs WHERE id = ${id} LIMIT 1`;
+        const rows = await sql`SELECT * FROM runs WHERE id = ${id} LIMIT 1`;
         if (rows && rows.length > 0) {
           const r = rows[0];
-          finalRun = {
-            id: r.id,
-            targetUrl: r.target_url,
-            goal: r.goal,
-            persona: r.persona || 'keyboard',
-            status: r.status,
-            startedAt: r.created_at,
-            finishedAt: r.updated_at,
-            taskSuccess: r.task_success ?? true,
-            effortRatio: r.effort_ratio ? parseFloat(r.effort_ratio) : 1.0,
-            tierMix: { tier0Rules: 5, tier1Ranker: 2, tier2Groq: 1, tier3Gemini: 0 },
-            findings: [],
-            steps: []
-          };
+          if (r.payload && typeof r.payload === 'object') {
+            finalRun = r.payload;
+            if (r.payload.findings && Array.isArray(r.payload.findings)) {
+              findings = r.payload.findings;
+            }
+          } else {
+            finalRun = {
+              id: r.id,
+              targetUrl: r.target_url || 'https://barrierlens.ai',
+              goal: r.goal_text || 'Complete primary interaction flow',
+              persona: r.persona || 'keyboard',
+              status: r.status,
+              startedAt: r.started_at || new Date().toISOString(),
+              finishedAt: r.finished_at || new Date().toISOString(),
+              taskSuccess: r.task_success ?? true,
+              effortRatio: r.effort_ratio ? parseFloat(r.effort_ratio) : 1.0,
+              tierMix: r.tier_mix || { tier0Rules: 5, tier1Ranker: 2, tier2Groq: 1, tier3Gemini: 0 },
+              findings: [],
+              steps: []
+            };
+          }
 
-          const findingRows = await sql`SELECT * FROM barrier_findings WHERE run_id = ${id}`;
-          findings = (findingRows || []).map((f: any) => ({
-            id: f.id,
-            runId: f.run_id,
-            stepIdx: f.step_idx || 0,
-            kind: f.kind,
-            trustTier: f.trust_tier,
-            wcagRules: f.wcag_rules || [],
-            severity: f.severity,
-            severityScore: f.severity_score || 5.0,
-            severityInterval: [4.0, 6.0],
-            title: f.title,
-            summary: f.summary,
-            evidence: f.evidence || {},
-            certificate: f.certificate
-          }));
+          if (findings.length === 0) {
+            const findingRows = await sql`SELECT * FROM findings WHERE run_id = ${id}`;
+            findings = (findingRows || []).map((f: any) => ({
+              id: f.id,
+              runId: f.run_id,
+              stepIdx: f.step_idx || 0,
+              kind: f.kind,
+              trustTier: f.trust_tier,
+              wcagRules: f.wcag || [],
+              severity: f.severity > 8 ? 'critical' : f.severity > 5 ? 'high' : 'medium',
+              severityScore: f.severity || 5.0,
+              severityInterval: [f.severity_lo || 4.0, f.severity_hi || 6.0],
+              title: `${f.kind.replace(/_/g, ' ').toUpperCase()}`,
+              summary: f.certificate?.summary || `Finding detected: ${f.kind}`,
+              evidence: f.evidence || {},
+              certificate: f.certificate
+            }));
+          }
         }
       } catch (dbErr) {
         console.warn('[Export] Database lookup note:', dbErr);

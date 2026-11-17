@@ -61,29 +61,61 @@ export class GenomeStore {
         domain = genome.context.targetUrl || 'unknown';
       }
 
-      await sql`
-        INSERT INTO barrier_genomes (
-          id, finding_id, finding_kind, domain, target_url, persona, vector, magnitude, severity_score, wcag_rules, context, created_at
-        ) VALUES (
-          ${genome.findingId},
-          ${genome.findingId},
-          ${genome.findingKind},
-          ${domain},
-          ${genome.context.targetUrl},
-          ${genome.context.persona},
-          ${JSON.stringify(genome.vector)},
-          ${genome.magnitude},
-          ${genome.metadata.severityScore || 5.0},
-          ${JSON.stringify(genome.metadata.wcagRules || [])},
-          ${JSON.stringify(genome.context)},
-          ${genome.timestamp}
-        )
-        ON CONFLICT (id) DO UPDATE SET
-          vector = EXCLUDED.vector,
-          magnitude = EXCLUDED.magnitude,
-          severity_score = EXCLUDED.severity_score,
-          context = EXCLUDED.context;
-      `;
+      const vectorStr = (genome.vector && Array.isArray(genome.vector) && genome.vector.length === 768)
+        ? `[${genome.vector.join(',')}]`
+        : null;
+
+      if (vectorStr) {
+        await sql`
+          INSERT INTO barrier_genomes (
+            id, finding_id, finding_kind, domain, target_url, persona, vector, embedding, magnitude, severity_score, wcag_rules, context, created_at
+          ) VALUES (
+            ${genome.findingId},
+            ${genome.findingId},
+            ${genome.findingKind},
+            ${domain},
+            ${genome.context.targetUrl},
+            ${genome.context.persona},
+            ${JSON.stringify(genome.vector)},
+            ${vectorStr}::vector,
+            ${genome.magnitude},
+            ${genome.metadata.severityScore || 5.0},
+            ${JSON.stringify(genome.metadata.wcagRules || [])},
+            ${JSON.stringify(genome.context)},
+            ${genome.timestamp}
+          )
+          ON CONFLICT (id) DO UPDATE SET
+            vector = EXCLUDED.vector,
+            embedding = EXCLUDED.embedding,
+            magnitude = EXCLUDED.magnitude,
+            severity_score = EXCLUDED.severity_score,
+            context = EXCLUDED.context;
+        `;
+      } else {
+        await sql`
+          INSERT INTO barrier_genomes (
+            id, finding_id, finding_kind, domain, target_url, persona, vector, magnitude, severity_score, wcag_rules, context, created_at
+          ) VALUES (
+            ${genome.findingId},
+            ${genome.findingId},
+            ${genome.findingKind},
+            ${domain},
+            ${genome.context.targetUrl},
+            ${genome.context.persona},
+            ${JSON.stringify(genome.vector)},
+            ${genome.magnitude},
+            ${genome.metadata.severityScore || 5.0},
+            ${JSON.stringify(genome.metadata.wcagRules || [])},
+            ${JSON.stringify(genome.context)},
+            ${genome.timestamp}
+          )
+          ON CONFLICT (id) DO UPDATE SET
+            vector = EXCLUDED.vector,
+            magnitude = EXCLUDED.magnitude,
+            severity_score = EXCLUDED.severity_score,
+            context = EXCLUDED.context;
+        `;
+      }
     } catch (err) {
       // In-memory store already holds it
     }
@@ -96,42 +128,88 @@ export class GenomeStore {
   ): Promise<GenomeSimilarityResult[]> {
     const results: GenomeSimilarityResult[] = [];
 
-    // 1. Try DB fetch
+    // 1. Try Neon Postgres HNSW pgvector search if embedding is available
     try {
       await this.ensureTable();
-      const rows = await sql`
-        SELECT id, finding_id, finding_kind, domain, target_url, persona, vector, magnitude, severity_score, wcag_rules, context, created_at
-        FROM barrier_genomes
-        LIMIT 100;
-      `;
 
-      if (rows && rows.length > 0) {
-        for (const row of rows) {
-          if (row.finding_id === queryGenome.findingId) continue;
-          const vec: number[] = typeof row.vector === 'string' ? JSON.parse(row.vector) : row.vector;
-          const targetGenome: BarrierGenome = {
-            findingId: row.finding_id,
-            findingKind: row.finding_kind as FindingKind,
-            vector: vec,
-            magnitude: row.magnitude,
-            timestamp: row.created_at,
-            context: typeof row.context === 'string' ? JSON.parse(row.context) : row.context,
-            metadata: {
-              title: `${row.finding_kind} on ${row.domain}`,
-              trustTier: 'proven',
-              severityScore: row.severity_score,
-              wcagRules: typeof row.wcag_rules === 'string' ? JSON.parse(row.wcag_rules) : row.wcag_rules
+      if (queryGenome.vector && Array.isArray(queryGenome.vector) && queryGenome.vector.length === 768) {
+        const queryVectorStr = `[${queryGenome.vector.join(',')}]`;
+        const rows = await sql`
+          SELECT id, finding_id, finding_kind, domain, target_url, persona, vector, magnitude, severity_score, wcag_rules, context, created_at,
+                 (1 - (embedding <=> ${queryVectorStr}::vector)) as similarity
+          FROM barrier_genomes
+          WHERE embedding IS NOT NULL AND finding_id != ${queryGenome.findingId}
+          ORDER BY embedding <=> ${queryVectorStr}::vector ASC
+          LIMIT ${topK * 2};
+        `;
+
+        if (rows && rows.length > 0) {
+          for (const row of rows) {
+            const sim = parseFloat(row.similarity);
+            if (sim >= threshold) {
+              const vec: number[] = typeof row.vector === 'string' ? JSON.parse(row.vector) : row.vector;
+              const targetGenome: BarrierGenome = {
+                findingId: row.finding_id,
+                findingKind: row.finding_kind as FindingKind,
+                vector: vec,
+                magnitude: row.magnitude,
+                timestamp: row.created_at,
+                context: typeof row.context === 'string' ? JSON.parse(row.context) : row.context,
+                metadata: {
+                  title: `${row.finding_kind} on ${row.domain}`,
+                  trustTier: 'proven',
+                  severityScore: row.severity_score,
+                  wcagRules: typeof row.wcag_rules === 'string' ? JSON.parse(row.wcag_rules) : row.wcag_rules
+                }
+              };
+
+              results.push({
+                genome: targetGenome,
+                similarity: sim,
+                domain: row.domain,
+                remediationAdvice: this.generateRemediationHint(targetGenome)
+              });
             }
-          };
+          }
+        }
+      }
 
-          const sim = this.encoder.similarity(queryGenome, targetGenome);
-          if (sim >= threshold) {
-            results.push({
-              genome: targetGenome,
-              similarity: sim,
-              domain: row.domain,
-              remediationAdvice: this.generateRemediationHint(targetGenome)
-            });
+      // If pgvector search had no matches, fallback to scanning recent rows
+      if (results.length === 0) {
+        const rows = await sql`
+          SELECT id, finding_id, finding_kind, domain, target_url, persona, vector, magnitude, severity_score, wcag_rules, context, created_at
+          FROM barrier_genomes
+          LIMIT 100;
+        `;
+
+        if (rows && rows.length > 0) {
+          for (const row of rows) {
+            if (row.finding_id === queryGenome.findingId) continue;
+            const vec: number[] = typeof row.vector === 'string' ? JSON.parse(row.vector) : row.vector;
+            const targetGenome: BarrierGenome = {
+              findingId: row.finding_id,
+              findingKind: row.finding_kind as FindingKind,
+              vector: vec,
+              magnitude: row.magnitude,
+              timestamp: row.created_at,
+              context: typeof row.context === 'string' ? JSON.parse(row.context) : row.context,
+              metadata: {
+                title: `${row.finding_kind} on ${row.domain}`,
+                trustTier: 'proven',
+                severityScore: row.severity_score,
+                wcagRules: typeof row.wcag_rules === 'string' ? JSON.parse(row.wcag_rules) : row.wcag_rules
+              }
+            };
+
+            const sim = this.encoder.similarity(queryGenome, targetGenome);
+            if (sim >= threshold) {
+              results.push({
+                genome: targetGenome,
+                similarity: sim,
+                domain: row.domain,
+                remediationAdvice: this.generateRemediationHint(targetGenome)
+              });
+            }
           }
         }
       }

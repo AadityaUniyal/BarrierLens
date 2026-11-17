@@ -30,9 +30,11 @@ export async function GET(req: Request) {
           effort_ratio, 
           started_at, 
           finished_at,
-          tier_mix
+          tier_mix,
+          target_url,
+          goal_text
         FROM runs
-        ORDER BY started_at DESC
+        ORDER BY COALESCE(started_at, created_at) DESC
         LIMIT ${limit} OFFSET ${offset};
       `;
 
@@ -43,6 +45,8 @@ export async function GET(req: Request) {
           kind, 
           trust_tier, 
           severity, 
+          severity_lo,
+          severity_hi,
           wcag, 
           evidence, 
           certificate,
@@ -52,7 +56,7 @@ export async function GET(req: Request) {
         LIMIT 50;
       `;
     } else {
-      // For unauthenticated visitors, only expose public sample/benchmark evaluation runs
+      // For unauthenticated visitors, expose public benchmark evaluation runs and verified findings
       runs = await sql`
         SELECT 
           id, 
@@ -62,14 +66,32 @@ export async function GET(req: Request) {
           effort_ratio, 
           started_at, 
           finished_at,
-          tier_mix
+          tier_mix,
+          target_url,
+          goal_text
         FROM runs
         WHERE status = 'completed'
-        ORDER BY started_at DESC
-        LIMIT 5;
+        ORDER BY COALESCE(started_at, created_at) DESC
+        LIMIT 10;
       `;
 
-      findings = [];
+      findings = await sql`
+        SELECT 
+          id, 
+          run_id, 
+          kind, 
+          trust_tier, 
+          severity, 
+          severity_lo,
+          severity_hi,
+          wcag, 
+          evidence, 
+          certificate,
+          created_at
+        FROM findings
+        ORDER BY created_at DESC
+        LIMIT 20;
+      `;
     }
 
     return NextResponse.json({

@@ -171,6 +171,14 @@ export async function initializeDatabaseSchema() {
       );
     `;
 
+    try {
+      await sql`ALTER TABLE findings ADD COLUMN IF NOT EXISTS severity_lo FLOAT;`;
+      await sql`ALTER TABLE findings ADD COLUMN IF NOT EXISTS severity_hi FLOAT;`;
+      await sql`ALTER TABLE findings ADD COLUMN IF NOT EXISTS certificate JSONB;`;
+    } catch (e: any) {
+      console.log('[Neon DB] findings columns notice:', e.message);
+    }
+
     await sql`
       CREATE TABLE IF NOT EXISTS fixes (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -189,9 +197,18 @@ export async function initializeDatabaseSchema() {
         status TEXT NOT NULL DEFAULT 'pending',
         run_after TIMESTAMPTZ DEFAULT NOW(),
         locked_at TIMESTAMPTZ,
-        attempts INTEGER DEFAULT 0
+        attempts INTEGER DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
       );
     `;
+
+    try {
+      await sql`ALTER TABLE jobs ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();`;
+      await sql`ALTER TABLE jobs ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();`;
+    } catch (e: any) {
+      console.log('[Neon DB] jobs columns notice:', e.message);
+    }
 
     await sql`
       CREATE TABLE IF NOT EXISTS llm_calls (
@@ -227,7 +244,9 @@ export async function initializeDatabaseSchema() {
     `;
 
     try {
-      await sql`CREATE INDEX IF NOT EXISTS idx_barrier_genomes_vector ON barrier_genomes USING hnsw (vector vector_cosine_ops);`;
+      await sql`ALTER TABLE barrier_genomes ADD COLUMN IF NOT EXISTS embedding vector(768);`;
+      await sql`CREATE INDEX IF NOT EXISTS idx_barrier_genomes_embedding ON barrier_genomes USING hnsw (embedding vector_cosine_ops);`;
+      console.log('[Neon DB] HNSW genome embedding index enabled/verified.');
     } catch (e: any) {
       console.log('[Neon DB] HNSW genome index notice:', e.message);
     }
@@ -276,6 +295,8 @@ export async function initializeDatabaseSchema() {
       await sql`ALTER TABLE runs ADD COLUMN IF NOT EXISTS target_url TEXT;`;
       await sql`ALTER TABLE runs ADD COLUMN IF NOT EXISTS goal_text TEXT;`;
       await sql`ALTER TABLE runs ADD COLUMN IF NOT EXISTS payload JSONB;`;
+      await sql`ALTER TABLE runs ADD COLUMN IF NOT EXISTS kendall_tau FLOAT;`;
+      await sql`ALTER TABLE runs ADD COLUMN IF NOT EXISTS vpat_signature JSONB;`;
     } catch (e: any) {
       console.log('[Neon DB] runs public-share columns notice:', e.message);
     }
