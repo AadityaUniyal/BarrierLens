@@ -83,6 +83,65 @@ export function AuditStudioView({
   // Active key state for on-screen physical keycaps
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [activeElementSelector, setActiveElementSelector] = useState<string>('body');
+
+  // Swarm & Autonomous Crawler State
+  const [isSwarmRunning, setIsSwarmRunning] = useState<boolean>(false);
+  const [swarmSummary, setSwarmSummary] = useState<any | null>(null);
+  const [isDiscovering, setIsDiscovering] = useState<boolean>(false);
+  const [discoveredJourneys, setDiscoveredJourneys] = useState<Array<{ name: string; goalText: string; startingUrl: string; criticality: string }>>([]);
+
+  const handleRunSwarm = async () => {
+    if (!targetUrl || !goal) return;
+    setIsSwarmRunning(true);
+    setSwarmSummary(null);
+    try {
+      const res = await fetch('/api/audit/swarm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetUrl,
+          goal,
+          personas: ['keyboard', 'screen_reader', 'low_vision', 'cognitive'],
+          maxStepsPerPersona: 6,
+          concurrency: 2,
+          synthesizePatches: true
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSwarmSummary(data.summary);
+      }
+    } catch (err) {
+      console.error('Failed to execute multi-persona swarm:', err);
+    } finally {
+      setIsSwarmRunning(false);
+    }
+  };
+
+  const handleDiscoverDomain = async () => {
+    if (!targetUrl) return;
+    setIsDiscovering(true);
+    try {
+      const res = await fetch('/api/crawler/discover', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: targetUrl, maxRoutes: 12, crawlDepth: 2 })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.journeys && Array.isArray(data.journeys)) {
+          setDiscoveredJourneys(data.journeys);
+          if (data.journeys.length > 0 && !goal) {
+            setGoal(data.journeys[0].goalText || data.journeys[0].name);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to discover domain routes & CUJs:', err);
+    } finally {
+      setIsDiscovering(false);
+    }
+  };
   const lastSpokenStepRef = useRef<number>(-1);
 
   // Sync active key from latest streaming step or audit result
@@ -194,7 +253,31 @@ export function AuditStudioView({
             )}
             <button
               type="button"
-              disabled={isAuditing}
+              disabled={isAuditing || isSwarmRunning}
+              onClick={handleRunSwarm}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all border shadow-sm ${
+                isSwarmRunning
+                  ? 'bg-[#181a1d] text-[#8e98ec] border-[#5e6ad2]/40 cursor-wait'
+                  : 'bg-[#5e6ad2]/15 hover:bg-[#5e6ad2]/25 text-[#8e98ec] hover:text-[#f4f5f6] border-[#5e6ad2]/40'
+              }`}
+              title="Launch parallel audit across Keyboard, Screen Reader, Low Vision, and Cognitive personas simultaneously"
+            >
+              {isSwarmRunning ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-[#8e98ec]/30 border-t-[#8e98ec] rounded-full animate-spin" />
+                  <span>Swarm Active...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5 text-[#8e98ec]" />
+                  <span>Multi-Persona Swarm</span>
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              disabled={isAuditing || isSwarmRunning}
               onClick={onRunAudit}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all shadow-sm ${
                 isAuditing 
@@ -265,10 +348,10 @@ export function AuditStudioView({
           </div>
         </div>
 
-        {/* Quick Presets Bar */}
+        {/* Quick Presets & Autonomous Domain Discovery Bar */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#23262a] text-xs">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[11px] text-[#62676d] font-mono">Ground Truth Presets:</span>
+            <span className="text-[11px] text-[#62676d] font-mono">Ground Truth:</span>
             {benchmarkPresets.map((preset) => (
               <button
                 key={preset.url}
@@ -282,6 +365,17 @@ export function AuditStudioView({
                 {preset.label}
               </button>
             ))}
+
+            <button
+              type="button"
+              disabled={isDiscovering}
+              onClick={handleDiscoverDomain}
+              className="px-2.5 py-0.5 rounded-md bg-[#5e6ad2]/15 hover:bg-[#5e6ad2]/25 border border-[#5e6ad2]/30 text-[11px] text-[#8e98ec] hover:text-[#f4f5f6] transition-all font-mono flex items-center gap-1.5 ml-2"
+              title="Autonomous crawler discovers all sub-routes and synthesizes end-to-end critical user journeys (CUJs)"
+            >
+              <Compass className={`w-3 h-3 ${isDiscovering ? 'animate-spin' : ''}`} />
+              <span>{isDiscovering ? 'Discovering CUJs...' : 'Auto-Discover Domain CUJs'}</span>
+            </button>
           </div>
 
           {persona === 'screen_reader' && (
@@ -294,6 +388,72 @@ export function AuditStudioView({
             </button>
           )}
         </div>
+
+        {/* Synthesized CUJs Drawer */}
+        {discoveredJourneys.length > 0 && (
+          <div className="pt-2 border-t border-[#23262a] space-y-1.5 animate-in fade-in duration-200">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-[#8e98ec]">
+              Synthesized Critical User Journeys (Click to Select Target Goal):
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {discoveredJourneys.map((j, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    setGoal(j.goalText || j.name);
+                    if (j.startingUrl) setTargetUrl(j.startingUrl);
+                  }}
+                  className="px-3 py-1 rounded-lg bg-[#181a1d] hover:bg-[#23262a] border border-[#5e6ad2]/30 text-xs text-[#f4f5f6] hover:border-[#5e6ad2] transition-all flex items-center gap-2 text-left"
+                >
+                  <span className={`w-2 h-2 rounded-full ${
+                    j.criticality === 'critical' ? 'bg-[#e5484d]' : 'bg-[#5e6ad2]'
+                  }`} />
+                  <span className="font-medium">{j.name}</span>
+                  <span className="text-[10px] text-[#9ba1a6] font-mono">({j.criticality})</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Multi-Persona Swarm Summary Card */}
+        {swarmSummary && (
+          <div className="p-4 rounded-lg bg-[#181a1d] border border-[#5e6ad2]/40 shadow-lg space-y-2 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#8e98ec]" />
+                <span className="text-xs font-semibold text-[#f4f5f6]">
+                  Parallel Multi-Persona Swarm Results
+                </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#5e6ad2]/20 text-[#8e98ec]">
+                  Score: {swarmSummary.unifiedHealthScore}/100
+                </span>
+              </div>
+              <span className="text-xs font-mono text-[#9ba1a6]">
+                {swarmSummary.totalDurationMs}ms total duration
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs font-mono">
+              <div className="p-2 rounded bg-[#0c0d0e] border border-[#23262a]">
+                <div className="text-[10px] text-[#9ba1a6]">Unique Findings</div>
+                <div className="text-sm font-bold text-[#f4f5f6]">{swarmSummary.uniqueFindingCount}</div>
+              </div>
+              <div className="p-2 rounded bg-[#0c0d0e] border border-[#23262a]">
+                <div className="text-[10px] text-[#9ba1a6]">Cross-Persona Consensus</div>
+                <div className="text-sm font-bold text-[#5e6ad2]">{swarmSummary.crossPersonaFindingCount}</div>
+              </div>
+              <div className="p-2 rounded bg-[#0c0d0e] border border-[#23262a]">
+                <div className="text-[10px] text-[#9ba1a6]">Pareto Optimal Patches</div>
+                <div className="text-sm font-bold text-[#30a46c]">{swarmSummary.paretoFrontierCount}</div>
+              </div>
+              <div className="p-2 rounded bg-[#0c0d0e] border border-[#23262a]">
+                <div className="text-[10px] text-[#9ba1a6]">Personas Evaluated</div>
+                <div className="text-sm font-bold text-[#f4f5f6]">{swarmSummary.personasEvaluated?.length || 4}</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 2. Cockpit Split-View (Linear Precision Canvas & Trace) */}
