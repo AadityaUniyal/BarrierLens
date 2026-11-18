@@ -81,6 +81,10 @@ export class ParetoConflictResolver {
       implementsModalInert?: boolean;
       addsEscKeyListener?: boolean;
       setsCompactAriaLabel?: boolean;
+      hasCompensatoryHelp?: boolean;
+      preservesVisualDesign?: boolean;
+      increasesCognitiveLoad?: boolean;
+      [key: string]: any;
     }
   ): PersonaUtilityVector {
     let key = 0.0;
