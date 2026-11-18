@@ -36,6 +36,54 @@ export interface DomainCUJBundle {
  */
 export class CUJSynthesizer {
   /**
+   * Synthesizes journeys from a raw list of routes and an origin
+   */
+  synthesizeFromDiscoveredRoutes(
+    origin: string,
+    routes: Array<{ url: string; archetype: RouteArchetype; path?: string }>
+  ): { profile: DiscoveredDomainProfile; journeys: SynthesizedCUJ[] } {
+    const domain = new URL(origin).hostname;
+    const archetypesMap: Record<RouteArchetype, DiscoveredRoute[]> = {
+      landing: [],
+      auth: [],
+      catalog: [],
+      detail: [],
+      cart_checkout: [],
+      account_settings: [],
+      docs_support: [],
+      utility: []
+    };
+
+    const discoveredRoutes: DiscoveredRoute[] = routes.map(r => {
+      const path = r.path || new URL(r.url).pathname;
+      const dr: DiscoveredRoute = {
+        url: r.url,
+        path,
+        archetype: r.archetype,
+        depth: path === '/' ? 0 : path.split('/').filter(Boolean).length
+      };
+      if (archetypesMap[r.archetype]) {
+        archetypesMap[r.archetype].push(dr);
+      }
+      return dr;
+    });
+
+    const profile: DiscoveredDomainProfile = {
+      origin,
+      domain,
+      totalRoutesDiscovered: discoveredRoutes.length,
+      routes: discoveredRoutes,
+      archetypes: archetypesMap,
+      primaryNavLinks: discoveredRoutes.slice(0, 5).map(r => r.url),
+      hasSitemap: false,
+      discoveredAt: new Date().toISOString()
+    };
+
+    const journeys = this.synthesizeJourneys(profile);
+    return { profile, journeys };
+  }
+
+  /**
    * Synthesizes 3-5 Critical User Journeys based on discovered archetypes
    */
   synthesizeJourneys(profile: DiscoveredDomainProfile): SynthesizedCUJ[] {

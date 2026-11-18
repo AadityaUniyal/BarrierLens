@@ -33,6 +33,27 @@ export interface WebhookDispatcherSummary {
  */
 export class WebhookDispatcher {
   /**
+   * Computes an HMAC-SHA256 signature for a payload
+   */
+  signPayload(payload: any, secret: string): string {
+    const str = typeof payload === 'string' ? payload : JSON.stringify(payload);
+    return `sha256=${crypto.createHmac('sha256', secret).update(str).digest('hex')}`;
+  }
+
+  /**
+   * Validates an HMAC-SHA256 signature
+   */
+  verifyPayloadSignature(payload: any, signature: string, secret: string): boolean {
+    if (!signature || !secret) return false;
+    const expected = this.signPayload(payload, secret);
+    try {
+      return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Dispatches an event payload to all matching active webhooks in Neon DB
    */
   async dispatchEvent(

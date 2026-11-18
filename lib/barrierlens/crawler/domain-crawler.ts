@@ -37,10 +37,17 @@ export class DomainCrawler {
   private visitedUrls = new Set<string>();
 
   /**
-   * Classify a URL path into an interaction archetype
+   * Classify a URL path or full URL into an interaction archetype
    */
-  classifyArchetype(path: string): RouteArchetype {
-    const p = path.toLowerCase().replace(/\/$/, '') || '/';
+  classifyArchetype(pathOrUrl: string): RouteArchetype {
+    let cleanPath = pathOrUrl;
+    try {
+      if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) {
+        cleanPath = new URL(pathOrUrl).pathname;
+      }
+    } catch {}
+
+    const p = cleanPath.toLowerCase().replace(/\/$/, '') || '/';
 
     if (p === '/' || p === '/home' || p === '/index' || p === '/index.html') {
       return 'landing';
