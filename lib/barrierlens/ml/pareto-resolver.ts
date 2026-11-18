@@ -343,4 +343,35 @@ export class ParetoConflictResolver {
 
     return list;
   }
+
+  /**
+   * Generates a compensated remediation candidate that neutralizes persona regression
+   */
+  generateCompensatedCandidate(candidate: RemediationCandidate, targetRegressedPersona: ExtendedPersona): RemediationCandidate {
+    const updatedUtils: PersonaUtilityVector = { ...candidate.utilities };
+    let compensationSnippet = '';
+
+    if (targetRegressedPersona === 'cognitive') {
+      updatedUtils.cognitive = Math.max(0.2, updatedUtils.cognitive + 0.6);
+      compensationSnippet = '\n/* Compensatory fix for cognitive load */\nannouncer.setAttribute("aria-live", "polite");';
+    } else if (targetRegressedPersona === 'keyboard') {
+      updatedUtils.keyboard = Math.max(0.3, updatedUtils.keyboard + 0.6);
+      compensationSnippet = '\n/* Compensatory fix for keyboard flow */\nelement.setAttribute("tabindex", "0");';
+    } else if (targetRegressedPersona === 'low_vision') {
+      updatedUtils.lowVision = Math.max(0.3, updatedUtils.lowVision + 0.6);
+      compensationSnippet = '\n/* Compensatory fix for low-vision contrast */\nelement.style.outline = "2px solid #5e6ad2"; element.style.minWidth = "44px"; element.style.minHeight = "44px";';
+    } else if (targetRegressedPersona === 'screen_reader') {
+      updatedUtils.screenReader = Math.max(0.3, updatedUtils.screenReader + 0.6);
+      compensationSnippet = '\n/* Compensatory fix for assistive tech name */\nelement.setAttribute("aria-label", "Interactive element");';
+    }
+
+    return {
+      ...candidate,
+      id: `${candidate.id}_comp_${targetRegressedPersona}`,
+      name: `${candidate.name} (Compensated for ${targetRegressedPersona})`,
+      patchCode: `${candidate.patchCode}${compensationSnippet}`,
+      utilities: updatedUtils,
+      notes: `${candidate.notes || ''} [Compensated for ${targetRegressedPersona} regression]`.trim()
+    };
+  }
 }
