@@ -1,4 +1,4 @@
-import { DiscoveredDomainProfile, RouteArchetype } from './domain-crawler';
+import { DiscoveredDomainProfile, RouteArchetype, DiscoveredRoute } from './domain-crawler';
 import { sql } from '../../neon/db';
 import crypto from 'node:crypto';
 
