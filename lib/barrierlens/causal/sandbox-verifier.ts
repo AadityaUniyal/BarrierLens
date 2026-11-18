@@ -1,4 +1,5 @@
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
+import { BrowserProvider } from '../agent/browser-provider';
 import { CounterfactualPatch } from './counterfactual-engine';
 import { BarrierFinding, PersonaType } from '../types';
 import { AccNameProvenanceEngine } from '../engines/accname-provenance';
@@ -44,7 +45,7 @@ export class SandboxVerifier {
     let replaySuccess = false;
 
     try {
-      browser = await chromium.launch({ headless: true });
+      browser = await BrowserProvider.getBrowser({ headless: true });
       context = await browser.newContext({
         viewport: { width: 1280, height: 800 }
       });

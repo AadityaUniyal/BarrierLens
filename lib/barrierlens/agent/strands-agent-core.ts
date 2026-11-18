@@ -7,6 +7,7 @@
 
 import { Agent, BedrockModel, FunctionTool } from '@strands-agents/sdk';
 import { chromium, Browser, Page } from 'playwright';
+import { BrowserProvider } from './browser-provider';
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 import { AWSBudgetSentinel } from '../aws/budget-sentinel';
 import { BarrierGenomeEncoder } from '../genome/barrier-encoder';
@@ -166,10 +167,7 @@ export class StrandsAgentMesh {
       // =========================================================================
       // STEP 1: Strands Navigator Agent (Real Playwright Navigation & CDP AXTree)
       // =========================================================================
-      browser = await chromium.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      });
+      browser = await BrowserProvider.getBrowser({ headless: true });
 
       const context = await browser.newContext({
         viewport: { width: 1280, height: 800 },

@@ -1,4 +1,5 @@
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
+import { BrowserProvider } from '../agent/browser-provider';
 import { TargetPolicyError } from '../security/target-policy';
 import { isIP } from 'node:net';
 
@@ -52,17 +53,7 @@ export class IsolatedExecutionSandbox {
     let context: BrowserContext | null = null;
 
     try {
-      browser = await chromium.launch({
-        headless: true,
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          `--js-flags=--max-old-space-size=${this.config.maxMemoryMb}`,
-          '--disable-gpu',
-          '--disable-background-networking'
-        ]
-      });
+      browser = await BrowserProvider.getBrowser({ headless: true });
 
       context = await browser.newContext({
         viewport: { width: 1280, height: 800 },

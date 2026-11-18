@@ -1,4 +1,5 @@
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
+import { BrowserProvider } from '../agent/browser-provider';
 import { ExplorationStateGraph } from '../engines/exploration-graph';
 import { ProductionStateFingerprintEngine } from '../engines/state-fingerprint';
 import { FocusGraphEngine } from '../engines/focus-graph';
@@ -81,7 +82,7 @@ export class AdversarialStressAgent {
     const focusGraph = new FocusGraphEngine();
 
     try {
-      browser = await chromium.launch({ headless: true });
+      browser = await BrowserProvider.getBrowser({ headless: true });
       context = await browser.newContext({
         viewport: { width: 1280, height: 800 }
       });

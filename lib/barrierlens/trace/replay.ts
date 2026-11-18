@@ -1,4 +1,5 @@
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
+import { BrowserProvider } from '../agent/browser-provider';
 import { TraceRecord, TraceAction, ExpectedStateAssertion } from './recorder';
 
 export interface StepReplayResult {
@@ -44,7 +45,7 @@ export class PlaywrightTraceReplayer {
     if (options.browserInstance) {
       browser = options.browserInstance;
     } else {
-      ownBrowser = await chromium.launch({
+      ownBrowser = await BrowserProvider.getBrowser({
         headless: options.headless !== false,
         slowMo: options.slowMo || 0
       });

@@ -1,4 +1,5 @@
 import { chromium } from 'playwright';
+import { BrowserProvider } from '../agent/browser-provider';
 import { VerifiedFixResult, FindingKind } from '../types';
 import { sql } from '../../neon/db';
 
@@ -31,7 +32,7 @@ export class VerifiedRepairEngine {
     let replayTaskSuccess = true;
 
     try {
-      browser = await chromium.launch({ headless: true });
+      browser = await BrowserProvider.getBrowser({ headless: true });
       const context = await browser.newContext();
       const page = await context.newPage();
 

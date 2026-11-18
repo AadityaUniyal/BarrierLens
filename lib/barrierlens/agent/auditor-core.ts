@@ -1,4 +1,5 @@
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
+import { BrowserProvider } from './browser-provider';
 import { FocusGraphEngine } from '../engines/focus-graph';
 import { AnnouncementGapDetector } from '../engines/announcement-gap';
 import { AccNameProvenanceEngine } from '../engines/accname-provenance';
@@ -95,7 +96,7 @@ export class AuditorCore {
     let activeGoal = (goal || '').trim();
 
     try {
-      browser = await chromium.launch({ headless: true });
+      browser = await BrowserProvider.getBrowser({ headless: true });
       context = await browser.newContext({
         viewport: { width: 1280, height: 800 },
         userAgent: 'BarrierLens-Auditor/1.0 (Enterprise Accessibility Agent; +https://barrierlens.ai)'
