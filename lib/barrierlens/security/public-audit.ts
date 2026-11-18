@@ -1,9 +1,12 @@
 import { AuditorCore } from '../agent/auditor-core';
 import { PersonaType } from '../types';
+import crypto from 'node:crypto';
+import { sql } from '@/lib/neon/db';
 import {
   assertAuditQuota,
   beginAudit,
   clientIp,
+  RateLimitError,
 } from './rate-limit';
 import {
   TargetPolicyError,
@@ -12,7 +15,13 @@ import {
   requestOriginFrom,
   resolvePublicTargetUrl,
 } from './target-policy';
-import { RateLimitError } from './rate-limit';
+
+export class AuthError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AuthError';
+  }
+}
 
 export type PublicAuditBody = {
   targetUrl?: string;
@@ -21,13 +30,72 @@ export type PublicAuditBody = {
   maxSteps?: number;
 };
 
+// In-memory key rate limiter bucket for authenticated clients
+const keyBuckets = new Map<string, { timestamps: number[] }>();
+
+async function verifyApiKey(req: Request): Promise<{ keyId: string; userId: string; rateLimit: number } | null> {
+  const authHeader = req.headers.get('authorization') || '';
+  const apiKeyHeader = req.headers.get('x-api-key') || '';
+  
+  let rawKey = '';
+  if (authHeader.startsWith('Bearer bl_live_')) {
+    rawKey = authHeader.replace(/^Bearer\s+/, '').trim();
+  } else if (apiKeyHeader.startsWith('bl_live_')) {
+    rawKey = apiKeyHeader.trim();
+  }
+
+  if (!rawKey) return null;
+
+  const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex');
+
+  try {
+    const keys = await sql`
+      SELECT id, user_id, rate_limit_per_min, scopes
+      FROM api_keys
+      WHERE key_hash = ${keyHash}
+      LIMIT 1;
+    `;
+
+    if (keys.length === 0) {
+      throw new AuthError('Invalid or revoked API key supplied.');
+    }
+
+    const key = keys[0];
+    // Enforce rate limit per minute
+    const limit = key.rate_limit_per_min || 120;
+    const now = Date.now();
+    const bucket = keyBuckets.get(key.id) || { timestamps: [] };
+    bucket.timestamps = bucket.timestamps.filter((t) => now - t < 60000);
+    if (bucket.timestamps.length >= limit) {
+      throw new RateLimitError(`API Key rate limit of ${limit} requests/minute exceeded.`, 60);
+    }
+    bucket.timestamps.push(now);
+    keyBuckets.set(key.id, bucket);
+
+    // Update last_used_at asynchronously
+    sql`UPDATE api_keys SET last_used_at = NOW() WHERE id = ${key.id};`.catch(() => {});
+
+    return { keyId: key.id, userId: key.user_id, rateLimit: limit };
+  } catch (err: any) {
+    if (err instanceof RateLimitError || err instanceof AuthError) throw err;
+    console.warn('[Public Audit] API key check failed, falling back to IP quota:', err.message);
+    return null;
+  }
+}
+
 export async function runGuardedAudit(
   req: Request,
   body: PublicAuditBody,
   onProgress?: (event: { type: 'step' | 'finding' | 'complete' | 'status'; data: any }) => void
 ) {
+  // Check for enterprise API Key first
+  const keyInfo = await verifyApiKey(req);
   const ip = clientIp(req);
-  assertAuditQuota(ip);
+
+  // If no valid API key, apply standard free public IP quota
+  if (!keyInfo) {
+    assertAuditQuota(ip);
+  }
 
   const origin = requestOriginFrom(req);
   const targetUrl = await resolvePublicTargetUrl(body.targetUrl, origin);
@@ -35,13 +103,12 @@ export async function runGuardedAudit(
   const persona: PersonaType = body.persona || 'keyboard';
   const maxSteps = clampPublicMaxSteps(body.maxSteps);
 
-  const release = beginAudit(ip);
+  const release = beginAudit(keyInfo ? `key_${keyInfo.keyId}` : ip);
   try {
     const auditor = new AuditorCore();
     return await auditor.runAudit(targetUrl, goal, persona, maxSteps, onProgress);
   } catch (auditErr: any) {
     console.error('[Auditor Core] Audit execution failed:', auditErr.message);
-    // Report honest error state without fabricating synthetic steps or fake certificates
     onProgress?.({ 
       type: 'status', 
       data: { error: auditErr.message || 'Audit execution halted', status: 'failed' } 
@@ -53,6 +120,9 @@ export async function runGuardedAudit(
 }
 
 export function publicErrorResponse(err: unknown): { status: number; body: Record<string, unknown> } {
+  if (err instanceof AuthError) {
+    return { status: 401, body: { error: err.message, code: 'unauthorized' } };
+  }
   if (err instanceof TargetPolicyError) {
     return { status: 400, body: { error: err.message, code: err.code } };
   }

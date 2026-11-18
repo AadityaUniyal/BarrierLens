@@ -1,4 +1,24 @@
 services:
+  ml-backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=${DATABASE_URL}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   web:
     build:
       context: .
@@ -10,6 +30,7 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - HOSTNAME=0.0.0.0
+      - PYTHON_BACKEND_URL=http://ml-backend:8000
       - DATABASE_URL=${DATABASE_URL}
       - NEON_DATABASE_URL=${NEON_DATABASE_URL}
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
@@ -19,7 +40,10 @@ services:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET:-barrierlens-audit-artifacts-us-east-1}
       - ALLOW_PRIVATE_TARGETS=false
+    depends_on:
+      - ml-backend
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
       interval: 30s
@@ -34,6 +58,7 @@ services:
     command: ["node", "scripts/worker.mjs"]
     environment:
       - NODE_ENV=production
+      - PYTHON_BACKEND_URL=http://ml-backend:8000
       - DATABASE_URL=${DATABASE_URL}
       - NEON_DATABASE_URL=${NEON_DATABASE_URL}
       - GROQ_API_KEY=${GROQ_API_KEY}
@@ -41,6 +66,8 @@ services:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET:-barrierlens-audit-artifacts-us-east-1}
       - ALLOW_PRIVATE_TARGETS=false
     depends_on:
       - web
+      - ml-backend
