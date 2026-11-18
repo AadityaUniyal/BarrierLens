@@ -225,8 +225,8 @@ export class ParallelPersonaSwarm {
     // Penalize by severe findings and regression counts, reward balanced patches
     const totalFindings = allFindings.length;
     const criticalWeight = allFindings.filter(f => f.severity === 'critical' || f.kind.includes('trap')).length * 20;
-    const seriousWeight = allFindings.filter(f => f.severity === 'serious').length * 10;
-    const moderateWeight = allFindings.filter(f => f.severity === 'moderate').length * 5;
+    const seriousWeight = allFindings.filter(f => f.severity === 'serious' || f.severity === 'high').length * 10;
+    const moderateWeight = allFindings.filter(f => f.severity === 'moderate' || f.severity === 'medium').length * 5;
     const rawPenalty = criticalWeight + seriousWeight + moderateWeight;
     const unifiedHealthScore = Math.max(0, Math.min(100, Math.round(100 - (rawPenalty / (personas.length * 2)))));
 

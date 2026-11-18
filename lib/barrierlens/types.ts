@@ -297,7 +297,7 @@ export interface BarrierFinding {
   kind: FindingKind;
   trustTier: TrustTier;
   wcagRules: string[];
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: 'low' | 'medium' | 'moderate' | 'high' | 'serious' | 'critical';
   severityScore: number; // 0.0 - 10.0
   severityInterval: [number, number]; // Conformal prediction 80% coverage interval [lo, hi]
   title: string;
@@ -401,7 +401,7 @@ export type DiagnosticCode =
 
 export interface AccNameDiagnostic {
   code: DiagnosticCode;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: 'low' | 'medium' | 'moderate' | 'high' | 'serious' | 'critical';
   wcagRules?: string[];
   message: string;
   remedy?: string;
