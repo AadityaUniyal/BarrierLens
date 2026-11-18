@@ -25,6 +25,7 @@ import { ContextAwareInputFuzzer } from './input-fuzzer';
 import { AuditRun, BarrierFinding, ActionStep, PersonaType, FocusNode } from '../types';
 import { sql } from '../../neon/db';
 import { trajectoryLogger } from './trajectory-logger';
+import { WebhookDispatcher } from '../integrations/webhook-dispatcher';
 import crypto from 'node:crypto';
 
 const ROLE_PRIORITIES: Record<string, number> = {
@@ -879,6 +880,33 @@ export class AuditorCore {
       `;
 
       console.log(`[Neon DB] Audit run ${runId}, ${steps.length} steps, and ${findings.length} findings saved to Neon Postgres.`);
+
+      // Non-blocking Webhook dispatch for completed audit & proven traps
+      try {
+        const dispatcher = new WebhookDispatcher();
+        const hasTrap = findings.some(f => f.kind === 'keyboard_trap');
+        if (hasTrap) {
+          dispatcher.dispatchEvent('trap.detected', {
+            runId,
+            targetUrl,
+            persona,
+            findingsCount: findings.length,
+            criticalFindings: findings.filter(f => f.severity === 'critical')
+          }).catch(() => {});
+        }
+
+        dispatcher.dispatchEvent('audit.completed', {
+          runId,
+          targetUrl,
+          goal: activeGoal,
+          persona,
+          status: 'completed',
+          taskSuccess,
+          effortRatio,
+          findingsCount: findings.length,
+          stepsCount: steps.length
+        }).catch(() => {});
+      } catch {}
     } catch (dbErr: any) {
       console.warn('[Neon DB] Could not persist run to Postgres:', dbErr.message);
     }
