@@ -79,11 +79,55 @@ export async function GET(req: NextRequest) {
       console.warn('[Analytics Trends API] Neon query fallback:', dbErr.message);
     }
 
-    // 4. Default baseline metrics if DB is fresh / cold
+    // 4. Compute dynamic MTTR from completed runs
+    let mttrMinutes: number | null = null;
+    try {
+      const [mttrRow] = await sql`
+        SELECT avg(EXTRACT(EPOCH FROM (finished_at - started_at)) / 60) as avg_minutes
+        FROM runs
+        WHERE status = 'completed' AND finished_at IS NOT NULL AND started_at IS NOT NULL;
+      `;
+      const raw = parseFloat(mttrRow?.avg_minutes || '0');
+      if (raw > 0) mttrMinutes = Math.round(raw * 10) / 10;
+    } catch { /* DB offline fallback */ }
+
+    // 5. Compute dynamic WCAG compliance rates from findings table
+    let wcagMatrix: Record<string, string> = {
+      wcag212_noKeyboardTrap: '100%',
+      wcag412_nameRoleValue: '100%',
+      wcag132_meaningfulSequence: '100%',
+      wcag413_statusMessages: '100%'
+    };
+    try {
+      const totalFindingsRes = await sql`SELECT count(*) as n FROM findings;`;
+      const totalN = parseInt(totalFindingsRes[0]?.n || '0');
+      if (totalN > 0) {
+        const wcagCounts = await sql`
+          SELECT wcag, count(*) as n
+          FROM findings
+          WHERE wcag IN ('2.1.2', '4.1.2', '1.3.2', '4.1.3')
+          GROUP BY wcag;
+        `;
+        const byWcag: Record<string, number> = {};
+        for (const row of wcagCounts) byWcag[row.wcag] = parseInt(row.n || '0');
+        const calcPct = (wcagId: string) => {
+          const failCount = byWcag[wcagId] || 0;
+          return `${Math.round(((totalN - failCount) / totalN) * 1000) / 10}%`;
+        };
+        wcagMatrix = {
+          wcag212_noKeyboardTrap: calcPct('2.1.2'),
+          wcag412_nameRoleValue: calcPct('4.1.2'),
+          wcag132_meaningfulSequence: calcPct('1.3.2'),
+          wcag413_statusMessages: calcPct('4.1.3')
+        };
+      }
+    } catch { /* fallback default matrix */ }
+
+    // 6. Default baseline metrics if DB is fresh / cold
     const totalRuns = parseInt(runStats?.total_runs || '0');
     const successfulRuns = parseInt(runStats?.successful_runs || '0');
     const successRate = totalRuns > 0 ? Math.round((successfulRuns / totalRuns) * 100) : 100;
-    const avgEffortRatio = parseFloat(parseFloat(runStats?.avg_effort_ratio || '1.25').toFixed(2));
+    const avgEffortRatio = parseFloat(parseFloat(runStats?.avg_effort_ratio || '1.0').toFixed(2));
 
     // Calculate synthetic historical trend points from real runs
     const trendPoints = runsList.map((r: any, idx: number) => ({
@@ -101,28 +145,18 @@ export async function GET(req: NextRequest) {
           provenCount: parseInt(f.proven_count || '0'),
           avgSeverity: parseFloat(parseFloat(f.avg_severity || '5.0').toFixed(1))
         }))
-      : [
-          { kind: 'keyboard_trap', count: 6, provenCount: 6, avgSeverity: 9.8 },
-          { kind: 'empty_accessible_name', count: 4, provenCount: 4, avgSeverity: 7.2 },
-          { kind: 'low_kendall_tau', count: 3, provenCount: 3, avgSeverity: 6.5 },
-          { kind: 'silent_state_change', count: 2, provenCount: 2, avgSeverity: 8.0 }
-        ];
+      : [];
 
     return NextResponse.json({
       summary: {
-        totalAudits: totalRuns || 20,
+        totalAudits: totalRuns,
         successRate: `${successRate}%`,
         averageEffortRatio: `${avgEffortRatio}x`,
-        activeDomains: parseInt(genomeStats?.unique_domains || '4'),
-        totalBarrierGenomes: parseInt(genomeStats?.total_genomes || '16'),
-        meanTimeToRemediation: '14.2 minutes'
+        activeDomains: parseInt(genomeStats?.unique_domains || '0'),
+        totalBarrierGenomes: parseInt(genomeStats?.total_genomes || '0'),
+        meanTimeToRemediation: mttrMinutes !== null ? `${mttrMinutes} minutes` : (totalRuns > 0 ? 'N/A' : 'Pending runs')
       },
-      wcagComplianceMatrix: {
-        wcag212_noKeyboardTrap: '94.2%',
-        wcag412_nameRoleValue: '88.5%',
-        wcag132_meaningfulSequence: '91.0%',
-        wcag413_statusMessages: '89.4%'
-      },
+      wcagComplianceMatrix: wcagMatrix,
       findingsBreakdown,
       longitudinalTrend: trendPoints,
       timestamp: new Date().toISOString()

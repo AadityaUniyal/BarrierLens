@@ -10,8 +10,17 @@
     },
     "app/api/repair/verify/route.ts": {
       "maxDuration": 45
+    },
+    "app/api/worker/tick/route.ts": {
+      "maxDuration": 60
     }
   },
+  "crons": [
+    {
+      "path": "/api/worker/tick",
+      "schedule": "* * * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

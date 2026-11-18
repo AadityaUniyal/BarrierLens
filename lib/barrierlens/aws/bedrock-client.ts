@@ -2,9 +2,15 @@
  * AWS Bedrock Foundation Model Client Strand
  * Provides unified agentic inference across Anthropic Claude 3.5 Sonnet,
  * Amazon Nova Pro, and Amazon Titan via AWS Bedrock Runtime.
- * Features automatic fallback for local offline execution.
+ * Uses @aws-sdk/client-bedrock-runtime with real AWS SigV4 signing.
+ * Falls back to Groq LLaMA → deterministic synthesizer when unavailable.
  */
 
+import {
+  BedrockRuntimeClient,
+  InvokeModelCommand,
+  InvokeModelCommandInput,
+} from '@aws-sdk/client-bedrock-runtime';
 import { AWSBudgetSentinel } from './budget-sentinel';
 
 export interface BedrockInferenceRequest {
@@ -35,65 +41,88 @@ export class AWSBedrockClient {
   private accessKeyId: string;
   private secretAccessKey: string;
   private isConfigured: boolean;
+  private sdkClient: BedrockRuntimeClient | null;
 
   constructor() {
     this.region = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1';
     this.accessKeyId = process.env.AWS_ACCESS_KEY_ID || '';
     this.secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || '';
     this.isConfigured = Boolean(this.accessKeyId && this.secretAccessKey);
+    // Instantiate real AWS SDK client with SigV4 signing handled internally
+    this.sdkClient = this.isConfigured
+      ? new BedrockRuntimeClient({
+          region: this.region,
+          credentials: {
+            accessKeyId: this.accessKeyId,
+            secretAccessKey: this.secretAccessKey,
+          },
+        })
+      : null;
   }
 
   /**
-   * Invokes an AWS Bedrock foundation model with budget optimization
+   * Invokes an AWS Bedrock foundation model via the official SDK (SigV4 signed).
+   * Falls back to Groq LLaMA → deterministic synthesizer when unavailable.
    */
   async invokeModel(request: BedrockInferenceRequest): Promise<BedrockInferenceResponse> {
     const start = performance.now();
     const sentinel = AWSBudgetSentinel.getInstance();
     const modelId = request.modelId || sentinel.recommendModel(request.taskType || 'planning');
 
-    // 1. If real AWS credentials are provided, invoke AWS Bedrock via SigV4 signed HTTP request
-    if (this.isConfigured) {
+    // 1. Real AWS Bedrock invocation via @aws-sdk/client-bedrock-runtime (SigV4 signed)
+    if (this.isConfigured && this.sdkClient) {
       try {
-        const endpoint = `https://bedrock-runtime.${this.region}.amazonaws.com/model/${encodeURIComponent(modelId)}/invoke`;
-        const payload = JSON.stringify({
-          anthropic_version: 'bedrock-2023-05-31',
-          max_tokens: request.maxTokens || 600,
-          temperature: request.temperature ?? 0.1,
-          system: request.systemPrompt || 'You are BarrierLens, an enterprise accessibility agent.',
-          messages: [{ role: 'user', content: request.prompt }]
-        });
+        const isNova = modelId.includes('nova') || modelId.includes('titan');
+        const bodyPayload = isNova
+          ? JSON.stringify({
+              messages: [{ role: 'user', content: [{ text: request.prompt }] }],
+              inferenceConfig: {
+                maxTokens: request.maxTokens || 600,
+                temperature: request.temperature ?? 0.1,
+              },
+              system: request.systemPrompt
+                ? [{ text: request.systemPrompt }]
+                : [{ text: 'You are BarrierLens, an enterprise accessibility agent.' }],
+            })
+          : JSON.stringify({
+              anthropic_version: 'bedrock-2023-05-31',
+              max_tokens: request.maxTokens || 600,
+              temperature: request.temperature ?? 0.1,
+              system: request.systemPrompt || 'You are BarrierLens, an enterprise accessibility agent.',
+              messages: [{ role: 'user', content: request.prompt }],
+            });
 
-        // Use standard Bedrock endpoint
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-Amz-Bedrock-Model': modelId
-          },
-          body: payload
-        });
+        const command = new InvokeModelCommand({
+          modelId,
+          body: Buffer.from(bodyPayload),
+          contentType: 'application/json',
+          accept: 'application/json',
+        } as InvokeModelCommandInput);
 
-        if (response.ok) {
-          const data = await response.json();
-          const latencyMs = Math.round(performance.now() - start);
-          const text = data.content?.[0]?.text || data.output?.message?.content?.[0]?.text || '';
-          const inputTokens = data.usage?.input_tokens || 150;
-          const outputTokens = data.usage?.output_tokens || 80;
-          const usage = sentinel.recordUsage(modelId, inputTokens, outputTokens);
+        const sdkResponse = await this.sdkClient.send(command);
+        const responseBody = JSON.parse(Buffer.from(sdkResponse.body).toString('utf-8'));
 
-          return {
-            text,
-            modelId,
-            latencyMs,
-            tokenUsage: { inputTokens, outputTokens },
-            estimatedCostUSD: usage.costUSD,
-            budgetRemainingUSD: usage.remainingUSD,
-            provider: 'aws-bedrock'
-          };
-        }
+        const text =
+          responseBody.content?.[0]?.text ||
+          responseBody.output?.message?.content?.[0]?.text ||
+          responseBody.results?.[0]?.outputText ||
+          '';
+        const inputTokens = responseBody.usage?.input_tokens || responseBody.usage?.inputTokens || 150;
+        const outputTokens = responseBody.usage?.output_tokens || responseBody.usage?.outputTokens || 80;
+        const latencyMs = Math.round(performance.now() - start);
+        const usage = sentinel.recordUsage(modelId, inputTokens, outputTokens);
+
+        return {
+          text,
+          modelId,
+          latencyMs,
+          tokenUsage: { inputTokens, outputTokens },
+          estimatedCostUSD: usage.costUSD,
+          budgetRemainingUSD: usage.remainingUSD,
+          provider: 'aws-bedrock',
+        };
       } catch (err: any) {
-        console.warn('[AWS Bedrock] Bedrock API call failed, falling back:', err.message);
+        console.warn('[AWS Bedrock] SDK invocation failed, falling back:', err.message);
       }
     }
 

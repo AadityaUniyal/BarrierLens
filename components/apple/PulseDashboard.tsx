@@ -68,25 +68,8 @@ export function PulseDashboard({
 
   const overallTraversability = Math.round((spatialScore + auditoryScore + cognitiveScore) / 3);
 
-  // Table rows to display
-  const displayRuns = runsHistory.length > 0 ? runsHistory : [
-    {
-      id: 'run_sample_benchmark_01',
-      target_url: 'https://barrierlens-seven.vercel.app/benchmark',
-      persona: 'keyboard',
-      goal_text: 'Navigate accessible catalog & trigger modal dialog',
-      task_success: true,
-      started_at: '15 mins ago'
-    },
-    {
-      id: 'run_sample_checkout_02',
-      target_url: 'https://barrierlens-seven.vercel.app',
-      persona: 'screen_reader',
-      goal_text: 'Complete passkey sign-in with live voice announcement',
-      task_success: true,
-      started_at: '1 hour ago'
-    }
-  ];
+  // Table rows to display — no synthetic fallbacks; show empty state when no real runs exist
+  const displayRuns = runsHistory;
 
   return (
     <div className="space-y-6 text-[#f4f5f6]">
@@ -326,6 +309,22 @@ export function PulseDashboard({
         </div>
 
         <div className="overflow-x-auto">
+          {displayRuns.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-10 h-10 rounded-full bg-[#23262a] flex items-center justify-center mb-3">
+                <Activity className="w-5 h-5 text-[#9ba1a6]" />
+              </div>
+              <p className="text-sm font-medium text-[#9ba1a6]">No audits yet</p>
+              <p className="text-xs text-[#62676d] mt-1">Run your first audit to see traversal results here.</p>
+              <button
+                onClick={onRunQuickAudit}
+                className="mt-4 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#5e6ad2]/10 border border-[#5e6ad2]/20 text-[#5e6ad2] text-xs font-medium hover:bg-[#5e6ad2]/20 transition-all"
+              >
+                <Play className="w-3 h-3 fill-current" />
+                Run Quick Audit
+              </button>
+            </div>
+          ) : (
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-[#23262a] text-[10px] font-mono text-[#62676d] uppercase tracking-wider">
@@ -385,6 +384,7 @@ export function PulseDashboard({
               ))}
             </tbody>
           </table>
+          )}
         </div>
       </div>
     </div>
