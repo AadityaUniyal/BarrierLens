@@ -5,9 +5,12 @@ export type TrustTier = 'proven' | 'observed' | 'suspected';
 export type FindingKind = 
   | 'keyboard_trap'
   | 'unreachable_control'
+  | 'unreachable_interactive'
   | 'silent_state_change'
+  | 'silent_dynamic_mutation'
   | 'low_kendall_tau'
   | 'empty_accessible_name'
+  | 'missing_accessible_name'
   | 'misleading_accessible_name'
   | 'focus_loss'
   | 'color_contrast_violation'

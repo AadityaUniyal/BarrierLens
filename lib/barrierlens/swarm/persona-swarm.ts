@@ -311,7 +311,7 @@ export class ParallelPersonaSwarm {
         utilities: utilities2,
         notes: 'Declares explicit ARIA modal semantics for assistive tech.'
       });
-    } else if (kind === 'missing_accessible_name') {
+    } else if (kind === 'missing_accessible_name' || kind === 'empty_accessible_name') {
       const suggestedLabel = finding.suggestedFix?.title || 'Interactive element';
       const utilities = this.paretoResolver.evaluateCandidateUtility(kind, 'attribute_patch', {
         preservesVisualDesign: true
@@ -326,7 +326,7 @@ export class ParallelPersonaSwarm {
         utilities,
         notes: 'Provides missing accessible description without modifying visible layout.'
       });
-    } else if (kind === 'silent_dynamic_mutation') {
+    } else if (kind === 'silent_dynamic_mutation' || kind === 'silent_state_change') {
       const utilities = this.paretoResolver.evaluateCandidateUtility(kind, 'listener_patch', {
         hasCompensatoryHelp: true
       });
@@ -352,7 +352,7 @@ export class ParallelPersonaSwarm {
         utilities,
         notes: 'Polite screen reader live announcement container.'
       });
-    } else if (kind === 'unreachable_interactive') {
+    } else if (kind === 'unreachable_interactive' || kind === 'unreachable_control') {
       const utilities = this.paretoResolver.evaluateCandidateUtility(kind, 'attribute_patch', {
         preservesVisualDesign: true
       });
