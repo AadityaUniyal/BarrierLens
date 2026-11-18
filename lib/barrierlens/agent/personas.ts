@@ -37,4 +37,11 @@ export const PERSONA_CONFIGS: Record<PersonaType, PersonaConstraints> = {
     enforcesFocusRings: false,
     requiresScreenReaderAnnouncements: false,
   },
+  cognitive: {
+    persona: 'cognitive',
+    allowsMouseClick: true,
+    allowedKeys: ['Tab', 'Shift+Tab', 'Enter', 'Space', 'Escape'],
+    enforcesFocusRings: true,
+    requiresScreenReaderAnnouncements: false,
+  },
 };

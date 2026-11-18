@@ -1,4 +1,4 @@
-export type PersonaType = 'keyboard' | 'screen_reader' | 'low_vision' | 'mouse_unconstrained';
+export type PersonaType = 'keyboard' | 'screen_reader' | 'low_vision' | 'mouse_unconstrained' | 'cognitive';
 
 export type TrustTier = 'proven' | 'observed' | 'suspected';
 
