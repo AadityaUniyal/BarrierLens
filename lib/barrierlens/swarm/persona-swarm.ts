@@ -6,9 +6,6 @@ import {
   ParetoResolutionSummary,
   ExtendedPersona
 } from '../ml/pareto-resolver';
-import { getDb } from '../../neon/db';
-import { runs as runsTable } from '../../neon/schema';
-import { eq } from 'drizzle-orm';
 
 export interface SwarmExecutionOptions {
   targetUrl: string;

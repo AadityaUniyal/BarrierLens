@@ -44,6 +44,11 @@ export const sql: any = databaseUrl
   : async () => [];
 
 /**
+ * Returns the active SQL client
+ */
+export const getDb = () => sql;
+
+/**
  * Helper to execute raw queries with timing and error handling
  */
 export async function queryNeon<T = any>(queryText: string, params: any[] = []): Promise<{ rows: T[]; latencyMs: number }> {
