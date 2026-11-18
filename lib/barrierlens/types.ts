@@ -303,6 +303,15 @@ export interface BarrierFinding {
   title: string;
   summary: string;
   evidence: Record<string, any>;
+  selector?: string;
+  persona?: PersonaType;
+  description?: string;
+  suggestedFix?: {
+    title?: string;
+    patch?: string;
+    description?: string;
+  };
+  confidence?: number;
   certificate?: TrapCertificate;
   gapCertificate?: AnnouncementGapCertificate;
   patchProposal?: string;

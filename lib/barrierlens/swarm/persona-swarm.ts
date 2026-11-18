@@ -154,11 +154,12 @@ export class ParallelPersonaSwarm {
     // Correlate findings across personas
     const selectorOccurrences = new Map<string, Set<PersonaType>>();
     for (const finding of allFindings) {
-      const sel = finding.selector || 'window';
+      const sel = finding.selector || (finding.evidence?.selector as string) || 'window';
+      const p = finding.persona || 'keyboard';
       if (!selectorOccurrences.has(sel)) {
         selectorOccurrences.set(sel, new Set());
       }
-      selectorOccurrences.get(sel)!.add(finding.persona);
+      selectorOccurrences.get(sel)!.add(p);
     }
 
     let crossPersonaCount = 0;
@@ -171,7 +172,9 @@ export class ParallelPersonaSwarm {
     // Deduplicate findings by signature
     const uniqueFindingsMap = new Map<string, BarrierFinding>();
     for (const f of allFindings) {
-      const key = `${f.kind}:${f.selector || 'root'}:${f.persona}`;
+      const sel = f.selector || (f.evidence?.selector as string) || 'root';
+      const p = f.persona || 'keyboard';
+      const key = `${f.kind}:${sel}:${p}`;
       if (!uniqueFindingsMap.has(key)) {
         uniqueFindingsMap.set(key, f);
       }
@@ -263,7 +266,7 @@ export class ParallelPersonaSwarm {
    */
   private synthesizeRemediationCandidates(finding: BarrierFinding): RemediationCandidate[] {
     const candidates: RemediationCandidate[] = [];
-    const sel = finding.selector || 'body';
+    const sel = finding.selector || (finding.evidence?.selector as string) || 'body';
     const kind = finding.kind;
 
     if (kind === 'keyboard_trap') {
