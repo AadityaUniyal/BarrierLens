@@ -285,6 +285,13 @@ export class ParetoConflictResolver {
     };
   }
 
+  /**
+   * Alias for resolveParetoFrontier for trade-off resolution
+   */
+  resolveTradeoffs(candidates: RemediationCandidate[]): ParetoResolutionSummary {
+    return this.resolveParetoFrontier(candidates);
+  }
+
   private analyzeConflict(candidate: RemediationCandidate): {
     hasConflict: boolean;
     primaryBenefitPersona?: ExtendedPersona;
