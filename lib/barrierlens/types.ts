@@ -289,6 +289,7 @@ export interface ActionStep {
   activeElementBefore?: string;
   activeElementAfter?: string;
   timestamp: number;
+  latencyMs?: number;
   screenshot?: string;
   reasoning?: string;
 }

@@ -1,10 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { sql } from '@/lib/neon/db';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+async function getUserId(req: NextRequest): Promise<string> {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    }).catch(() => null);
+    if (session?.user?.id) return session.user.id;
+  } catch {}
+  return req.headers.get('x-user-id') || 'guest_user';
+}
 
 export async function GET(req: NextRequest) {
   try {
-    const userId = req.headers.get('x-user-id') || 'usr_apple_9841';
+    const userId = await getUserId(req);
 
     let keys: any[] = [];
     try {
@@ -26,7 +41,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const userId = req.headers.get('x-user-id') || 'usr_apple_9841';
+    const userId = await getUserId(req);
     const body = await req.json().catch(() => ({}));
     const name = body.name || 'Production CI/CD Runner';
     const scopes = body.scopes || ['audits:read', 'audits:write'];
@@ -75,8 +90,10 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Missing key id' }, { status: 400 });
     }
 
+    const userId = await getUserId(req);
+
     try {
-      await sql`DELETE FROM api_keys WHERE id = ${id}::uuid;`;
+      await sql`DELETE FROM api_keys WHERE id = ${id}::uuid AND user_id = ${userId};`;
     } catch (e: any) {
       console.warn('[API Keys] Neon delete warning:', e.message);
     }

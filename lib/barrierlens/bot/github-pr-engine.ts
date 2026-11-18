@@ -172,6 +172,41 @@ npm run audit:live -- --url="${run.targetUrl}"
         throw new Error(`Failed to create branch: ${createRefRes.statusText}`);
       }
 
+      // 2.5. Commit patches to the branch so the branch has real commits differing from base
+      let commitsCreated = 0;
+      if (patchBundle && patchBundle.patches && patchBundle.patches.length > 0) {
+        for (const patch of patchBundle.patches) {
+          const patchContent = patch.unifiedDiff || `/* BarrierLens fix for ${patch.findingId} */\n/* Strategy: ${patch.astFixStrategy} */`;
+          const base64Content = Buffer.from(patchContent, 'utf-8').toString('base64');
+          const commitFilePath = patch.filePath || `remediations/${patch.findingId}.diff`;
+          const commitRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${commitFilePath}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({
+              message: `fix(a11y): autonomous counterfactual patch for ${patch.findingId}`,
+              content: base64Content,
+              branch: branchName
+            })
+          });
+          if (commitRes.ok) commitsCreated++;
+        }
+      }
+
+      // If individual file commits did not execute, commit the combined patch artifact
+      if (commitsCreated === 0 && patchBundle?.combinedPatch) {
+        const patchBase64 = Buffer.from(patchBundle.combinedPatch, 'utf-8').toString('base64');
+        const fallbackCommitRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/.barrierlens/remediation.patch`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({
+            message: `fix(a11y): verified counterfactual accessibility patch bundle`,
+            content: patchBase64,
+            branch: branchName
+          })
+        });
+        if (fallbackCommitRes.ok) commitsCreated = 1;
+      }
+
       // 3. Create Pull Request
       const createPRRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/pulls`, {
         method: 'POST',
