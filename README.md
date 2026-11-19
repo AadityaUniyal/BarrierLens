@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://barrierlens-seven.vercel.app"><strong>🌐 Live Deployment: barrierlens-seven.vercel.app</strong></a>
+  <a href="http://43.205.254.136"><strong>🌐 Live AWS Production Deployment: http://43.205.254.136</strong></a>
 </p>
 
 <p align="center">
@@ -140,7 +140,7 @@ barrierlens/
 ├── docs/                                # Technical Documentation & Architecture Blueprints
 │   ├── ARCHITECTURE.md                  # Comprehensive deep-dive system design
 │   ├── API_REFERENCE.md                 # Complete REST & SSE API specification
-│   ├── VERCEL_DEPLOYMENT.md             # Production cloud deployment guide
+│   ├── AWS_PRODUCTION_DEPLOYMENT.md     # Production cloud deployment guide on AWS
 │   └── BarrierLens Full Build Plan.pdf  # Foundational specification document
 ├── fixtures/                            # Verified benchmark pages with deliberate traps
 ├── lib/barrierlens/                     # Core Behavioral Accessibility Agent Framework
@@ -159,9 +159,9 @@ barrierlens/
 │   ├── dev-all.mjs                      # Concurrent full-stack dev runner (:3000 + :8000)
 │   ├── verify-novel-differentiators.mjs # 20/20 novel differentiator test suite
 │   ├── aws-agent-cli.mjs                # CLI inspection for AWS STS, S3, and Bedrock
+│   ├── aws-deploy/                      # AWS cloud-init and user_data deployment scripts
 │   └── barrierlens-ci.mjs               # Headless CI/CD audit runner for GitHub Actions
-├── next.config.mjs                      # Next.js 15 production server configuration
-├── vercel.json                          # Vercel deployment, security headers & daily cron
+├── next.config.mjs                      # Next.js 15 standalone production configuration
 └── tsconfig.json                        # Strict TypeScript compiler configuration
 ```
 
