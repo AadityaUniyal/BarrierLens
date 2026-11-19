@@ -10,6 +10,10 @@
 </p>
 
 <p align="center">
+  <a href="https://barrierlens-seven.vercel.app"><strong>🌐 Live Deployment: barrierlens-seven.vercel.app</strong></a>
+</p>
+
+<p align="center">
   <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-15.1-black?logo=next.js" alt="Next.js" /></a>
   <a href="https://react.dev"><img src="https://img.shields.io/badge/React-19.0-61dafb?logo=react" alt="React 19" /></a>
   <a href="https://aws.amazon.com/bedrock/"><img src="https://img.shields.io/badge/AWS%20Bedrock-Nova%20Micro%20%7C%20Pro-FF9900?logo=amazon-aws" alt="AWS Bedrock Nova" /></a>
@@ -254,7 +258,6 @@ npm run dev:all
 
 ---
 
-## 📄 License
+## 📄 License & Attribution
 
-Licensed under the [Apache License, Version 2.0](LICENSE).  
-Copyright © 2026 Aaditya Uniyal. All rights reserved.
+Internal Proprietary / Open Access — Aaditya Uniyal. All rights reserved.
