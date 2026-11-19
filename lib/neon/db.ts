@@ -28,20 +28,54 @@ if (!process.env.DATABASE_URL) {
   } catch {}
 }
 
-// Cache connectionless SQL query client
-const databaseUrl = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL || '';
+function isValidPostgresUrl(urlStr: string | undefined): boolean {
+  if (!urlStr || typeof urlStr !== 'string') return false;
+  const trimmed = urlStr.trim();
+  if (trimmed === '[SENSITIVE]' || trimmed.includes('[SENSITIVE]')) return false;
+  return trimmed.startsWith('postgres://') || trimmed.startsWith('postgresql://');
+}
 
-if (!databaseUrl) {
-  console.warn('[Neon DB] Warning: DATABASE_URL is not set.');
+let _cachedClient: any = null;
+let _cachedUrl: string = '';
+
+function getNeonClient() {
+  const currentUrl = (process.env.DATABASE_URL || process.env.NEON_DATABASE_URL || '').trim();
+  if (!isValidPostgresUrl(currentUrl)) {
+    return null;
+  }
+  if (!_cachedClient || _cachedUrl !== currentUrl) {
+    try {
+      _cachedClient = neon(currentUrl);
+      _cachedUrl = currentUrl;
+    } catch {
+      _cachedClient = null;
+    }
+  }
+  return _cachedClient;
 }
 
 /**
  * Serverless SQL client for Neon Postgres.
  * Uses HTTP pipeline for zero-overhead, connectionless queries in serverless/edge environments.
+ * Lazy proxy ensures build-time static evaluation and Vercel placeholder credentials do not crash.
  */
-export const sql: any = databaseUrl 
-  ? neon(databaseUrl)
-  : async () => [];
+export const sql: any = new Proxy(function () {} as any, {
+  apply(_target, _thisArg, args) {
+    const client = getNeonClient();
+    if (!client) {
+      return Promise.resolve([]);
+    }
+    return Reflect.apply(client, _thisArg, args);
+  },
+  get(_target, prop) {
+    const client = getNeonClient();
+    if (!client) {
+      if (prop === 'then') return undefined;
+      return () => Promise.resolve([]);
+    }
+    return Reflect.get(client, prop);
+  }
+});
 
 /**
  * Returns the active SQL client
