@@ -77,7 +77,10 @@ export class ParallelPersonaSwarm {
       : ['keyboard', 'screen_reader', 'low_vision', 'cognitive'];
 
     const maxSteps = options.maxStepsPerPersona || 8;
-    const concurrency = Math.max(1, Math.min(options.concurrency || 2, personas.length));
+    const isCloudServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+    const hasRemoteCdp = Boolean(process.env.BROWSER_WS_ENDPOINT);
+    const safeMaxConcurrency = (isCloudServerless && !hasRemoteCdp) ? 1 : 2;
+    const concurrency = Math.max(1, Math.min(options.concurrency || safeMaxConcurrency, safeMaxConcurrency));
     const shouldSynthesizePatches = options.synthesizePatches !== false;
 
     options.onProgress?.({

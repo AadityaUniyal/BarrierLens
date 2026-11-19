@@ -4,6 +4,7 @@ import { AuditorCore } from '@/lib/barrierlens/agent/auditor-core';
 import { VPATGenerator } from '@/lib/barrierlens/compliance/vpat-generator';
 import { WebhookDispatcher, WebhookEventType } from '@/lib/barrierlens/integrations/webhook-dispatcher';
 import { AWSS3ArtifactStore } from '@/lib/barrierlens/aws/s3-artifact-store';
+import { DomainCrawler } from '@/lib/barrierlens/crawler/domain-crawler';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -156,21 +157,34 @@ export async function POST(req: Request) {
       const targetDomain = domain || 'barrierlens-seven.vercel.app';
       const limit = Math.min(maxPages || 3, 5);
 
-      // Generate paths to audit
-      const paths = ['/', '/benchmark', '/vault'];
+      const targetOrigin = targetDomain.startsWith('http')
+        ? targetDomain.replace(/\/$/, '')
+        : `https://${targetDomain}`;
+
+      // Autonomously discover real routes via DomainCrawler
+      const crawler = new DomainCrawler();
+      let targetUrls: string[] = [];
+      try {
+        const crawlProfile = await crawler.crawlDomain(targetOrigin, limit);
+        targetUrls = crawlProfile.routes.map((r) => r.url);
+      } catch (crawlErr: any) {
+        console.warn(`[Worker API] Route discovery failed for ${targetOrigin}, using origin:`, crawlErr.message);
+        targetUrls = [targetOrigin];
+      }
+
+      if (targetUrls.length === 0) {
+        targetUrls = [targetOrigin];
+      }
+
       const auditor = new AuditorCore();
       const runResults: string[] = [];
 
-      for (let i = 0; i < Math.min(paths.length, limit); i++) {
-        const fullUrl = targetDomain.startsWith('http') 
-          ? `${targetDomain.replace(/\/$/, '')}${paths[i]}`
-          : `https://${targetDomain}${paths[i]}`;
-        
+      for (const urlToAudit of targetUrls.slice(0, limit)) {
         try {
-          const run = await auditor.runAudit(fullUrl, `Crawl audit for path ${paths[i]}`, persona || 'keyboard', 8);
+          const run = await auditor.runAudit(urlToAudit, `Continuous crawler audit for ${urlToAudit}`, persona || 'keyboard', 8);
           runResults.push(run.id);
-        } catch (crawlErr: any) {
-          console.warn(`[Worker API] Path crawl failed for ${fullUrl}:`, crawlErr.message);
+        } catch (auditErr: any) {
+          console.warn(`[Worker API] Path crawl failed for ${urlToAudit}:`, auditErr.message);
         }
       }
 

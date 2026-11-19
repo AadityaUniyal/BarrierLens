@@ -1,12 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DomainCrawler } from '@/lib/barrierlens/crawler/domain-crawler';
 import { CUJSynthesizer } from '@/lib/barrierlens/crawler/cuj-synthesizer';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
+import { verifyApiKey } from '@/lib/barrierlens/security/public-audit';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   try {
+    const authHeader = req.headers.get('authorization') || '';
+    const workerSecret = process.env.WORKER_SECRET;
+    const isWorkerCall = workerSecret && authHeader === `Bearer ${workerSecret}`;
+
+    let authenticatedUserId: string | null = null;
+
+    if (isWorkerCall) {
+      authenticatedUserId = 'system_worker';
+    } else {
+      // Check BetterAuth session
+      const session = await auth.api.getSession({
+        headers: await headers(),
+      }).catch(() => null);
+
+      if (session?.user?.id) {
+        authenticatedUserId = session.user.id;
+      } else {
+        // Check API key
+        const apiKeyAuth = await verifyApiKey(req).catch(() => null);
+        if (apiKeyAuth?.userId) {
+          authenticatedUserId = apiKeyAuth.userId;
+        }
+      }
+    }
+
+    if (!authenticatedUserId) {
+      return NextResponse.json(
+        { error: 'Authentication required to initiate autonomous domain discovery' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json().catch(() => ({}));
     const domainUrl = body.domainUrl || body.url || body.targetUrl;
 
@@ -16,9 +51,9 @@ export async function POST(req: NextRequest) {
 
     const maxRoutes = Math.min(50, Math.max(5, parseInt(body.maxRoutes || '25')));
     const autoSaveToNeon = body.autoSaveToNeon !== false;
-    const userId = body.userId || 'usr_autonomous_system';
+    const userId = authenticatedUserId;
 
-    console.log(`[Crawler API] Starting autonomous domain discovery for: ${domainUrl}`);
+    console.log(`[Crawler API] Starting autonomous domain discovery for: ${domainUrl} (user: ${userId})`);
 
     // 1. Crawl domain routes & archetypes
     const crawler = new DomainCrawler();

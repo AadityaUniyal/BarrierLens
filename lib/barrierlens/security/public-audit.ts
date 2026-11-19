@@ -33,7 +33,7 @@ export type PublicAuditBody = {
 // In-memory key rate limiter bucket for authenticated clients
 const keyBuckets = new Map<string, { timestamps: number[] }>();
 
-async function verifyApiKey(req: Request): Promise<{ keyId: string; userId: string; rateLimit: number } | null> {
+export async function verifyApiKey(req: Request): Promise<{ keyId: string; userId: string; rateLimit: number } | null> {
   const authHeader = req.headers.get('authorization') || '';
   const apiKeyHeader = req.headers.get('x-api-key') || '';
   

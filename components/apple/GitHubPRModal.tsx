@@ -304,27 +304,58 @@ export function GitHubPRModal({
                 </p>
               )}
 
-              <div className="flex items-center gap-2">
-                <a
-                  href={result.prUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#30a46c] hover:bg-[#3ec784] text-[#0c0d0e] font-semibold text-xs transition-colors shadow-sm"
-                >
-                  <span>{result.isSimulated ? 'Open GitHub Compare Link' : 'View Live PR on GitHub'}</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
+              {result.isSimulated ? (
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(patch);
+                        setStatusMessage('Verified patch copied to clipboard!');
+                      }}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#5e6ad2] hover:bg-[#6875e5] text-white font-semibold text-xs transition-colors shadow-sm"
+                    >
+                      <FileCode className="w-3.5 h-3.5" />
+                      <span>Copy Verified Git Patch</span>
+                    </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    navigator.clipboard.writeText(result.prUrl);
-                  }}
-                  className="px-3 py-2 rounded-lg bg-[#181a1d] hover:bg-[#23262a] border border-[#34383f] text-xs font-mono text-[#f4f5f6] transition-colors"
-                >
-                  Copy URL
-                </button>
-              </div>
+                    <a
+                      href={`https://github.com/${owner}/${repo}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#181a1d] hover:bg-[#23262a] border border-[#34383f] text-xs font-mono text-[#f4f5f6] transition-colors"
+                    >
+                      <span>Visit Repo</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                  <p className="text-[11px] text-[#f76808] flex items-center gap-1">
+                    <span>⚠️ To automatically create the branch and live PR on GitHub, enter your GitHub Personal Access Token (PAT) above.</span>
+                  </p>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <a
+                    href={result.prUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#30a46c] hover:bg-[#3ec784] text-[#0c0d0e] font-semibold text-xs transition-colors shadow-sm"
+                  >
+                    <span>View Live PR on GitHub</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(result.prUrl);
+                    }}
+                    className="px-3 py-2 rounded-lg bg-[#181a1d] hover:bg-[#23262a] border border-[#34383f] text-xs font-mono text-[#f4f5f6] transition-colors"
+                  >
+                    Copy URL
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

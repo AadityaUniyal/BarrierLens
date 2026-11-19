@@ -330,7 +330,18 @@ export async function initializeDatabaseSchema() {
       );
     `;
 
+    // 5. Findings Triage Reviews
+    await sql`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        finding_id UUID REFERENCES findings(id) ON DELETE CASCADE,
+        reviewer_id TEXT NOT NULL,
+        label TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+
     console.log('[Neon DB] Schema successfully initialized in Neon Postgres!');
-    return { success: true, message: 'All BarrierLens tables (including api_keys, webhooks, barrier_genomes, causal_certificates, agent_event_traces) created and verified.' };
+    return { success: true, message: 'All BarrierLens tables (including api_keys, webhooks, reviews, barrier_genomes, causal_certificates, agent_event_traces) created and verified.' };
   });
 }

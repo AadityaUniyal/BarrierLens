@@ -28,17 +28,6 @@ export async function POST(req: Request) {
     // Server-derived reviewer identity from verified session
     const reviewerId = session.user.id || session.user.email;
 
-    // Ensure reviews table exists
-    await sql`
-      CREATE TABLE IF NOT EXISTS reviews (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        finding_id UUID REFERENCES findings(id) ON DELETE CASCADE,
-        reviewer_id TEXT NOT NULL,
-        label TEXT NOT NULL,
-        created_at TIMESTAMPTZ DEFAULT NOW()
-      );
-    `;
-
     const result = await sql`
       INSERT INTO reviews (finding_id, reviewer_id, label)
       VALUES (${findingId}, ${reviewerId}, ${label})

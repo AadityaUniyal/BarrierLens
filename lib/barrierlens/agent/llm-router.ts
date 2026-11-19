@@ -110,9 +110,10 @@ Output format:
     }
 
     // Tier 3 Fallback (Gemini API)
-    if (this.geminiApiKey) {
+    const isGoogleAiKey = this.geminiApiKey && !this.geminiApiKey.startsWith('AQ.');
+    if (isGoogleAiKey) {
       try {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.geminiApiKey}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.geminiApiKey}`;
         const response = await fetch(geminiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -226,15 +227,9 @@ Output format:
   }
 
   /**
-   * Gemini Flash Fix Synthesizer: Generates minimal surgical HTML/ARIA patch
+   * Fix Synthesizer: Generates minimal surgical HTML/ARIA patch using Groq LLaMA 3.3 or Gemini 2.0 Flash
    */
   async generateFixPatch(offendingHtml: string, barrierFinding: string): Promise<string> {
-    if (!this.geminiApiKey) {
-      return offendingHtml.includes('aria-label') 
-        ? offendingHtml 
-        : offendingHtml.replace(/<([a-z0-9]+)/i, '<$1 aria-label="Action"');
-    }
-
     const prompt = `You are the BarrierLens Autonomous Accessibility Repair Engine.
 Issue Identified: ${barrierFinding}
 Offending Element HTML / Context:
@@ -248,26 +243,69 @@ Rules:
 - Do NOT rewrite entire components. Only fix the accessibility attribute or semantic tag (e.g. add aria-label, change div to button, add role="dialog" aria-modal="true", or tabindex="0").
 - Return ONLY the exact replacement HTML snippet. No markdown wrappers or explanation.`;
 
-    try {
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.geminiApiKey}`;
-      const response = await fetch(geminiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.0 }
-        })
-      });
+    // 1. Try Groq LLaMA 3.3 70B First (Enterprise speed & accuracy)
+    if (this.groqApiKey) {
+      try {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.groqApiKey}`
+          },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+              { role: 'system', content: 'You are an accessibility patch engine. Output only raw HTML patch code, no markdown codeblocks, no explanations.' },
+              { role: 'user', content: prompt }
+            ],
+            temperature: 0.1,
+            max_tokens: 300
+          })
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        return text.replace(/```html/g, '').replace(/```/g, '').trim();
+        if (response.ok) {
+          const data = await response.json();
+          const patch = data.choices?.[0]?.message?.content || '';
+          const cleaned = patch.replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
+          if (cleaned && cleaned.includes('<')) {
+            return cleaned;
+          }
+        }
+      } catch (err) {
+        console.warn('[Fix Synthesizer] Groq error, trying Gemini:', err);
       }
-    } catch (err) {
-      console.error('[Fix Synthesizer] Gemini error:', err);
     }
 
-    return offendingHtml;
+    // 2. Try Gemini 2.0 Flash (if genuine Google AI key configured)
+    const isGoogleAiKey = this.geminiApiKey && !this.geminiApiKey.startsWith('AQ.');
+    if (isGoogleAiKey) {
+      try {
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.geminiApiKey}`;
+        const response = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.0 }
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          const cleaned = text.replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
+          if (cleaned && cleaned.includes('<')) {
+            return cleaned;
+          }
+        }
+      } catch (err) {
+        console.error('[Fix Synthesizer] Gemini error:', err);
+      }
+    }
+
+    // 3. Deterministic ARIA heuristic fallback
+    return offendingHtml.includes('aria-label') 
+      ? offendingHtml 
+      : offendingHtml.replace(/<([a-z0-9]+)/i, '<$1 aria-label="Action"');
   }
 }
