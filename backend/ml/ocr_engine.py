@@ -13,11 +13,14 @@ from PIL import Image
 
 class VisualTextRecoveryEngine:
     def __init__(self):
-        self._ocr_available = False
-        self._init_ocr()
+        self._ocr_available = None
+        self.reader = None
+        self.backend = "heuristic_raster"
 
-    def _init_ocr(self):
-        # Check if tesseract or easyocr is available
+    def _ensure_ocr(self):
+        if self._ocr_available is not None:
+            return
+        # Lazy check if tesseract or easyocr is available
         try:
             import pytesseract
             self.pytesseract = pytesseract
@@ -26,7 +29,7 @@ class VisualTextRecoveryEngine:
         except ImportError:
             try:
                 import easyocr
-                self.reader = easyocr.Reader(['en'], gpu=True)
+                self.reader = easyocr.Reader(['en'], gpu=False)
                 self._ocr_available = True
                 self.backend = "easyocr"
             except Exception:
@@ -59,6 +62,7 @@ class VisualTextRecoveryEngine:
             img_bytes = base64.b64decode(clean_b64)
             image = Image.open(io.BytesIO(img_bytes)).convert("RGB")
 
+            self._ensure_ocr()
             extracted_text = ""
             confidence = 0.85
 
@@ -66,14 +70,16 @@ class VisualTextRecoveryEngine:
                 try:
                     extracted_text = self.pytesseract.image_to_string(image).strip()
                 except Exception:
-                    extracted_text = ""
+                    self._ensure_ocr()
+            extracted_text = ""
             elif self._ocr_available and self.backend == "easyocr":
                 try:
                     import numpy as np
                     results = self.reader.readtext(np.array(image))
                     extracted_text = " ".join([r[1] for r in results if r[2] > 0.4]).strip()
                 except Exception:
-                    extracted_text = ""
+                    self._ensure_ocr()
+            extracted_text = ""
 
             # Clean extracted text
             extracted_text = re.sub(r"\s+", " ", extracted_text).strip()

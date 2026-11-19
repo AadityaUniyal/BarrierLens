@@ -6,15 +6,19 @@ import os
 from pathlib import Path
 from typing import Dict, Any, Optional
 
-# Automatically resolve root .env
-env_file = Path(__file__).resolve().parent.parent.parent / ".env"
-if env_file.exists():
-    with open(env_file, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, v = line.split("=", 1)
-                os.environ.setdefault(k.strip(), v.strip())
+# Automatically resolve root .env.local and .env
+root_dir = Path(__file__).resolve().parent.parent.parent
+for env_name in [".env.local", ".env"]:
+    env_path = root_dir / env_name
+    if env_path.exists():
+        with open(env_path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    k_clean = k.strip()
+                    v_clean = v.strip().strip("'\"")
+                    os.environ.setdefault(k_clean, v_clean)
 
 class CoreConfig:
     # AWS Bedrock

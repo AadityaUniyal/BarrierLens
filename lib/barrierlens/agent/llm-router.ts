@@ -1,3 +1,6 @@
+import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+import { backendBreaker } from './backend-circuit-breaker';
+
 export interface LLMDecision {
   thought: string;
   action: 'press_key' | 'type_text' | 'wait' | 'finish_task';
@@ -13,11 +16,22 @@ export class LLMRouter {
   private groqApiKey: string;
   private geminiApiKey: string;
   private backendUrl: string;
+  private bedrockClient?: BedrockRuntimeClient;
 
   constructor() {
     this.groqApiKey = process.env.GROQ_API_KEY || '';
     this.geminiApiKey = process.env.GEMINI_API_KEY || '';
     this.backendUrl = process.env.PYTHON_BACKEND_URL || 'http://127.0.0.1:8000';
+
+    if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+      this.bedrockClient = new BedrockRuntimeClient({
+        region: process.env.BEDROCK_REGION || 'us-east-1',
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        },
+      });
+    }
   }
 
   /**
@@ -70,7 +84,47 @@ Output format:
   "isGoalReached": false
 }`;
 
-    // Try Tier 2 (Groq) first for speed and token cost
+    // 2. Try Amazon Bedrock Nova Foundation Model First (Verified AWS STS Credentials)
+    if (this.bedrockClient) {
+      try {
+        const payload = {
+          messages: [{
+            role: 'user',
+            content: [{ text: `${prompt}\nOutput strict JSON.` }]
+          }],
+          inferenceConfig: { max_new_tokens: 300, temperature: 0.1 }
+        };
+
+        const cmd = new InvokeModelCommand({
+          modelId: 'amazon.nova-micro-v1:0',
+          contentType: 'application/json',
+          accept: 'application/json',
+          body: JSON.stringify(payload)
+        });
+
+        const res = await this.bedrockClient.send(cmd);
+        const dec = new TextDecoder().decode(res.body);
+        const parsedBody = JSON.parse(dec);
+        const textOut = parsedBody.output?.message?.content?.[0]?.text || '';
+        const jsonMatch = textOut.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          return {
+            thought: parsed.thought || 'Bedrock Nova inferred optimal navigation step',
+            action: parsed.action || 'press_key',
+            key: parsed.key || 'Tab',
+            text: parsed.text,
+            isGoalReached: !!parsed.isGoalReached,
+            tierUsed: 2,
+            engine: 'amazon.nova-micro-v1:0'
+          };
+        }
+      } catch (bedrockErr: any) {
+        console.warn('[LLM Router] Bedrock Nova notice:', bedrockErr.message);
+      }
+    }
+
+    // 3. Try Tier 2 (Groq) fallback
     if (this.groqApiKey) {
       try {
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -88,7 +142,8 @@ Output format:
             response_format: { type: 'json_object' },
             temperature: 0.1,
             max_tokens: 400
-          })
+          }),
+          signal: AbortSignal.timeout(2500)
         });
 
         if (response.ok) {
@@ -165,6 +220,11 @@ Output format:
     history: string[],
     reflexionHint?: string
   ): Promise<LLMDecision | null> {
+    const isOnline = await backendBreaker.checkAvailability();
+    if (!isOnline) {
+      return null;
+    }
+
     try {
       const res = await fetch(`${this.backendUrl}/api/ml/slm-reason`, {
         method: 'POST',
@@ -177,11 +237,12 @@ Output format:
           history,
           reflexionHint: reflexionHint || ''
         }),
-        signal: AbortSignal.timeout(4000)
+        signal: AbortSignal.timeout(2000)
       });
 
       if (!res.ok) return null;
       const data = await res.json();
+      backendBreaker.markOnline();
       return {
         thought: data.thought || 'Local GPU SLM reasoning step',
         action: data.action || 'press_key',
@@ -192,6 +253,7 @@ Output format:
         engine: 'qwen2.5_coder_gpu'
       };
     } catch {
+      backendBreaker.markOffline();
       return null;
     }
   }
@@ -205,6 +267,11 @@ Output format:
     targetSnippet: string = '',
     proofExplanation: string = ''
   ): Promise<string | null> {
+    const isOnline = await backendBreaker.checkAvailability();
+    if (!isOnline) {
+      return null;
+    }
+
     try {
       const res = await fetch(`${this.backendUrl}/api/ml/slm-remediate`, {
         method: 'POST',
@@ -215,19 +282,21 @@ Output format:
           targetSnippet,
           proofExplanation
         }),
-        signal: AbortSignal.timeout(6000)
+        signal: AbortSignal.timeout(3000)
       });
 
       if (!res.ok) return null;
       const data = await res.json();
+      backendBreaker.markOnline();
       return data.patchedCode || null;
     } catch {
+      backendBreaker.markOffline();
       return null;
     }
   }
 
   /**
-   * Fix Synthesizer: Generates minimal surgical HTML/ARIA patch using Groq LLaMA 3.3 or Gemini 2.0 Flash
+   * Fix Synthesizer: Generates minimal surgical HTML/ARIA patch using Bedrock Nova, Groq LLaMA 3.3 or Gemini 2.0 Flash
    */
   async generateFixPatch(offendingHtml: string, barrierFinding: string): Promise<string> {
     const prompt = `You are the BarrierLens Autonomous Accessibility Repair Engine.
@@ -243,7 +312,38 @@ Rules:
 - Do NOT rewrite entire components. Only fix the accessibility attribute or semantic tag (e.g. add aria-label, change div to button, add role="dialog" aria-modal="true", or tabindex="0").
 - Return ONLY the exact replacement HTML snippet. No markdown wrappers or explanation.`;
 
-    // 1. Try Groq LLaMA 3.3 70B First (Enterprise speed & accuracy)
+    // 1. Try Amazon Bedrock Nova Micro First (Live AWS STS authentication, zero DNS bottlenecks)
+    if (this.bedrockClient) {
+      try {
+        const payload = {
+          messages: [{
+            role: 'user',
+            content: [{ text: prompt }]
+          }],
+          inferenceConfig: { max_new_tokens: 300, temperature: 0.1 }
+        };
+
+        const cmd = new InvokeModelCommand({
+          modelId: 'amazon.nova-micro-v1:0',
+          contentType: 'application/json',
+          accept: 'application/json',
+          body: JSON.stringify(payload)
+        });
+
+        const res = await this.bedrockClient.send(cmd);
+        const dec = new TextDecoder().decode(res.body);
+        const parsedBody = JSON.parse(dec);
+        const textOut = parsedBody.output?.message?.content?.[0]?.text || '';
+        const cleaned = textOut.replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
+        if (cleaned && cleaned.includes('<')) {
+          return cleaned;
+        }
+      } catch (err: any) {
+        console.warn('[Fix Synthesizer] Bedrock Nova notice:', err.message);
+      }
+    }
+
+    // 2. Try Groq LLaMA 3.3 70B Fallback
     if (this.groqApiKey) {
       try {
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {

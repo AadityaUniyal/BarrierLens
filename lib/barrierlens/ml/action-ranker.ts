@@ -1,4 +1,5 @@
 import { SerializedAXNode } from '../cdp/ax-serializer';
+import { backendBreaker } from '../agent/backend-circuit-breaker';
 
 export interface ActionRankScore {
   bestNode: SerializedAXNode | null;
@@ -44,6 +45,11 @@ export class ActionRanker {
     currentFocusSelector: string,
     history: string[] = []
   ): Promise<ActionRankScore> {
+    const isOnline = await backendBreaker.checkAvailability();
+    if (!isOnline) {
+      return this.rankNextAction(goal, nodes, currentFocusSelector, history);
+    }
+
     try {
       const response = await fetch(`${this.backendUrl}/api/ml/rank-action`, {
         method: 'POST',
@@ -54,11 +60,12 @@ export class ActionRanker {
           currentFocusSelector,
           history
         }),
-        signal: AbortSignal.timeout(3000),
+        signal: AbortSignal.timeout(2000),
       });
 
       if (response.ok) {
         const data = await response.json();
+        backendBreaker.markOnline();
         return {
           bestNode: data.bestNode,
           recommendedAction: data.recommendedAction,
@@ -70,7 +77,7 @@ export class ActionRanker {
         };
       }
     } catch {
-      // Backend offline -> continue with in-process formula
+      backendBreaker.markOffline();
     }
 
     return this.rankNextAction(goal, nodes, currentFocusSelector, history);

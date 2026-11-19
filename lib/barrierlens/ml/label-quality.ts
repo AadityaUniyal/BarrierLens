@@ -1,3 +1,5 @@
+import { backendBreaker } from '../agent/backend-circuit-breaker';
+
 export interface LabelQualityResult {
   isAdequate: boolean;
   confidence: number;
@@ -26,23 +28,27 @@ export class LabelQualityClassifier {
     name: string,
     surroundingText: string = ''
   ): Promise<LabelQualityResult> {
-    try {
-      const response = await fetch(`${this.backendUrl}/api/ml/label-quality`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role, name, surroundingText }),
-        signal: AbortSignal.timeout(3000),
-      });
+    const isOnline = await backendBreaker.checkAvailability();
+    if (isOnline) {
+      try {
+        const response = await fetch(`${this.backendUrl}/api/ml/label-quality`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role, name, surroundingText }),
+          signal: AbortSignal.timeout(2000),
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        return {
-          ...data,
-          source: 'gpu_minilm',
-        };
+        if (response.ok) {
+          const data = await response.json();
+          backendBreaker.markOnline();
+          return {
+            ...data,
+            source: 'gpu_minilm',
+          };
+        }
+      } catch {
+        backendBreaker.markOffline();
       }
-    } catch {
-      // Backend offline or timeout -> proceed with fallback
     }
 
     return this.heuristicFallback(role, name);

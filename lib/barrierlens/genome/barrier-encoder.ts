@@ -1,4 +1,5 @@
 import { BarrierFinding, FindingKind, TrustTier, PersonaType, AuditRun } from '../types';
+import { backendBreaker } from '../agent/backend-circuit-breaker';
 
 export interface GenomeContext {
   goal: string;
@@ -288,18 +289,24 @@ export class BarrierGenomeEncoder {
       `task: ${context?.goal || ''}`,
     ].join('. ');
 
-    try {
-      const response = await fetch('http://127.0.0.1:8000/api/genome/embed', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: description }),
-        signal: AbortSignal.timeout(5000),
-      });
-      if (response.ok) {
-        const { vector } = await response.json();
-        return vector as number[];
+    const isOnline = await backendBreaker.checkAvailability();
+    if (isOnline) {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/genome/embed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: description }),
+          signal: AbortSignal.timeout(2000),
+        });
+        if (response.ok) {
+          const { vector } = await response.json();
+          backendBreaker.markOnline();
+          return vector as number[];
+        }
+      } catch {
+        backendBreaker.markOffline();
       }
-    } catch {}
+    }
 
     // Fallback to existing heuristic encoding
     const genome = this.encode(finding, context);

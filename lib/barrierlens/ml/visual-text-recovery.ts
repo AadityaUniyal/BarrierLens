@@ -4,6 +4,8 @@
  * that assistive technology cannot perceive due to missing programmatic labels.
  */
 
+import { backendBreaker } from '../agent/backend-circuit-breaker';
+
 export interface VisualTextAnalysisResult {
   extractedText: string;
   hasDiscrepancy: boolean;
@@ -25,31 +27,35 @@ export class VisualTextRecoveryClient {
     computedName: string = '',
     role: string = 'button'
   ): Promise<VisualTextAnalysisResult> {
-    try {
-      const res = await fetch(`${this.backendUrl}/api/ml/visual-text-recovery`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          screenshot_b64: screenshotB64,
-          computed_name: computedName,
-          role
-        }),
-        signal: AbortSignal.timeout(4000)
-      });
+    const isOnline = await backendBreaker.checkAvailability();
+    if (isOnline) {
+      try {
+        const res = await fetch(`${this.backendUrl}/api/ml/visual-text-recovery`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            screenshot_b64: screenshotB64,
+            computed_name: computedName,
+            role
+          }),
+          signal: AbortSignal.timeout(2000)
+        });
 
-      if (res.ok) {
-        const data = await res.json();
-        return {
-          extractedText: data.extractedText || '',
-          hasDiscrepancy: !!data.hasDiscrepancy,
-          suggestedLabel: data.suggestedLabel || '',
-          confidence: data.confidence ?? 0.85,
-          explanation: data.explanation || '',
-          source: 'python_ocr_gpu'
-        };
+        if (res.ok) {
+          const data = await res.json();
+          backendBreaker.markOnline();
+          return {
+            extractedText: data.extractedText || '',
+            hasDiscrepancy: !!data.hasDiscrepancy,
+            suggestedLabel: data.suggestedLabel || '',
+            confidence: data.confidence ?? 0.85,
+            explanation: data.explanation || '',
+            source: 'python_ocr_gpu'
+          };
+        }
+      } catch {
+        backendBreaker.markOffline();
       }
-    } catch {
-      // Fallback
     }
 
     // Client-side fallback heuristic when backend is offline

@@ -1,3 +1,5 @@
+import { backendBreaker } from '../agent/backend-circuit-breaker';
+
 export interface VisualAffordanceResult {
   selector: string;
   detectedIconType?: 'trash' | 'cart' | 'search' | 'menu' | 'close' | 'arrow' | 'unknown';
@@ -29,38 +31,42 @@ export class VisualAffordanceEngine {
     screenshotBase64: string,
     candidateLabels?: string[]
   ): Promise<VisualAffordanceResult> {
-    try {
-      const response = await fetch(`${this.backendUrl}/api/ml/visual-affordance`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          screenshot_b64: screenshotBase64,
-          accessible_name: accessibleName,
-          candidate_labels: candidateLabels || [
-            accessibleName,
-            'trash', 'delete', 'cart', 'search', 'close', 'save', 'submit'
-          ],
-        }),
-        signal: AbortSignal.timeout(5000),
-      });
+    const isOnline = await backendBreaker.checkAvailability();
+    if (isOnline) {
+      try {
+        const response = await fetch(`${this.backendUrl}/api/ml/visual-affordance`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            screenshot_b64: screenshotBase64,
+            accessible_name: accessibleName,
+            candidate_labels: candidateLabels || [
+              accessibleName,
+              'trash', 'delete', 'cart', 'search', 'close', 'save', 'submit'
+            ],
+          }),
+          signal: AbortSignal.timeout(2500),
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        return {
-          selector,
-          accessibleName,
-          hasSemanticContradiction: data.hasSemanticContradiction,
-          confidence: data.topScore,
-          explanation: data.hasSemanticContradiction
-            ? `CLIP Zero-Shot detected visual icon matches '${data.topLabel}' (score: ${data.topScore}) but programmatic name is '${accessibleName}'.`
-            : `Visual icon matches expected semantic context (top classification: '${data.topLabel}').`,
-          source: 'gpu_clip',
-          topLabel: data.topLabel,
-          scores: data.scores,
-        };
+        if (response.ok) {
+          const data = await response.json();
+          backendBreaker.markOnline();
+          return {
+            selector,
+            accessibleName,
+            hasSemanticContradiction: data.hasSemanticContradiction,
+            confidence: data.topScore,
+            explanation: data.hasSemanticContradiction
+              ? `CLIP Zero-Shot detected visual icon matches '${data.topLabel}' (score: ${data.topScore}) but programmatic name is '${accessibleName}'.`
+              : `Visual icon matches expected semantic context (top classification: '${data.topLabel}').`,
+            source: 'gpu_clip',
+            topLabel: data.topLabel,
+            scores: data.scores,
+          };
+        }
+      } catch {
+        backendBreaker.markOffline();
       }
-    } catch {
-      // Backend offline -> continue with fallback
     }
 
     return this.evaluateIconAffordance(selector, accessibleName, '');

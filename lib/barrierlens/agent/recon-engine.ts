@@ -6,6 +6,8 @@
  */
 
 import { Page } from 'playwright';
+import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+import { backendBreaker } from './backend-circuit-breaker';
 
 export interface PageLandmarks {
   title: string;
@@ -99,37 +101,87 @@ export class AutonomousReconEngine {
   async deduceMission(page: Page): Promise<DeducedMission> {
     const landmarks = await this.inspectPageLandmarks(page);
 
-    // Try Local GPU SLM for smart context-aware goal deduction
-    try {
-      const slmRes = await fetch(`${this.backendUrl}/api/ml/slm-reason`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          goal: `Analyze page titled "${landmarks.title}" (${landmarks.pageGenre}) with headings: ${landmarks.headings.slice(0, 3).join(', ')} and CTAs: ${landmarks.ctaButtons.slice(0, 3).join(', ')}. Deduce primary, secondary, and edge-case accessibility exploration goals.`,
-          persona: 'keyboard',
-          currentFocus: 'body',
-          compactAXTree: `[Title: ${landmarks.title}] [Genre: ${landmarks.pageGenre}] [CTAs: ${landmarks.ctaButtons.join(', ')}] [Headings: ${landmarks.headings.join(', ')}]`,
-          history: []
-        }),
-        signal: AbortSignal.timeout(3000)
-      });
+    // 1. Try Local GPU SLM if Python backend is known online
+    const isOnline = await backendBreaker.checkAvailability();
+    if (isOnline) {
+      try {
+        const slmRes = await fetch(`${this.backendUrl}/api/ml/slm-reason`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            goal: `Analyze page titled "${landmarks.title}" (${landmarks.pageGenre}) with headings: ${landmarks.headings.slice(0, 3).join(', ')} and CTAs: ${landmarks.ctaButtons.slice(0, 3).join(', ')}. Deduce primary, secondary, and edge-case accessibility exploration goals.`,
+            persona: 'keyboard',
+            currentFocus: 'body',
+            compactAXTree: `[Title: ${landmarks.title}] [Genre: ${landmarks.pageGenre}] [CTAs: ${landmarks.ctaButtons.join(', ')}] [Headings: ${landmarks.headings.join(', ')}]`,
+            history: []
+          }),
+          signal: AbortSignal.timeout(2000)
+        });
 
-      if (slmRes.ok) {
-        const data = await slmRes.json();
-        if (data.thought && data.thought.length > 10) {
-          const generatedGoal = data.thought.replace(/^Reasoning:\s*/i, '');
-          return {
-            primaryGoal: generatedGoal,
-            secondaryGoal: `Navigate ${landmarks.primaryNavLinks[0] || 'primary navigation'} and verify reading order concordance`,
-            edgeCaseGoal: landmarks.hasModalTrigger ? 'Trigger modal dialog and test Escape key restoration' : 'Traverse sequential interactive controls without focus loss',
-            landmarks,
-            confidence: 0.92,
-            engineUsed: 'local_gpu_slm'
-          };
+        if (slmRes.ok) {
+          const data = await slmRes.json();
+          if (data.thought && data.thought.length > 10) {
+            const generatedGoal = data.thought.replace(/^Reasoning:\s*/i, '');
+            backendBreaker.markOnline();
+            return {
+              primaryGoal: generatedGoal,
+              secondaryGoal: `Navigate ${landmarks.primaryNavLinks[0] || 'primary navigation'} and verify reading order concordance`,
+              edgeCaseGoal: landmarks.hasModalTrigger ? 'Trigger modal dialog and test Escape key restoration' : 'Traverse sequential interactive controls without focus loss',
+              landmarks,
+              confidence: 0.92,
+              engineUsed: 'local_gpu_slm'
+            };
+          }
         }
+      } catch {
+        backendBreaker.markOffline();
       }
-    } catch {
-      // Local SLM offline or busy; fall through to semantic landmark synthesis
+    }
+
+    // 2. Try Amazon Bedrock Nova Micro (Sub-second foundation model inference)
+    if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+      try {
+        const bedrock = new BedrockRuntimeClient({
+          region: process.env.BEDROCK_REGION || 'us-east-1',
+          credentials: {
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+          },
+        });
+
+        const promptText = `Given this web page (Title: "${landmarks.title}", Genre: "${landmarks.pageGenre}", Headings: [${landmarks.headings.slice(0, 3).join(', ')}], CTAs: [${landmarks.ctaButtons.slice(0, 3).join(', ')}]), output strict JSON with a concise user exploration goal: {"goal": "one-sentence user mission"}`;
+
+        const cmd = new InvokeModelCommand({
+          modelId: 'amazon.nova-micro-v1:0',
+          contentType: 'application/json',
+          accept: 'application/json',
+          body: JSON.stringify({
+            messages: [{ role: 'user', content: [{ text: promptText }] }],
+            inferenceConfig: { max_new_tokens: 150, temperature: 0.1 },
+          }),
+        });
+
+        const res = await bedrock.send(cmd);
+        const dec = new TextDecoder().decode(res.body);
+        const parsed = JSON.parse(dec);
+        const textOut = parsed.output?.message?.content?.[0]?.text || '';
+        const match = textOut.match(/\{[\s\S]*\}/);
+        if (match) {
+          const goalJson = JSON.parse(match[0]);
+          if (goalJson.goal) {
+            return {
+              primaryGoal: goalJson.goal,
+              secondaryGoal: `Navigate ${landmarks.primaryNavLinks[0] || 'primary navigation'} and verify reading order concordance`,
+              edgeCaseGoal: landmarks.hasModalTrigger ? 'Trigger modal dialog and test Escape key restoration' : 'Traverse sequential interactive controls without focus loss',
+              landmarks,
+              confidence: 0.95,
+              engineUsed: 'semantic_landmark_heuristic',
+            };
+          }
+        }
+      } catch (err: any) {
+        console.warn('[Recon Engine] Bedrock Nova goal deduction notice:', err.message);
+      }
     }
 
     // High-Precision Semantic Landmark Synthesis (Zero Hallucination Fallback)
