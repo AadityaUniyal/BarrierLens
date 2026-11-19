@@ -197,18 +197,35 @@ export function TimeTravelReplayPlayer({
             <span className="text-zinc-500">CDP Frame #1</span>
           </div>
 
-          {/* Page Canvas Simulator with Interactive Focus Ring */}
-          <div className="relative flex-1 p-6 bg-zinc-900/60 overflow-hidden">
-            {/* Mock Page Mockup Elements */}
-            <div className="flex flex-col space-y-4 opacity-40 select-none">
-              <div className="h-8 w-48 rounded bg-zinc-700/60" />
-              <div className="flex space-x-3">
-                <div className="h-6 w-20 rounded bg-zinc-700/40" />
-                <div className="h-6 w-24 rounded bg-zinc-700/40" />
-                <div className="h-6 w-20 rounded bg-zinc-700/40" />
+          {/* Page Canvas Replay with Interactive Focus Ring */}
+          <div className="relative flex-1 p-6 bg-zinc-900/60 overflow-hidden font-mono flex flex-col justify-between">
+            {/* Real Audited Target State & DOM Path */}
+            <div className="space-y-3 z-10">
+              <div className="flex items-center gap-2 text-xs text-zinc-300">
+                <span className="px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-emerald-400 font-bold">
+                  STEP {currentStep.idx || currentStepIdx + 1}
+                </span>
+                <span className="text-zinc-400 truncate">
+                  Target: <span className="text-zinc-200">{currentStep.activeElementAfter || 'body'}</span>
+                </span>
               </div>
-              <div className="h-20 w-full rounded-xl bg-zinc-800/40 border border-zinc-700/30" />
-              <div className="h-10 w-32 rounded-lg bg-zinc-700/50" />
+
+              {/* Agent Reasoning Stream */}
+              <div className="p-3 rounded-lg bg-zinc-950/80 border border-zinc-800 text-xs text-zinc-300 space-y-1">
+                <span className="text-[10px] text-zinc-500 uppercase tracking-wider block font-sans font-semibold">
+                  Agent Intent & CDP Transition:
+                </span>
+                <p className="text-zinc-200 italic">
+                  &ldquo;{currentStep.reasoning || `Navigated from ${currentStep.activeElementBefore || 'origin'} to ${currentStep.activeElementAfter || 'target'}`}&rdquo;
+                </p>
+              </div>
+
+              {findingsAtCurrentStep.length > 0 && findingsAtCurrentStep[0].evidence?.elementHTML && (
+                <div className="p-2.5 rounded-lg bg-zinc-950/90 border border-rose-500/30 text-[11px] text-rose-300 overflow-x-auto max-h-24">
+                  <span className="text-[10px] text-rose-400 block font-semibold mb-1">Offending DOM Fragment:</span>
+                  <code>{findingsAtCurrentStep[0].evidence.elementHTML}</code>
+                </div>
+              )}
             </div>
 
             {/* Dynamic Animated Focus Ring (SVG / CSS Overlay) */}

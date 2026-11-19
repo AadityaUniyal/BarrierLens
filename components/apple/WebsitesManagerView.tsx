@@ -107,7 +107,7 @@ export function WebsitesManagerView({ onStartAuditForSite }: WebsitesManagerView
       const res = await fetch(`/api/websites/${siteId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'verify', simulationOverride: true })
+        body: JSON.stringify({ action: 'verify' })
       });
       const data = await res.json();
       if (data.verified) {

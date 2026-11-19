@@ -122,6 +122,34 @@ export default function Home() {
   const [runsHistory, setRunsHistory] = useState<any[]>([]);
   const [servicesHealth, setServicesHealth] = useState({ operational: 7, total: 7 });
 
+  // Adversarial Stress Testing State
+  const [stressResult, setStressResult] = useState<any | null>(null);
+  const [isStressTesting, setIsStressTesting] = useState(false);
+
+  const handleRunStressTest = async (config: { chaosLevel: 'mild' | 'moderate' | 'extreme'; enableMotorTremor: boolean }) => {
+    setIsStressTesting(true);
+    try {
+      const res = await fetch('/api/adversarial/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetUrl,
+          chaosLevel: config.chaosLevel,
+          enableMotorTremor: config.enableMotorTremor,
+          maxSteps: 15
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.result) setStressResult(data.result);
+      }
+    } catch (err) {
+      console.error('Failed to run adversarial stress test:', err);
+    } finally {
+      setIsStressTesting(false);
+    }
+  };
+
   // Resolve absolute origin on client mount
   useEffect(() => {
     if (typeof window !== 'undefined' && targetUrl === '/benchmark') {
@@ -624,7 +652,11 @@ export default function Home() {
         )}
 
         {activeScreen === 'arena' && (
-          <StressTestDashboard />
+          <StressTestDashboard
+            onRunStressTest={handleRunStressTest}
+            isTesting={isStressTesting}
+            result={stressResult}
+          />
         )}
 
         {activeScreen === 'visual-twin' && (

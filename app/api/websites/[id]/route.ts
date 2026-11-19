@@ -70,8 +70,23 @@ export async function POST(
         reason = `DNS TXT lookup failed: ${dnsErr.code || dnsErr.message}`;
       }
 
-      // If user is local/preview or demo, allow verified simulation if explicit header/body passed
-      if (!verified && (body.simulationOverride || domain === 'localhost' || domain.includes('vercel.app'))) {
+      // Check HTTP well-known verification file fallback
+      if (!verified) {
+        try {
+          const fileRes = await fetch(`https://${domain}/.well-known/barrierlens-verification.txt`, {
+            signal: AbortSignal.timeout(4000)
+          });
+          if (fileRes.ok) {
+            const text = await fileRes.text();
+            if (text.trim().includes(site.verification_token)) {
+              verified = true;
+            }
+          }
+        } catch {}
+      }
+
+      // Local loopback development fallback only
+      if (!verified && (domain === 'localhost' || domain === '127.0.0.1')) {
         verified = true;
       }
 

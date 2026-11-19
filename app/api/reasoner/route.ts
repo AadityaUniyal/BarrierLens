@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +16,59 @@ export async function POST(req: Request) {
     const groqKey = process.env.GROQ_API_KEY;
     const geminiKey = process.env.GEMINI_API_KEY;
 
-    // 1. Try Groq LLaMA if configured
+    // 1. Try Amazon Bedrock Nova Micro if AWS credentials present
+    if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+      try {
+        const bedrock = new BedrockRuntimeClient({
+          region: process.env.BEDROCK_REGION || 'us-east-1',
+          credentials: {
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+          }
+        });
+
+        const promptPayload = {
+          messages: [{
+            role: 'user',
+            content: [{
+              text: `You are the Barrier Intelligence Engine. Given this accessibility problem: "${prompt}", output JSON ONLY in format: {"thought": "analysis of root cause", "patch": "exact minimal HTML/ARIA attribute patch"}`
+            }]
+          }],
+          inferenceConfig: { max_new_tokens: 300, temperature: 0.1 }
+        };
+
+        const cmd = new InvokeModelCommand({
+          modelId: 'amazon.nova-micro-v1:0',
+          contentType: 'application/json',
+          accept: 'application/json',
+          body: JSON.stringify(promptPayload)
+        });
+
+        const res = await bedrock.send(cmd);
+        const dec = new TextDecoder().decode(res.body);
+        const parsedBody = JSON.parse(dec);
+        const textOut = parsedBody.output?.message?.content?.[0]?.text || '';
+        const jsonMatch = textOut.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          return NextResponse.json({
+            model: 'amazon.nova-micro-v1:0 (Bedrock Foundation Model)',
+            thought: parsed.thought || 'Amazon Nova root-cause analysis completed.',
+            patch: parsed.patch || textOut,
+            latencyMs: Date.now() - startTime,
+            tokens: {
+              input: parsedBody.usage?.inputTokens || 25,
+              output: parsedBody.usage?.outputTokens || 35
+            },
+            provider: 'Amazon Bedrock Nova Tier'
+          });
+        }
+      } catch (bedrockErr: any) {
+        console.warn('[Reasoner API] Bedrock Nova attempt notice:', bedrockErr.message);
+      }
+    }
+
+    // 2. Try Groq LLaMA if configured
     if (groqKey) {
       try {
         const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {

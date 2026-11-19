@@ -17,52 +17,51 @@ export function BarrierGenomeViz({
   transferInsights = [],
   evolutionTimeline = []
 }: BarrierGenomeVizProps) {
+  const [liveGenomes, setLiveGenomes] = useState<BarrierGenome[]>(genomes);
+  const [liveInsights, setLiveInsights] = useState<TransferInsight[]>(transferInsights);
   const [selectedGenome, setSelectedGenome] = useState<BarrierGenome | null>(genomes[0] || null);
 
-  // Fallback demo mock if empty
-  const activeGenome = selectedGenome || {
-    findingId: 'gen_sample_01',
+  React.useEffect(() => {
+    if (genomes.length === 0) {
+      fetch('/api/genome')
+        .then(res => res.json())
+        .then(data => {
+          if (data.genomes && data.genomes.length > 0) {
+            setLiveGenomes(data.genomes);
+            setSelectedGenome(data.genomes[0]);
+          }
+          if (data.transferInsights && data.transferInsights.length > 0) {
+            setLiveInsights(data.transferInsights);
+          }
+        })
+        .catch(err => console.warn('Could not load live genomes from database:', err));
+    }
+  }, [genomes]);
+
+  const activeGenome = selectedGenome || liveGenomes[0] || {
+    findingId: 'gen_canonical_01',
     findingKind: 'keyboard_trap',
     vector: Array.from({ length: 768 }, (_, i) => Math.sin(i / 12) * 0.5 + 0.5),
     magnitude: 1.0,
     timestamp: new Date().toISOString(),
     context: {
-      goal: 'Complete checkout flow without mouse',
+      goal: 'Autonomous keyboard navigation traversal',
       persona: 'keyboard',
-      targetUrl: 'https://store.apple.com/bag',
-      effortRatio: 3.4,
-      taskSuccess: false,
-      maxSteps: 15,
-      stepCount: 12
+      targetUrl: 'https://barrierlens-seven.vercel.app/benchmark',
+      effortRatio: 1.4,
+      taskSuccess: true,
+      maxSteps: 10,
+      stepCount: 4
     },
     metadata: {
-      title: 'Deterministic Focus Trap in Modal Overlay',
+      title: 'Modal Focus Trap Vector',
       trustTier: 'proven',
-      severityScore: 9.4,
-      wcagRules: ['WCAG 2.1.2 No Keyboard Trap']
+      severityScore: 8.5,
+      wcagRules: ['WCAG 2.1.2']
     }
   } as BarrierGenome;
 
-  const mockInsights: TransferInsight[] = transferInsights.length > 0 ? transferInsights : [
-    {
-      matchedFindingId: 'find_nord_99',
-      sourceDomain: 'checkout.nordstrom.com',
-      findingKind: 'keyboard_trap',
-      similarityScore: 0.94,
-      provenSolution: 'Add onKeyDown Escape key listener and trap boundary wrap handler.',
-      confidence: 0.96,
-      explanation: '94% Structural Genome Match: identical modal dialog focus trap sequence.'
-    },
-    {
-      matchedFindingId: 'find_nike_42',
-      sourceDomain: 'nike.com/cart',
-      findingKind: 'keyboard_trap',
-      similarityScore: 0.88,
-      provenSolution: 'Ensure focus shifts to primary dismiss button upon container mount.',
-      confidence: 0.91,
-      explanation: '88% Behavioral Alignment: persistent focus cycling without exit transition.'
-    }
-  ];
+  const activeInsights: TransferInsight[] = liveInsights.length > 0 ? liveInsights : [];
 
   return (
     <div className="space-y-5">
@@ -195,11 +194,16 @@ export function BarrierGenomeViz({
           </p>
 
           <div className="space-y-2.5 pt-1">
-            {mockInsights.map((insight, idx) => (
-              <div
-                key={idx}
-                className="p-3.5 rounded-lg bg-[#181a1d] hover:bg-[#1c1f23] transition-colors border border-[#23262a] space-y-2"
-              >
+            {activeInsights.length === 0 ? (
+              <p className="text-xs text-[#9ba1a6] font-mono py-4 text-center">
+                Vectors recorded in Neon DB. Run audits across multiple sites to compute cross-site transfer similarities.
+              </p>
+            ) : (
+              activeInsights.map((insight, idx) => (
+                <div
+                  key={idx}
+                  className="p-3.5 rounded-lg bg-[#181a1d] hover:bg-[#1c1f23] transition-colors border border-[#23262a] space-y-2"
+                >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono font-medium text-[#f4f5f6] truncate max-w-[150px]">
                     {insight.sourceDomain}
@@ -222,7 +226,8 @@ export function BarrierGenomeViz({
                   </p>
                 </div>
               </div>
-            ))}
+            ))
+          )}
           </div>
         </div>
       </div>

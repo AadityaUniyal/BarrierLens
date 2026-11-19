@@ -22,24 +22,62 @@ export function AWSBridgeConsole() {
   const [reasonerResponse, setReasonerResponse] = useState<string | null>(null);
   const [isInferring, setIsInferring] = useState(false);
 
-  // Cloud CLI Detected State
+  // Cloud CLI Detected State (Dynamically populated from live AWS STS & S3)
   const [awsStatus, setAwsStatus] = useState({
     installed: true,
-    version: 'cloud-cli/2.37.12 Node/v22',
-    region: 'ap-south-1 (Production Primary)',
-    account: '145023097151 (Production Org)',
-    authenticated: true,
-    authNote: 'Active & Authenticated via enterprise credentials. Neural inference & Evidence Vault ready.',
-    bucket: 'barrierlens-audit-artifacts-prod'
+    version: 'Probing AWS CLI / SDK...',
+    region: 'ap-south-1',
+    account: 'Checking credentials...',
+    authenticated: false,
+    authNote: 'Probing live STS credentials...',
+    bucket: 'barrierlens-audit-artifacts-145023097151'
   });
 
   const [budget, setBudget] = useState({
     total: 120.0,
-    remaining: 119.98,
-    spent: 0.02,
-    estimatedRuns: 19850,
-    modelCascade: 'Fast Reasoning Tier ($0.000035/1K) + Deep Reasoner'
+    remaining: 120.0,
+    spent: 0.0,
+    estimatedRuns: 20000,
+    modelCascade: 'Amazon Nova Micro ($0.000035/1K) + Nova Pro'
   });
+
+  const fetchLiveAwsStatus = async () => {
+    setIsChecking(true);
+    try {
+      const res = await fetch('/api/aws/status');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.aws) {
+          setAwsStatus({
+            installed: data.aws.installed,
+            version: data.aws.version || 'AWS CLI v2.37',
+            region: data.aws.region,
+            account: data.aws.account,
+            authenticated: data.aws.authenticated,
+            authNote: data.aws.authNote,
+            bucket: data.aws.bucket
+          });
+          if (data.aws.budget) {
+            setBudget({
+              total: data.aws.budget.total || 120.0,
+              remaining: data.aws.budget.remaining ?? 120.0,
+              spent: data.aws.budget.spent ?? 0.0,
+              estimatedRuns: Math.floor((data.aws.budget.remaining || 120.0) / 0.006),
+              modelCascade: data.aws.budget.modelCascade || 'Amazon Nova Micro + Nova Pro'
+            });
+          }
+        }
+      }
+    } catch (err: any) {
+      console.warn('Could not fetch AWS live status:', err.message);
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchLiveAwsStatus();
+  }, []);
 
   const handleTestReasoner = async () => {
     setIsInferring(true);
@@ -70,22 +108,7 @@ export function AWSBridgeConsole() {
   };
 
   const handleRefreshStatus = async () => {
-    setIsChecking(true);
-    try {
-      const res = await fetch('/api/strands');
-      if (res.ok) {
-        const data = await res.json();
-        setAwsStatus(prev => ({
-          ...prev,
-          version: data.framework || prev.version,
-          authNote: `Runtime status: ${data.status || 'operational'}. Active models: ${data.models?.reasoning || 'Nova Pro / LLaMA 3.3'}`
-        }));
-      }
-    } catch {
-      // Keep baseline on connection hiccup
-    } finally {
-      setIsChecking(false);
-    }
+    await fetchLiveAwsStatus();
   };
 
   return (
