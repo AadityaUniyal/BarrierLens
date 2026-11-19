@@ -95,7 +95,7 @@ const BENCHMARK_SAMPLE_FINDINGS: BarrierFinding[] = [
 ];
 
 export default function Home() {
-  const [activeScreen, setActiveScreen] = useState<ScreenId>('story');
+  const [activeScreen, setActiveScreen] = useState<ScreenId>('audits');
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
@@ -454,8 +454,9 @@ export default function Home() {
   const currentFindings = auditResult?.findings?.length ? auditResult.findings : historicalFindings;
 
   return (
-    <div className="min-h-screen bg-[#0c0d0e] text-[#f4f5f6] flex flex-col font-sans selection:bg-[#0090ff]/30 selection:text-[#f4f5f6] antialiased">
-      {/* 1. Linear Navigation Bar */}
+    <div className="min-h-screen bg-[#07080b] text-[#f8fafc] flex flex-col font-sans selection:bg-[#0090ff]/30 selection:text-white antialiased relative">
+      <div className="ambient-mesh" />
+      {/* 1. Master Hub Navigation Bar */}
       <Navbar
         activeScreen={activeScreen}
         setActiveScreen={setActiveScreen}

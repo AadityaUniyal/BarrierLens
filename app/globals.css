@@ -4,328 +4,120 @@
 
 :root {
   --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", system-ui, sans-serif;
-  --bg-primary: #0c0d0e;
-  --bg-secondary: #141517;
-  --surface-group: #181a1d;
-  --surface-raised: #1f2226;
-  --surface-overlay: rgba(20, 21, 23, 0.85);
-  --separator: #23262a;
-  --separator-strong: #34383e;
+  --bg-primary: #07080b;
+  --bg-secondary: #0d0f15;
+  --surface-group: #12151e;
+  --surface-raised: #181d28;
+  --surface-overlay: rgba(13, 15, 21, 0.85);
+  --separator: rgba(255, 255, 255, 0.08);
+  --separator-strong: rgba(255, 255, 255, 0.16);
   --accent-apple: #0090ff;
   --accent-apple-hover: #0077ed;
   --accent-blue: #0090ff;
-  --accent-green: #30a46c;
-  --accent-orange: #f76808;
-  --accent-red: #e5484d;
-  --accent-purple: #8e4ec6;
-  --text-primary: #f4f5f6;
-  --text-secondary: #9ba1a6;
-  --text-tertiary: #6b7280;
+  --accent-cyan: #06b6d4;
+  --accent-green: #10b981;
+  --accent-orange: #f59e0b;
+  --accent-red: #f43f5e;
+  --accent-purple: #8b5cf6;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #64748b;
 }
 
 [data-theme="oled"] {
   --bg-primary: #000000;
-  --bg-secondary: #080808;
-  --surface-group: #0d0d0d;
-  --surface-raised: #141414;
-  --separator: #1f1f1f;
-  --separator-strong: #2a2a2a;
+  --bg-secondary: #050507;
+  --surface-group: #0a0a0f;
+  --surface-raised: #101017;
+  --separator: rgba(255, 255, 255, 0.06);
+  --separator-strong: rgba(255, 255, 255, 0.14);
   --text-primary: #ffffff;
-  --text-secondary: #a3a3a3;
+  --text-secondary: #94a3b8;
 }
 
 [data-theme="light"] {
-  --bg-primary: #f6f8fa;
+  --bg-primary: #f8fafc;
   --bg-secondary: #ffffff;
   --surface-group: #ffffff;
-  --surface-raised: #f3f4f6;
+  --surface-raised: #f1f5f9;
   --surface-overlay: rgba(255, 255, 255, 0.95);
-  --separator: #d0d7de;
-  --separator-strong: #afb8c1;
-  --text-primary: #1f2328;
-  --text-secondary: #656d76;
-  --text-tertiary: #8c959f;
+  --separator: #e2e8f0;
+  --separator-strong: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #94a3b8;
 }
 
-/* Light mode overrides for component utility classes */
-[data-theme="light"] body {
-  background-color: #f6f8fa;
-  color: #1f2328;
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-system);
+  overflow-x: hidden;
 }
 
-[data-theme="light"] .bg-\[\#0c0d0e\] {
-  background-color: #f6f8fa !important;
+/* Glassmorphism & Cyber-Precision Utility Classes */
+.glass-panel {
+  background: rgba(18, 21, 30, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-[data-theme="light"] .bg-\[\#141517\] {
-  background-color: #ffffff !important;
+.glass-panel-glow {
+  box-shadow: 0 0 40px -10px rgba(0, 144, 255, 0.15);
 }
 
-[data-theme="light"] .bg-\[\#181a1d\] {
-  background-color: #f6f8fa !important;
+.glass-card {
+  background: rgba(24, 29, 40, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-[data-theme="light"] .bg-\[\#1f2226\] {
-  background-color: #eaeef2 !important;
+.glass-card:hover {
+  background: rgba(28, 34, 48, 0.75);
+  border-color: rgba(255, 255, 255, 0.14);
+  transform: translateY(-1px);
 }
 
-[data-theme="light"] .border-\[\#23262a\] {
-  border-color: #d0d7de !important;
+.glow-pill-cyan {
+  box-shadow: 0 0 16px -2px rgba(6, 182, 212, 0.35);
 }
 
-[data-theme="light"] .border-\[\#34383e\] {
-  border-color: #afb8c1 !important;
+.glow-pill-green {
+  box-shadow: 0 0 16px -2px rgba(16, 185, 129, 0.35);
 }
 
-[data-theme="light"] .text-\[\#f4f5f6\] {
-  color: #1f2328 !important;
+.glow-pill-red {
+  box-shadow: 0 0 16px -2px rgba(244, 63, 94, 0.35);
 }
 
-[data-theme="light"] .text-\[\#9ba1a6\] {
-  color: #656d76 !important;
+.ambient-mesh {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 600px;
+  background: radial-gradient(circle at 50% -20%, rgba(0, 144, 255, 0.12), rgba(139, 92, 246, 0.05) 45%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
-/* OLED Mode overrides */
-[data-theme="oled"] .bg-\[\#0c0d0e\] {
-  background-color: #000000 !important;
-}
-
-[data-theme="oled"] .bg-\[\#141517\] {
-  background-color: #080808 !important;
-}
-
-[data-theme="oled"] .border-\[\#23262a\] {
-  border-color: #1c1c1c !important;
-}
-
-@layer base {
-  * {
-    border-color: var(--separator);
-  }
-  body {
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    font-family: var(--font-system);
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
-  }
-}
-
-/* Tabular numerals for high-precision metrics */
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
-}
-
-/* =========================================================================
-   Apple HIG Typography Scale & Hierarchy
-   ========================================================================= */
-.apple-large-title {
-  font-size: 34px;
-  line-height: 41px;
-  letter-spacing: -0.022em;
-  font-weight: 700;
-}
-.apple-title-1 {
-  font-size: 28px;
-  line-height: 34px;
-  letter-spacing: -0.020em;
-  font-weight: 700;
-}
-.apple-title-2 {
-  font-size: 22px;
-  line-height: 28px;
-  letter-spacing: -0.017em;
-  font-weight: 700;
-}
-.apple-title-3 {
-  font-size: 20px;
-  line-height: 25px;
-  letter-spacing: -0.014em;
-  font-weight: 600;
-}
-.apple-headline {
-  font-size: 17px;
-  line-height: 22px;
-  letter-spacing: -0.015em;
-  font-weight: 600;
-}
-.apple-body {
-  font-size: 17px;
-  line-height: 22px;
-  letter-spacing: -0.015em;
-  font-weight: 400;
-}
-.apple-callout {
-  font-size: 16px;
-  line-height: 21px;
-  letter-spacing: -0.010em;
-  font-weight: 400;
-}
-.apple-subheadline {
-  font-size: 15px;
-  line-height: 20px;
-  letter-spacing: -0.005em;
-  font-weight: 400;
-}
-.apple-footnote {
-  font-size: 13px;
-  line-height: 18px;
-  letter-spacing: 0.005em;
-  font-weight: 400;
-}
-.apple-caption-1 {
-  font-size: 12px;
-  line-height: 16px;
-  letter-spacing: 0.008em;
-  font-weight: 400;
-}
-.apple-caption-2 {
-  font-size: 11px;
-  line-height: 13px;
-  letter-spacing: 0.010em;
-  font-weight: 400;
-}
-
-/* =========================================================================
-   Linear-Grade Surfaces & Panel Materials (Crisp Slate, No Glass Blur)
-   ========================================================================= */
-.apple-vibrancy-ultra-thin {
-  background: #141517;
-  border: 1px solid #23262a;
-}
-
-.apple-vibrancy-thin {
-  background: #141517;
-  border: 1px solid #23262a;
-}
-
-.apple-vibrancy-regular {
-  background: #141517;
-  border: 1px solid #23262a;
-}
-
-.apple-vibrancy-thick {
-  background: #181a1d;
-  border: 1px solid #23262a;
-}
-
-/* Translucent Apple Glass & Cards */
-.apple-glass {
-  background: #141517;
-  border: 1px solid #23262a;
-}
-
-.apple-card {
-  background: #141517;
-  border: 1px solid #23262a;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.6);
-}
-
-.apple-card-raised {
-  background: #181a1d;
-  border: 1px solid #282c32;
-  box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.7);
-}
-
-/* =========================================================================
-   0.5px Hairline Strokes & Dividers (Retina Crisp)
-   ========================================================= */
-.hairline-border {
-  border: 0.5px solid rgba(255, 255, 255, 0.08);
-}
-.hairline-border-strong {
-  border: 0.5px solid rgba(255, 255, 255, 0.16);
-}
-.hairline-divider {
-  height: 0.5px;
-  background-color: rgba(255, 255, 255, 0.08);
-  width: 100%;
-}
-.hairline-divider-v {
-  width: 0.5px;
-  background-color: rgba(255, 255, 255, 0.08);
-  height: 100%;
-}
-.hairline-t {
-  border-top: 0.5px solid rgba(255, 255, 255, 0.08);
-}
-.hairline-b {
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
-}
-.hairline-l {
-  border-left: 0.5px solid rgba(255, 255, 255, 0.08);
-}
-.hairline-r {
-  border-right: 0.5px solid rgba(255, 255, 255, 0.08);
-}
-
-/* =========================================================================
-   Fluid Spring Physics & Micro-interactions
-   ========================================================================= */
-.ease-spring {
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-}
-.ease-spring-bouncy {
-  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.apple-press {
-  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease;
-}
-.apple-press:active {
-  transform: scale(0.98);
-}
-
-.apple-button {
-  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s ease, box-shadow 0.15s ease;
-}
-.apple-button:active {
-  transform: scale(0.98);
-}
-
-/* Apple visible 2px focus ring with offset */
-:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--accent-blue);
-}
-
-/* =========================================================================
-   Linear Mechanical Keycaps (Tactile Solid Physical Keycap)
-   ========================================================================= */
-.apple-keycap {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-weight: 500;
-  background: #181a1d;
-  color: #f4f5f6;
-  border: 1px solid #34383f;
-  border-bottom: 2px solid #23262a;
-  border-radius: 5px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-  transition: transform 0.1s ease, border-bottom-width 0.1s ease;
-  user-select: none;
-}
-.apple-keycap:active, .apple-keycap.active {
-  transform: translateY(1px);
-  border-bottom-width: 1px;
-}
-
-/* Custom minimal scrollbar */
+/* Scrollbar polish */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 9999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.25);
 }
