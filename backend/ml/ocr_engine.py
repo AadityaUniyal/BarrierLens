@@ -70,16 +70,14 @@ class VisualTextRecoveryEngine:
                 try:
                     extracted_text = self.pytesseract.image_to_string(image).strip()
                 except Exception:
-                    self._ensure_ocr()
-            extracted_text = ""
+                    extracted_text = ""
             elif self._ocr_available and self.backend == "easyocr":
                 try:
                     import numpy as np
                     results = self.reader.readtext(np.array(image))
                     extracted_text = " ".join([r[1] for r in results if r[2] > 0.4]).strip()
                 except Exception:
-                    self._ensure_ocr()
-            extracted_text = ""
+                    extracted_text = ""
 
             # Clean extracted text
             extracted_text = re.sub(r"\s+", " ", extracted_text).strip()
