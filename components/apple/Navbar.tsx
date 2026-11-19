@@ -227,6 +227,15 @@ export function Navbar({
             )}
           </div>
 
+          {/* System Health Telemetry Pill */}
+          <div 
+            className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded-md bg-[#141517] border border-[#23262a] text-[11px] font-mono"
+            title={`${servicesCount.operational} of ${servicesCount.total} Cloud Services Operational`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${servicesCount.operational === servicesCount.total ? 'bg-[#30a46c]' : 'bg-[#f76808] animate-pulse'}`} />
+            <span className="text-[#9ba1a6]">{servicesCount.operational}/{servicesCount.total} Systems</span>
+          </div>
+
           {/* Quick Search Palette (Cmd+K) */}
           <button
             type="button"

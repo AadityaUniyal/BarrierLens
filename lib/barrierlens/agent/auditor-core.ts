@@ -106,9 +106,12 @@ export class AuditorCore {
 
       this.reflexionEngine.clear();
 
+      // Register observer script before navigation so it attaches at document creation
+      await page.addInitScript({ content: INJECTED_OBSERVER_SCRIPT });
+
       // Navigate to target
       await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await page.addInitScript({ content: INJECTED_OBSERVER_SCRIPT });
+      await page.evaluate(INJECTED_OBSERVER_SCRIPT).catch(() => {});
       await page.waitForTimeout(1000);
 
       // Autonomous Reconnaissance: If goal is empty or default generic, deduce mission dynamically from DOM landmarks

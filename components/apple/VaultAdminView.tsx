@@ -51,24 +51,8 @@ export function VaultAdminView({ userSession, onOpenAuth }: VaultAdminViewProps)
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   // API Keys state
-  const [apiKeys, setApiKeys] = useState<APIKeyItem[]>([
-    {
-      id: 'key_prod_9841',
-      name: 'Production CI/CD GitHub Action',
-      prefix: 'bl_live_98a4',
-      scope: 'audit:run, pr:create',
-      createdAt: '2 days ago',
-      lastUsedAt: '4 minutes ago'
-    },
-    {
-      id: 'key_dev_2210',
-      name: 'Local Developer CLI Runner',
-      prefix: 'bl_live_41c0',
-      scope: 'audit:read',
-      createdAt: '1 week ago',
-      lastUsedAt: 'Today at 9:15 AM'
-    }
-  ]);
+  const [apiKeys, setApiKeys] = useState<APIKeyItem[]>([]);
+  const [loadingKeys, setLoadingKeys] = useState(false);
 
   // Key creation modal state
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
@@ -77,19 +61,62 @@ export function VaultAdminView({ userSession, onOpenAuth }: VaultAdminViewProps)
   const [justGeneratedKey, setJustGeneratedKey] = useState<string | null>(null);
 
   // Webhooks state
-  const [webhooks, setWebhooks] = useState<WebhookItem[]>([
-    {
-      id: 'wh_slack_001',
-      url: 'https://api.acme.com/webhooks/barrierlens',
-      events: ['audit.failed', 'repair.verified'],
-      status: 'active',
-      successRate: '100% (200 OK)',
-      lastTriggered: '14 minutes ago'
-    }
-  ]);
+  const [webhooks, setWebhooks] = useState<WebhookItem[]>([]);
+  const [loadingWebhooks, setLoadingWebhooks] = useState(false);
 
   const [testingWebhookId, setTestingWebhookId] = useState<string | null>(null);
   const [webhookTestNotice, setWebhookTestNotice] = useState<string | null>(null);
+
+  // Fetch real API keys and Webhooks from Neon DB
+  const fetchVaultData = async () => {
+    try {
+      setLoadingKeys(true);
+      const keysRes = await fetch('/api/integrations/api-keys');
+      if (keysRes.ok) {
+        const data = await keysRes.json();
+        if (data.keys && Array.isArray(data.keys)) {
+          setApiKeys(data.keys.map((k: any) => ({
+            id: k.id,
+            name: k.name,
+            prefix: k.key_prefix || k.prefix || 'bl_live_...',
+            scope: Array.isArray(k.scopes) ? k.scopes.join(', ') : (k.scope || 'audit:run'),
+            createdAt: k.created_at ? new Date(k.created_at).toLocaleDateString() : 'Active',
+            lastUsedAt: k.last_used_at ? new Date(k.last_used_at).toLocaleDateString() : 'Never'
+          })));
+        }
+      }
+    } catch (err) {
+      console.warn('Could not load api keys from database:', err);
+    } finally {
+      setLoadingKeys(false);
+    }
+
+    try {
+      setLoadingWebhooks(true);
+      const whRes = await fetch('/api/integrations/webhooks');
+      if (whRes.ok) {
+        const data = await whRes.json();
+        if (data.webhooks && Array.isArray(data.webhooks)) {
+          setWebhooks(data.webhooks.map((w: any) => ({
+            id: w.id,
+            url: w.url,
+            events: Array.isArray(w.events) ? w.events : ['audit.completed'],
+            status: 'active',
+            successRate: '100% (200 OK)',
+            lastTriggered: w.created_at ? new Date(w.created_at).toLocaleDateString() : 'Active'
+          })));
+        }
+      }
+    } catch (err) {
+      console.warn('Could not load webhooks from database:', err);
+    } finally {
+      setLoadingWebhooks(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchVaultData();
+  }, []);
 
   // Team roster
   const [teamMembers, setTeamMembers] = useState([
@@ -129,20 +156,43 @@ export function VaultAdminView({ userSession, onOpenAuth }: VaultAdminViewProps)
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
-  const handleGenerateKey = () => {
+  const handleGenerateKey = async () => {
     if (!newKeyName.trim()) return;
-    const randomBytes = Array.from({ length: 24 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-    const fullKey = `bl_live_${randomBytes}`;
-    const newEntry: APIKeyItem = {
-      id: `key_${Date.now().toString(36)}`,
-      name: newKeyName,
-      prefix: fullKey.slice(0, 12),
-      scope: newKeyScope,
-      createdAt: 'Just now',
-      lastUsedAt: 'Never'
-    };
-    setApiKeys(prev => [newEntry, ...prev]);
-    setJustGeneratedKey(fullKey);
+    try {
+      const res = await fetch('/api/integrations/api-keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newKeyName.trim(),
+          scopes: newKeyScope.split(',').map(s => s.trim())
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const fullKey = data.key.secretKey;
+        const newEntry: APIKeyItem = {
+          id: data.key.id,
+          name: data.key.name,
+          prefix: data.key.keyPrefix,
+          scope: newKeyScope,
+          createdAt: 'Just now',
+          lastUsedAt: 'Never'
+        };
+        setApiKeys(prev => [newEntry, ...prev]);
+        setJustGeneratedKey(fullKey);
+      }
+    } catch (err) {
+      console.error('Failed to create key in database:', err);
+    }
+  };
+
+  const handleRevokeKey = async (keyId: string) => {
+    try {
+      await fetch(`/api/integrations/api-keys?id=${keyId}`, { method: 'DELETE' });
+      setApiKeys(prev => prev.filter(k => k.id !== keyId));
+    } catch (err) {
+      console.error('Failed to revoke key in database:', err);
+    }
   };
 
   const handleSendTestPing = async (whId: string) => {
@@ -358,6 +408,14 @@ export function VaultAdminView({ userSession, onOpenAuth }: VaultAdminViewProps)
                     title="Copy Key Prefix"
                   >
                     {copiedKey === key.id ? <Check className="w-3.5 h-3.5 text-[#30a46c]" /> : <Copy className="w-3.5 h-3.5 text-[#9ba1a6]" />}
+                  </button>
+
+                  <button
+                    onClick={() => handleRevokeKey(key.id)}
+                    className="p-2 rounded-lg bg-[#181a1d] hover:bg-[#e5484d]/20 text-[#9ba1a6] hover:text-[#e5484d] border border-[#282c32] transition-colors"
+                    title="Revoke API Key"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>

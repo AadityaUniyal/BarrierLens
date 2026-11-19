@@ -150,11 +150,16 @@ export default function Home() {
       })
       .catch(() => {});
 
-    // 1. Check Service Health
-    fetch('/api/backend/health')
+    // 1. Check Service Health from live diagnostics
+    fetch('/api/health')
       .then(res => res.json())
       .then(data => {
-        setServicesHealth({ operational: 7, total: 7 });
+        if (data.services && Array.isArray(data.services)) {
+          const op = data.services.filter((s: any) => s.status === 'operational').length;
+          setServicesHealth({ operational: op, total: data.services.length });
+        } else {
+          setServicesHealth({ operational: data.status === 'ok' ? 7 : 6, total: 7 });
+        }
       })
       .catch(() => {
         setServicesHealth({ operational: 6, total: 7 });
@@ -630,11 +635,23 @@ export default function Home() {
           <AWSBridgeConsole />
         )}
 
-        {activeScreen === 'settings' && (
+        {(activeScreen === 'settings' || activeScreen === 'vault') && (
           <VaultAdminView
             userSession={userSession}
             onOpenAuth={() => setIsAuthModalOpen(true)}
           />
+        )}
+
+        {activeScreen === 'multi-agent' && (
+          <MultiAgentMeshView />
+        )}
+
+        {activeScreen === 'trends' && (
+          <TrendsView runs={runsHistory} />
+        )}
+
+        {activeScreen === 'scorecard' && (
+          <PublicScorecardView auditRun={auditResult} />
         )}
 
         {activeScreen === 'story' && (

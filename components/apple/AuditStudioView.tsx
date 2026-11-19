@@ -88,12 +88,14 @@ export function AuditStudioView({
   const [isSwarmRunning, setIsSwarmRunning] = useState<boolean>(false);
   const [swarmSummary, setSwarmSummary] = useState<any | null>(null);
   const [isDiscovering, setIsDiscovering] = useState<boolean>(false);
+  const [actionNotice, setActionNotice] = useState<{ type: 'error' | 'success'; message: string } | null>(null);
   const [discoveredJourneys, setDiscoveredJourneys] = useState<Array<{ name: string; goalText: string; startingUrl: string; criticality: string }>>([]);
 
   const handleRunSwarm = async () => {
     if (!targetUrl || !goal) return;
     setIsSwarmRunning(true);
     setSwarmSummary(null);
+    setActionNotice(null);
     try {
       const res = await fetch('/api/audit/swarm', {
         method: 'POST',
@@ -110,9 +112,14 @@ export function AuditStudioView({
       if (res.ok) {
         const data = await res.json();
         setSwarmSummary(data.summary);
+        setActionNotice({ type: 'success', message: 'Multi-persona swarm audit completed successfully.' });
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setActionNotice({ type: 'error', message: errData.error || 'Swarm execution failed' });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to execute multi-persona swarm:', err);
+      setActionNotice({ type: 'error', message: err?.message || 'Swarm audit execution failed' });
     } finally {
       setIsSwarmRunning(false);
     }
@@ -121,6 +128,7 @@ export function AuditStudioView({
   const handleDiscoverDomain = async () => {
     if (!targetUrl) return;
     setIsDiscovering(true);
+    setActionNotice(null);
     try {
       const res = await fetch('/api/crawler/discover', {
         method: 'POST',
@@ -135,9 +143,25 @@ export function AuditStudioView({
             setGoal(data.journeys[0].goalText || data.journeys[0].name);
           }
         }
+        setActionNotice({
+          type: 'success',
+          message: `Discovered ${data.totalRoutesDiscovered || data.journeys?.length || 0} routes and synthesized journeys.`
+        });
+      } else if (res.status === 401) {
+        setActionNotice({
+          type: 'error',
+          message: 'Sign-in required: Please sign in or supply an API key to run autonomous domain discovery.'
+        });
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setActionNotice({
+          type: 'error',
+          message: errData.error || 'Domain discovery failed'
+        });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to discover domain routes & CUJs:', err);
+      setActionNotice({ type: 'error', message: err?.message || 'Domain crawler connection failed' });
     } finally {
       setIsDiscovering(false);
     }
@@ -388,6 +412,24 @@ export function AuditStudioView({
             </button>
           )}
         </div>
+
+        {/* Action Feedback Banner */}
+        {actionNotice && (
+          <div className={`p-2.5 rounded-lg border text-xs font-mono flex items-center justify-between animate-in fade-in ${
+            actionNotice.type === 'error' 
+              ? 'bg-[#e5484d]/10 border-[#e5484d]/30 text-[#ff8b8e]' 
+              : 'bg-[#30a46c]/10 border-[#30a46c]/30 text-[#30a46c]'
+          }`}>
+            <span>{actionNotice.message}</span>
+            <button 
+              type="button" 
+              onClick={() => setActionNotice(null)}
+              className="text-[#9ba1a6] hover:text-white text-xs px-1"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {/* Synthesized CUJs Drawer */}
         {discoveredJourneys.length > 0 && (

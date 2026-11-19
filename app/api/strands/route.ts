@@ -58,10 +58,19 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
+  const pythonBackendUrl = process.env.PYTHON_BACKEND_URL || 'http://127.0.0.1:8000';
+  let pythonAvailable = false;
+  try {
+    const ping = await fetch(`${pythonBackendUrl}/health`, { signal: AbortSignal.timeout(1000) });
+    pythonAvailable = ping.ok;
+  } catch {
+    pythonAvailable = false;
+  }
+
   return NextResponse.json({
     status: 'operational',
     framework: 'AWS Strands Agents (Python + Node.js Dual Runtime)',
-    pythonBackendAvailable: true,
+    pythonBackendAvailable: pythonAvailable,
     models: {
       routine: 'amazon.nova-micro-v1:0 ($0.000035/1K tokens)',
       reasoning: 'amazon.nova-pro-v1:0 ($0.0008/1K tokens)',

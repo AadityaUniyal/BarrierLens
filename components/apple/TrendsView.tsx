@@ -26,7 +26,7 @@ interface RunRecord {
 }
 
 interface TrendsViewProps {
-  runs: RunRecord[];
+  runs?: RunRecord[];
 }
 
 interface AnalyticsTrendsResponse {
@@ -51,7 +51,7 @@ interface AnalyticsTrendsResponse {
   }>;
 }
 
-export function TrendsView({ runs }: TrendsViewProps) {
+export function TrendsView({ runs = [] }: TrendsViewProps) {
   const driftSentinel = useMemo(() => new DriftSentinelEngine(), []);
   const [analytics, setAnalytics] = useState<AnalyticsTrendsResponse | null>(null);
   const [loadingAnalytics, setLoadingAnalytics] = useState<boolean>(true);

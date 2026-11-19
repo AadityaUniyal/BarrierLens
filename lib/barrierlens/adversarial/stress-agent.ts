@@ -88,8 +88,10 @@ export class AdversarialStressAgent {
       });
       page = await context.newPage();
 
-      await page.goto(config.targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      // Register observer script before navigation so it attaches at document creation
       await page.addInitScript({ content: INJECTED_OBSERVER_SCRIPT });
+      await page.goto(config.targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.evaluate(INJECTED_OBSERVER_SCRIPT).catch(() => {});
       await page.waitForTimeout(800);
 
       // Initial interactive element count
