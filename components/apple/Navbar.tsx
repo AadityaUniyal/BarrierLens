@@ -167,10 +167,10 @@ export function Navbar({
             <div className="hidden lg:flex items-center gap-2 pl-3 border-hairline-l">
               <div className="flex items-center gap-1.5 px-2 py-0.5 border-hairline text-[10px] font-mono text-[#10b981]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
-                <span>BEDROCK NOVA</span>
+                <span>WCAG 2.2 AAA</span>
               </div>
-              <div className="flex items-center gap-1.5 px-2 py-0.5 border-hairline text-[10px] font-mono text-[rgba(255,255,255,0.6)]">
-                <span>CDP 9222</span>
+              <div className="flex items-center gap-1.5 px-2 py-0.5 border-hairline text-[10px] font-mono text-[rgba(255,255,255,0.7)]">
+                <span>EAA 2025 READY</span>
               </div>
             </div>
           )}

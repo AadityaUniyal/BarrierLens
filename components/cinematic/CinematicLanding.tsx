@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Lenis from 'lenis';
 import { 
   ArrowRight, 
-  ArrowUpRight,
-  Terminal, 
+  ArrowUpRight, 
   ShieldCheck, 
   Sparkles, 
   Volume2, 
@@ -14,10 +13,7 @@ import {
   ExternalLink,
   Code2,
   FileCheck,
-  ChevronRight,
   ChevronDown,
-  Cpu,
-  Flame,
   CheckCircle2,
   AlertTriangle,
   Play,
@@ -26,7 +22,10 @@ import {
   Lock,
   GitPullRequest,
   Check,
-  X
+  Keyboard,
+  Eye,
+  Sliders,
+  MousePointerClick
 } from 'lucide-react';
 import { PersonaType } from '@/lib/barrierlens/types';
 
@@ -62,11 +61,11 @@ export function CinematicLanding({
 
   // Quick Trial Input State
   const [trialUrl, setTrialUrl] = useState<string>('/benchmark');
-  const [trialGoal, setTrialGoal] = useState<string>('Verify modal escape and keyboard focus traversal');
+  const [trialGoal, setTrialGoal] = useState<string>('Test keyboard navigation and modal escape flow');
   const [trialPersona, setTrialPersona] = useState<PersonaType>('keyboard');
 
   // Hero Proof Preview Active Tab
-  const [heroProofTab, setHeroProofTab] = useState<'tarjan' | 'diff' | 'voiceover' | 'certificate'>('tarjan');
+  const [heroProofTab, setHeroProofTab] = useState<'focus' | 'diff' | 'screenreader' | 'report'>('focus');
 
   // Featured Slide State (1/5)
   const [activeSlide, setActiveSlide] = useState<number>(0);
@@ -77,233 +76,207 @@ export function CinematicLanding({
   // FAQ Accordion State
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  // Interactive Tarjan SCC Demo
-  const [tarjanStep, setTarjanStep] = useState<number>(1);
-  const [trapEscaped, setTrapEscaped] = useState<boolean>(false);
+  // Interactive Focus Trap Demo State
+  const [focusStep, setFocusStep] = useState<number>(1);
+  const [isTrapEscaped, setIsTrapEscaped] = useState<boolean>(false);
 
-  const handleNextTarjan = () => {
-    if (tarjanStep === 1) setTarjanStep(2);
-    else if (tarjanStep === 2) setTarjanStep(3);
-    else if (tarjanStep === 3) {
-      if (trapEscaped) {
-        setTarjanStep(5); // Escaped to document root!
+  const handleNextFocusStep = () => {
+    if (focusStep === 1) setFocusStep(2);
+    else if (focusStep === 2) setFocusStep(3);
+    else if (focusStep === 3) {
+      if (isTrapEscaped) {
+        setFocusStep(5); // Clean escape back to root
       } else {
-        setTarjanStep(4); // Into trap modal
+        setFocusStep(4); // Into trap button
       }
-    } else if (tarjanStep === 4) {
-      if (trapEscaped) {
-        setTarjanStep(5);
+    } else if (focusStep === 4) {
+      if (isTrapEscaped) {
+        setFocusStep(5);
       } else {
-        setTarjanStep(3); // Closed loop cycle!
+        setFocusStep(3); // Trapped in closed loop!
       }
     } else {
-      setTarjanStep(1);
+      setFocusStep(1);
     }
   };
 
   const featureSlides = [
     {
       num: '01',
-      chunks: ['TAR', 'JAN', 'SCC'],
-      title: 'Tarjan SCC Focus Sink Proofs',
-      italicTag: 'Directed cycle detection over CDP tab transitions.',
-      desc: 'Static linters cannot know if focus ever leaves an element. BarrierLens models the entire DOM tab sequence as a directed graph G=(V,E) and computes Strongly Connected Components. Any terminal sink with zero out-degree is mathematically proven to be a trap with zero false positives.',
-      metric: '0 False Positives',
-      metricLabel: 'Mathematical Proof vs Heuristics',
+      chunks: ['KEY', 'BOARD', 'TRAP'],
+      title: 'Interactive Keyboard Trap Detection',
+      italicTag: 'Verify that modal overlays, drawers, and menus can be escaped.',
+      desc: 'Static code scanners cannot tell whether a user can actually tab out of an element. BarrierLens navigates interactive web pages like a keyboard-only user, testing modal dialogs, slide-out carts, and responsive menus to guarantee that focus is never permanently trapped.',
+      metric: '0 False Alarms',
+      metricLabel: 'Verified Behavioral Evidence',
       badge: 'WCAG 2.1.2 Level A',
       actionUrl: '/fixtures/keyboard-trap',
-      actionGoal: 'Prove modal keyboard focus sink cycle'
+      actionGoal: 'Verify modal keyboard escape flow'
     },
     {
       num: '02',
-      chunks: ['KEN', 'DALL', 'TAU'],
-      title: 'Kendall’s Tau (τ) Reading Discordance',
-      italicTag: 'Spatial 2D visual layout vs DOM accessibility tree.',
-      desc: 'CSS grid and flexbox frequently invert visual reading sequence relative to screen reader traversal order. BarrierLens evaluates the rank concordance between 2D (Y, X) coordinate order and accessibility tree indices. Drops below τ = 0.70 flag severe disorientation barriers.',
-      metric: 'τ = 0.52 Inversion',
-      metricLabel: 'Kendall Concordance Threshold',
+      chunks: ['FLOW', 'CONCORD', 'ANCE'],
+      title: 'Visual vs. Assistive Reading Order',
+      italicTag: 'Ensure responsive CSS layouts match screen reader reading flow.',
+      desc: 'Modern CSS flexbox and grid layouts frequently display content in one visual sequence while screen readers read it in a completely inverted order. BarrierLens detects spatial reading order disconnects so all users experience a coherent narrative.',
+      metric: 'Rank Aligned',
+      metricLabel: 'Reading Order Integrity',
       badge: 'WCAG 1.3.2 Level A',
       actionUrl: '/fixtures/disordered-unreachable',
-      actionGoal: 'Detect reading order inversion and unreachable controls'
+      actionGoal: 'Check reading order concordance on responsive layouts'
     },
     {
       num: '03',
-      chunks: ['VOICE', 'OVER', 'GAP'],
-      title: 'VoiceOver Acoustic Stream Gaps',
-      italicTag: 'Real-time speech mutation silence detector.',
-      desc: 'When an asynchronous cart total updates or an inline validation error triggers without aria-live, blind users are completely unalerted. BarrierLens measures the acoustic delta between DOM state mutations and screen reader speech synthesis buffers.',
-      metric: '0.00ms Announced',
-      metricLabel: 'Assistive Silence Detection',
+      chunks: ['VOICE', 'LIVE', 'SPEECH'],
+      title: 'Screen Reader Voice Simulation',
+      italicTag: 'Catch silent form errors and unannounced checkout updates.',
+      desc: 'When a shopping cart total updates or an inline validation message appears dynamically without live region announcements, blind and low-vision users receive zero feedback. BarrierLens simulates the screen reader voice output to catch assistive silences.',
+      metric: 'Real-Time Alert',
+      metricLabel: 'Dynamic Change Announcement',
       badge: 'WCAG 4.1.3 Level AA',
       actionUrl: '/benchmark',
-      actionGoal: 'Verify live announcement of dynamic validation updates'
+      actionGoal: 'Verify live announcements of dynamic errors'
     },
     {
       num: '04',
-      chunks: ['CAU', 'SAL', 'SCM'],
-      title: 'Pearl SCM Causal AST Certificates',
-      italicTag: 'Cryptographic do-calculus counterfactual verification.',
-      desc: 'We do not generate arbitrary AI advice. Applying Judea Pearl’s Structural Causal Models, BarrierLens simulates interventions do(X = x*), compiles minimal surgical AST patches, and produces a SHA-256 signed certificate proving the barrier is eradicated with zero side-effect regressions.',
-      metric: 'SHA-256 Signed',
-      metricLabel: 'Counterfactual Proof Certificate',
-      badge: 'Automated Pull Requests',
+      chunks: ['AUTO', 'CODE', 'FIXES'],
+      title: 'Verified Code Fixes & GitHub Pull Requests',
+      italicTag: 'Surgical React and HTML patches ready to merge with one click.',
+      desc: 'Traditional accessibility audits give you hundreds of confusing error tickets. BarrierLens synthesizes clean, minimal code patches (e.g., adding missing ARIA tags, restoring escape key handlers) and tests them before opening a ready-to-merge GitHub pull request.',
+      metric: '1-Click Merge',
+      metricLabel: 'Zero Regression Code Patches',
+      badge: 'GitHub Native Integration',
       actionUrl: '/fixtures/accname-wcag',
-      actionGoal: 'Synthesize verified ARIA attribute injection patch'
+      actionGoal: 'Review verified accessibility code diff'
     },
     {
       num: '05',
-      chunks: ['GEN', 'OME', '768'],
-      title: '768-d Barrier Genome Embeddings',
-      italicTag: 'Cross-site zero-shot transfer learning via pgvector.',
-      desc: 'Every barrier discovered across enterprise audits is vectorized into a 768-dimensional normalized embedding space stored in Neon Serverless PostgreSQL with HNSW cosine indexes. Similar visual and structural traps are predicted zero-shot before tests run.',
-      metric: '768-d Cosine HNSW',
-      metricLabel: 'Vector Knowledge Base',
-      badge: 'pgvector Multi-Tenant',
+      chunks: ['CI/CD', 'GUARD', 'RAILS'],
+      title: 'Continuous CI/CD Compliance Guardrails',
+      italicTag: 'Catch accessibility regressions in staging before production deploy.',
+      desc: 'Integrate BarrierLens directly into your GitHub Actions or deployment pipeline. Every new pull request is automatically tested across simulated user journeys, ensuring your web application stays permanently compliant as your product evolves.',
+      metric: 'Pre-Merge Gate',
+      metricLabel: 'Continuous Compliance Ledger',
+      badge: 'EAA 2025 & WCAG 2.2 Ready',
       actionUrl: '/benchmark',
-      actionGoal: 'Vectorize barrier signature into genome embedding space'
+      actionGoal: 'Run automated compliance pipeline test'
     }
   ];
 
   const proofItems = [
     {
       id: '01',
-      name: 'Modal Dialog Keyboard Focus Sink',
-      italic: 'Escape key unbound; Tab cycles indefinitely',
+      name: 'Modal Dialog Keyboard Trap',
+      italic: 'Escape key ignored; Tab navigation loops inside overlay indefinitely',
       wcag: 'WCAG 2.1.2 Level A',
-      severity: 9.8,
-      proof: 'Tarjan SCC Sink Cycle Verified',
+      severity: 'Critical',
+      impact: 'Blocks keyboard-only users from continuing',
       url: '/fixtures/keyboard-trap',
-      goal: 'Trap focus in newsletter modal and attempt escape'
+      goal: 'Test newsletter modal escape and keyboard focus return'
     },
     {
       id: '02',
-      name: 'Unlabeled Dismiss Icon Button',
-      italic: 'Empty accessible name in CDP accessibility tree',
+      name: 'Unlabeled Icon Action Button',
+      italic: 'Interactive SVG button has no accessible text name',
       wcag: 'WCAG 4.1.2 Level A',
-      severity: 7.5,
-      proof: 'Name/Role/Value Tree Extraction',
+      severity: 'High',
+      impact: 'Screen readers announce &quot;Button&quot; with no purpose',
       url: '/fixtures/accname-wcag',
-      goal: 'Identify and activate icon drawer dismiss controls'
+      goal: 'Identify and test unlabeled drawer dismiss icon buttons'
     },
     {
       id: '03',
-      name: 'Flexbox Reverse Reading Inversion',
-      italic: 'Visual reading flow diverges from DOM accessibility tree',
+      name: 'Visual vs. Assistive Reading Inversion',
+      italic: 'CSS flex-direction reverses visual cards while DOM order is backward',
       wcag: 'WCAG 1.3.2 Level A',
-      severity: 6.0,
-      proof: 'Kendall Tau τ = 0.52 (Threshold < 0.70)',
+      severity: 'Medium',
+      impact: 'Low-vision and screen reader users hear content in wrong order',
       url: '/fixtures/disordered-unreachable',
       goal: 'Evaluate reading order concordance across responsive grid'
     },
     {
       id: '04',
-      name: 'Silent Asynchronous Validation Failure',
-      italic: 'Server response injects error without speech announcement',
+      name: 'Silent Form Validation Error',
+      italic: 'Error banner appears dynamically without screen reader alert',
       wcag: 'WCAG 4.1.3 Level AA',
-      severity: 8.4,
-      proof: 'Acoustic Speech Gap Delta = 0ms',
+      severity: 'High',
+      impact: 'User cannot tell why submit button was disabled',
       url: '/benchmark',
       goal: 'Submit invalid payload and verify screen reader announcement'
     },
     {
       id: '05',
-      name: 'Focus Loss on Offcanvas Drawer Close',
-      italic: 'Closing drawer dumps focus onto document root body',
+      name: 'Focus Drop on Modal Close',
+      italic: 'Closing slide-out cart dumps focus onto the document root',
       wcag: 'WCAG 2.4.3 Level A',
-      severity: 6.8,
-      proof: 'Focus Restoration Invariant Failed',
+      severity: 'Medium',
+      impact: 'Keyboard users lose their place on the page',
       url: '/fixtures/focus-loss',
       goal: 'Open slide-out drawer, close it, and check focus return'
     },
     {
       id: '06',
-      name: '320px Viewport Horizontal Reflow Overflow',
-      italic: 'Fixed width container triggers horizontal scroll on mobile',
-      wcag: 'WCAG 1.4.10 Level AA',
-      severity: 7.2,
-      proof: 'Viewport Reflow Geometry Collision',
-      url: '/benchmark',
-      goal: 'Simulate mobile viewport reflow at 320px width'
-    },
-    {
-      id: '07',
-      name: 'APCA Low Contrast Text Over Media',
-      italic: 'Light text over background video stream fails Lc 45',
-      wcag: 'WCAG 1.4.3 Level AA',
-      severity: 5.5,
-      proof: 'APCA Perceptual Luminance Contrast',
-      url: '/benchmark',
-      goal: 'Measure perceptual APCA contrast over dynamic canvas'
-    },
-    {
-      id: '08',
-      name: 'Parkinson Motor Tremor Target Miss',
-      italic: 'Interactive touch targets smaller than 24x24px',
+      name: 'Small Touch & Click Target Size',
+      italic: 'Action button smaller than 24x24px minimum touch boundary',
       wcag: 'WCAG 2.5.8 Level AA',
-      severity: 8.0,
-      proof: 'Physical Fitts Law Tremor Simulation',
+      severity: 'Medium',
+      impact: 'Causes missed taps for users with motor tremors or mobile screens',
       url: '/benchmark',
-      goal: 'Simulate motor tremor perturbation on compact controls'
+      goal: 'Measure touch target bounding boxes against accessibility criteria'
     }
   ];
 
   const comparisonRows = [
     {
-      feature: 'Keyboard Trap Detection (WCAG 2.1.2)',
-      barrierlens: 'Formal Tarjan SCC Graph Cycle (100% Deterministic)',
-      axe: 'Rule-based static check (Misses dynamic traps)',
-      lighthouse: 'Basic element focus check',
-      overlays: 'Completely blind (causes more traps)'
+      feature: 'Keyboard Trap Detection (Modals & Drawers)',
+      barrierlens: 'Interactive User Journey Simulation',
+      linters: 'Checks static HTML only (Misses real traps)',
+      overlays: 'Fails to fix (often adds more traps)'
     },
     {
-      feature: 'Reading Flow Concordance (WCAG 1.3.2)',
-      barrierlens: 'Kendall Tau (τ) 2D Coordinate vs DOM Tree',
-      axe: 'Not supported',
-      lighthouse: 'Not supported',
+      feature: 'Visual vs Screen Reader Reading Order',
+      barrierlens: 'Automated 2D Layout Concordance Check',
+      linters: 'Not supported',
       overlays: 'Not supported'
     },
     {
-      feature: 'Screen Reader Speech Audio Gaps',
-      barrierlens: 'Dual-frequency acoustic synthesis simulation',
-      axe: 'Static aria-live attribute presence only',
-      lighthouse: 'Static attribute check',
-      overlays: 'Superficial text-to-speech injection'
+      feature: 'Screen Reader Speech Voice Verification',
+      barrierlens: 'Live Speech Synthesizer Simulation',
+      linters: 'Checks static aria-live attribute text',
+      overlays: 'Superficial text-to-speech widget'
     },
     {
       feature: 'False Positive Ratio',
-      barrierlens: '0% on certified mathematical proofs',
-      axe: '35% – 50% warning noise',
-      lighthouse: '40% warning noise',
-      overlays: 'N/A (Breaks user experience)'
+      barrierlens: 'Zero false alarms on verified user flows',
+      linters: '30% – 50% warning noise that slows teams',
+      overlays: 'Creates user confusion & breaks UI'
     },
     {
-      feature: 'Automated Verified AST Remediation',
-      barrierlens: 'Causal SCM AST diffs with 1-click GitHub PR',
-      axe: 'Text documentation links only',
-      lighthouse: 'Text recommendations only',
-      overlays: 'Fragile runtime DOM monkey-patching'
+      feature: 'Automated Code Fixes & GitHub PRs',
+      barrierlens: 'Surgical code diffs with 1-click merge',
+      linters: 'Generic documentation links only',
+      overlays: 'Temporary runtime JS patches only'
     },
     {
-      feature: 'EAA 2025 Legal Compliance Certificate',
-      barrierlens: 'Cryptographic SHA-256 signed ledger',
-      axe: 'None',
-      lighthouse: 'None',
-      overlays: 'Rejected in US & EU courts'
+      feature: 'EAA 2025 & ADA Legal Defense',
+      barrierlens: 'Full source-code compliance documentation',
+      linters: 'Insufficient for legal compliance',
+      overlays: 'Rejected in US & EU federal courts'
     }
   ];
 
   const pricingTiers = [
     {
-      name: 'Community / Developer',
+      name: 'Developer Sandbox',
       price: '$0',
-      period: 'forever',
-      desc: 'Essential mathematical proofs and local benchmark testbeds for individual developers.',
+      period: 'free forever',
+      desc: 'Test your personal projects and explore interactive accessibility verification.',
       features: [
-        '10 autonomous audits / month',
-        'Tarjan SCC directed graph cycle proofs',
-        '4 ground-truth benchmark fixtures',
-        'Headless Chromium CDP runner',
-        'Community Discord & GitHub support'
+        '10 autonomous user journey audits / mo',
+        'Interactive keyboard focus trap testing',
+        'Ground-truth benchmark testbeds',
+        'Visual DOM and code diff previews',
+        'Community support & documentation'
       ],
       cta: 'Start Free Sandbox',
       popular: false,
@@ -313,34 +286,33 @@ export function CinematicLanding({
       name: 'Team Pro',
       price: '$79',
       period: 'per month',
-      desc: 'Continuous CI/CD accessibility verification and automated GitHub pull requests.',
+      desc: 'Continuous accessibility testing, automated GitHub pull requests, and compliance alerts.',
       features: [
         'Unlimited autonomous user journey audits',
-        'Amazon Bedrock Nova tiered AI reasoning',
-        'Causal AST code diffs & 1-click GitHub PRs',
-        'Kendall Tau reading order concordance',
-        'VoiceOver acoustic silence simulation',
-        'Slack / Discord / Webhook alerts',
-        'Neon pgvector 768-d barrier genome memory'
+        'Automated code fixes & 1-click GitHub PRs',
+        'Screen reader voice synthesis simulation',
+        'Visual vs assistive reading order analysis',
+        'Slack & Webhook instant alert channels',
+        'Full WCAG 2.2 & EAA 2025 compliance reports'
       ],
-      cta: 'Launch Pro Trial',
+      cta: 'Start 14-Day Free Trial',
       popular: true,
       highlight: true
     },
     {
-      name: 'Enterprise Compliance',
+      name: 'Enterprise',
       price: 'Custom',
       period: 'tailored SLA',
-      desc: 'Dedicated AWS infrastructure, SAML SSO, and legally binding EAA 2025 certification.',
+      desc: 'For enterprise engineering organizations requiring dedicated environments and custom SLAs.',
       features: [
-        'Dedicated AWS VPC & S3 Evidence Vault',
-        'Custom enterprise persona training',
-        'Signed EAA 2025 & WCAG 2.2 AAA certificates',
+        'Dedicated isolated cloud environment',
+        'Custom assistive persona training',
         'SAML 2.0 / Okta / Azure AD SSO',
-        '99.99% uptime SLA & dedicated solution engineer',
-        'Custom CI/CD enterprise pipelines'
+        'Executive legal compliance audit ledgers',
+        '99.99% uptime SLA & dedicated solutions team',
+        'Custom enterprise CI/CD integration'
       ],
-      cta: 'Contact Architecture Team',
+      cta: 'Contact Sales',
       popular: false,
       highlight: false
     }
@@ -348,76 +320,31 @@ export function CinematicLanding({
 
   const faqs = [
     {
-      q: 'How does BarrierLens prove keyboard traps without false positives?',
-      a: 'Unlike static linters (Axe, Lighthouse) that only examine HTML attributes, BarrierLens drives a live headless Chromium session via the Chrome DevTools Protocol. It models every focusable DOM element as a vertex V and every Tab keypress as a directed edge E in graph G. It computes Strongly Connected Components using Tarjan’s algorithm. If a component cannot transition back to the document root upon pressing Escape or Tab, it is mathematically proven to be a sink cycle.'
+      q: 'How does BarrierLens catch bugs that Axe and Lighthouse miss?',
+      a: 'Traditional linters (like Axe-core or Google Lighthouse) only inspect static HTML strings at the moment a page loads. They never press the Tab key, open a modal dialog, or submit a form. BarrierLens launches an autonomous interactive session that navigates real user journeys—testing keyboard focus escape, screen reader announcements, and dynamic UI state changes just like a real user with assistive needs would.'
     },
     {
-      q: 'Why are JavaScript overlay widgets rejected in accessibility litigation?',
-      a: 'Recent landmark rulings in US Federal ADA lawsuits and European Accessibility Act (EAA 2025) audits confirmed that client-side JavaScript overlay widgets do not fix underlying source code defects. Often, they worsen focus navigation for screen reader users and add security vulnerabilities. BarrierLens operates upstream by generating surgical Abstract Syntax Tree (AST) pull requests directly into your GitHub codebase.'
+      q: 'Why are third-party overlay widgets risky for compliance?',
+      a: 'Third-party JavaScript overlay widgets (such as cosmetic toolbar plug-ins) only manipulate the rendered visual layer without repairing the underlying source code. Landmark rulings in US Federal courts and upcoming European Accessibility Act (EAA 2025) audits have repeatedly established that cosmetic overlays fail to provide legal accessibility compliance. BarrierLens fixes the actual code upstream in your repository.'
     },
     {
-      q: 'Can BarrierLens audit private SPAs behind authentication?',
-      a: 'Yes. BarrierLens supports custom authentication cookies, storage states, and local development staging endpoints (including localhost:3000). You can also run our CLI runner in GitHub Actions, GitLab CI, or Docker containers.'
+      q: 'Does BarrierLens work with modern Single Page Applications (SPAs)?',
+      a: 'Yes. BarrierLens is designed specifically for modern dynamic web frameworks including React, Next.js, Vue, Angular, Svelte, and static sites. It handles client-side routing, asynchronous data fetching, animated modals, and complex design systems.'
     },
     {
-      q: 'What is Kendall’s Tau (τ) and how does it detect reading order inversion?',
-      a: 'CSS properties like flex-direction: row-reverse and display: grid often display content in one visual order, while the underlying DOM structure traverses elements in the opposite order. BarrierLens evaluates the rank concordance between spatial 2D (Y, X) coordinates and accessibility tree indices. When τ drops below 0.70, a disorientation barrier is flagged.'
+      q: 'Can I use BarrierLens during pull requests in CI/CD?',
+      a: 'Absolutely. BarrierLens integrates directly into GitHub Actions, GitLab CI, or any CI/CD runner. You can set it to automatically audit pull requests, block accessibility regressions before merging, and receive automated PRs with ready-to-merge code fixes.'
     },
     {
-      q: 'How does the Causal AST Auto-Fix engine work?',
-      a: 'Using Judea Pearl’s Structural Causal Models (SCM), BarrierLens isolates the minimal causal subgraph responsible for the barrier. It tests counterfactual interventions do(X = x*)—such as adding aria-modal="true" and keydown escape handlers—replays the user journey headless, and certifies that the barrier is eradicated without regressions.'
-    }
-  ];
-
-  const journalArticles = [
-    {
-      id: 'RFC-104',
-      title: 'Graph-Theoretic Focus Traps: Proving Focus Sinks via Tarjan’s SCC Algorithm',
-      category: 'ALGORITHMS',
-      date: 'NOVEMBER 2026',
-      desc: 'Why heuristic tab timers fail and how directed graph strongly connected components yield mathematical proofs of accessibility lockouts.'
-    },
-    {
-      id: 'ANALYSIS',
-      title: 'The Legal Flaw of Surface Overlay Widgets in Federal ADA Lawsuits',
-      category: 'LEGAL & REGULATORY',
-      date: 'OCTOBER 2026',
-      desc: 'Examining recent court rulings where cosmetic JS overlay widgets aggravated rather than resolved web accessibility liability.'
-    },
-    {
-      id: 'BENCHMARK',
-      title: 'Evaluating Kendall’s Tau Rank Concordance on the Top 1,000 E-Commerce Checkouts',
-      category: 'EMPIRICAL RESEARCH',
-      date: 'OCTOBER 2026',
-      desc: 'How modern CSS grid styling inadvertently creates high disorientation rates for low-vision and screen reader users.'
-    },
-    {
-      id: 'INFRASTRUCTURE',
-      title: 'Sub-100ms Surgical Remediation Patches via Amazon Bedrock Nova Micro',
-      category: 'AI ARCHITECTURE',
-      date: 'SEPTEMBER 2026',
-      desc: 'Routing tiered foundation models through AWS SigV4 authentication to synthesize verified AST pull requests in real time.'
-    },
-    {
-      id: 'COMPLIANCE',
-      title: 'European Accessibility Act (EAA 2025): Technical Enforcement Guidelines',
-      category: 'STANDARDS',
-      date: 'AUGUST 2026',
-      desc: 'The technical differences between WCAG 2.1 AA and the new EAA mandates facing digital products operating in the EU.'
-    },
-    {
-      id: 'VECTOR-ML',
-      title: '768-Dimensional Barrier Genome: Vector Space Clustering with Neon pgvector',
-      category: 'MACHINE LEARNING',
-      date: 'AUGUST 2026',
-      desc: 'Clustering structural accessibility failure patterns across millions of DOM nodes for instant zero-shot remediation.'
+      q: 'How does the automated GitHub code fix feature work?',
+      a: 'When an accessibility issue (such as a missing accessible name or an unescapable modal) is detected, BarrierLens generates a clean, minimal code patch that addresses the root cause. It re-tests the fix automatically to ensure no regressions were introduced, and opens a GitHub Pull Request with a clear explanation for your review.'
     }
   ];
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-[#ffffff] font-sans selection:bg-white selection:text-black">
       
-      {/* 1. HERO SECTION (Giant stacked editorial typography + Live Proof Preview Card) */}
+      {/* 1. HERO SECTION: Value proposition, punchy editorial headline, and Quick Audit Omnibar */}
       <section className="min-h-screen relative flex flex-col justify-between pt-16 pb-12 px-6 sm:px-12 border-hairline-b">
         
         {/* Top Metadata Header Line */}
@@ -425,17 +352,17 @@ export function CinematicLanding({
           <div className="flex items-center gap-3">
             <span className="w-2 h-2 bg-[#10b981]" />
             <span className="text-white font-bold">BARRIERLENS 2.0</span>
-            <span>·</span>
-            <span>AUTONOMOUS AGENTIC ACCESSIBILITY</span>
+            <span>&middot;</span>
+            <span>AUTONOMOUS ACCESSIBILITY VERIFICATION</span>
           </div>
           <div className="flex items-center gap-6">
-            <span className="hidden md:inline">AMAZON BEDROCK NOVA LIVE</span>
-            <span className="hidden md:inline">WCAG 2.2 AAA DETERMINISTIC</span>
+            <span className="hidden md:inline">WCAG 2.2 LEVEL AAA</span>
+            <span className="hidden md:inline">EAA 2025 COMPLIANT</span>
             <span className="text-white">STATUS: OPERATIONAL</span>
           </div>
         </div>
 
-        {/* 4 Giant Stacked Headline Lines */}
+        {/* 4 Stacked Headline Lines */}
         <div className="my-auto py-12 space-y-1 sm:space-y-2">
           <div className="overflow-hidden">
             <h1 className="headline-giant text-[clamp(2.75rem,8.5vw,10.5rem)] text-white">
@@ -454,24 +381,24 @@ export function CinematicLanding({
           </div>
           <div className="overflow-hidden">
             <h1 className="headline-giant text-[clamp(2.75rem,8.5vw,10.5rem)] text-[rgba(255,255,255,0.7)]">
-              SEAL THE CODE.
+              BEFORE YOU SHIP.
             </h1>
           </div>
         </div>
 
-        {/* Subcopy & Interactive Quick Launcher Omnibar */}
+        {/* Subcopy & Interactive Omnibar */}
         <div className="space-y-8 pt-6 border-hairline-t">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
             
             {/* Subcopy text */}
             <div className="lg:col-span-5 space-y-4">
               <p className="text-sm sm:text-base text-[rgba(255,255,255,0.65)] leading-relaxed max-w-lg">
-                Traditional static linters only inspect static HTML markup. BarrierLens launches real headless Chromium sessions via the Chrome DevTools Protocol, traverses multi-step user journeys under physical assistive constraints, and mathematically proves focus sink cycles using <strong className="text-white">Tarjan SCC graph algorithms</strong>.
+                Traditional linters only inspect static HTML tags and miss over 60% of real accessibility barriers. BarrierLens tests your product like real humans with assistive needs do—detecting keyboard traps, screen reader dropouts, and reading order disconnects—then generates verified code fixes.
               </p>
               <div className="flex items-center gap-4 text-xs font-mono text-[rgba(255,255,255,0.5)]">
-                <span>[01] 0% FALSE POSITIVES</span>
-                <span>[02] CAUSAL SCM PROOFS</span>
-                <span>[03] LIVE CHROMIUM CDP</span>
+                <span>[01] REAL INTERACTIVE TESTING</span>
+                <span>[02] 0% FALSE ALARMS</span>
+                <span>[03] 1-CLICK GITHUB PRS</span>
               </div>
             </div>
 
@@ -485,7 +412,7 @@ export function CinematicLanding({
                       type="text"
                       value={trialUrl}
                       onChange={(e) => setTrialUrl(e.target.value)}
-                      placeholder="https://your-domain.com or /benchmark"
+                      placeholder="Enter target URL (e.g. https://your-site.com or /benchmark)"
                       className="w-full bg-transparent text-xs font-mono text-white placeholder-[rgba(255,255,255,0.3)] focus:outline-none"
                     />
                   </div>
@@ -495,24 +422,26 @@ export function CinematicLanding({
                     <button
                       type="button"
                       onClick={() => setTrialPersona('keyboard')}
-                      className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-all ${
+                      className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-all flex items-center gap-1.5 ${
                         trialPersona === 'keyboard'
                           ? 'bg-white text-black font-bold'
                           : 'text-[rgba(255,255,255,0.6)] hover:text-white'
                       }`}
                     >
-                      Keyboard
+                      <Keyboard className="w-3.5 h-3.5" />
+                      <span>Keyboard</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setTrialPersona('screen_reader')}
-                      className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-all ${
+                      className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider transition-all flex items-center gap-1.5 ${
                         trialPersona === 'screen_reader'
                           ? 'bg-white text-black font-bold'
                           : 'text-[rgba(255,255,255,0.6)] hover:text-white'
                       }`}
                     >
-                      VoiceOver
+                      <Volume2 className="w-3.5 h-3.5" />
+                      <span>VoiceOver</span>
                     </button>
                   </div>
 
@@ -522,44 +451,44 @@ export function CinematicLanding({
                     onClick={() => onLaunchStudio(trialUrl, trialGoal, trialPersona)}
                     className="w-full sm:w-auto px-6 py-2.5 bg-white hover:bg-[rgba(255,255,255,0.85)] text-black text-xs font-mono font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all shrink-0"
                   >
-                    <span>AUDIT TARGET</span>
+                    <span>TEST SITE</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
                 {/* Ground-Truth Quick Presets */}
                 <div className="flex flex-wrap items-center justify-between text-xs px-1 text-[rgba(255,255,255,0.5)] font-mono">
-                  <span className="text-[11px] uppercase tracking-wider">Ground Truth Benchmarks:</span>
+                  <span className="text-[11px] uppercase tracking-wider">Try Interactive Testbeds:</span>
                   <div className="flex items-center gap-3">
                     <button
                       type="button"
                       onClick={() => {
                         setTrialUrl('/benchmark');
-                        onLaunchStudio('/benchmark', 'Subscribe to newsletter and test confirmation modal', 'keyboard');
+                        onLaunchStudio('/benchmark', 'Test modal keyboard focus escape', 'keyboard');
                       }}
                       className="hover:text-white underline underline-offset-4 text-[11px]"
                     >
-                      [Modal Trap Cycle]
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setTrialUrl('/fixtures/keyboard-trap');
-                        onLaunchStudio('/fixtures/keyboard-trap', 'Navigate into modal and escape back to main page', 'keyboard');
-                      }}
-                      className="hover:text-white underline underline-offset-4 text-[11px]"
-                    >
-                      [Focus Loss Fixture]
+                      [Modal Dialog Trap]
                     </button>
                     <button
                       type="button"
                       onClick={() => {
                         setTrialUrl('/fixtures/accname-wcag');
-                        onLaunchStudio('/fixtures/accname-wcag', 'Identify and activate icon action buttons', 'screen_reader');
+                        onLaunchStudio('/fixtures/accname-wcag', 'Find unlabeled action buttons', 'screen_reader');
                       }}
                       className="hover:text-white underline underline-offset-4 text-[11px]"
                     >
-                      [Unlabeled SVG AccName]
+                      [Unlabeled Action Button]
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTrialUrl('/fixtures/disordered-unreachable');
+                        onLaunchStudio('/fixtures/disordered-unreachable', 'Check responsive reading order', 'keyboard');
+                      }}
+                      className="hover:text-white underline underline-offset-4 text-[11px]"
+                    >
+                      [Reading Order Inversion]
                     </button>
                   </div>
                 </div>
@@ -571,30 +500,30 @@ export function CinematicLanding({
 
       </section>
 
-      {/* 2. LIVE INTERACTIVE HERO PRODUCT PREVIEW CARD */}
+      {/* 2. INTERACTIVE PRODUCT COCKPIT PREVIEW (Show What the User Actually Sees) */}
       <section className="py-16 px-6 sm:px-12 border-hairline-b bg-[#07080a]">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-hairline-b pb-4">
             <div className="space-y-1">
               <div className="text-xs font-mono uppercase tracking-widest text-[#10b981] flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
-                <span>Deterministic Proof Engine in Action</span>
+                <span>Interactive Audit Cockpit</span>
               </div>
               <h2 className="text-xl font-bold font-mono uppercase text-white">
-                Live Verification Artifacts
+                How BarrierLens Verifies Your Product
               </h2>
             </div>
 
-            {/* Proof Type Tabs */}
+            {/* Interactive Preview Tabs */}
             <div className="flex items-center gap-1 p-1 bg-[#121316] border-hairline font-mono text-xs">
               <button
                 type="button"
-                onClick={() => setHeroProofTab('tarjan')}
+                onClick={() => setHeroProofTab('focus')}
                 className={`px-3 py-1 uppercase tracking-wider transition-all ${
-                  heroProofTab === 'tarjan' ? 'bg-white text-black font-bold' : 'text-[rgba(255,255,255,0.6)] hover:text-white'
+                  heroProofTab === 'focus' ? 'bg-white text-black font-bold' : 'text-[rgba(255,255,255,0.6)] hover:text-white'
                 }`}
               >
-                Tarjan Cycle
+                Keyboard Path
               </button>
               <button
                 type="button"
@@ -603,145 +532,155 @@ export function CinematicLanding({
                   heroProofTab === 'diff' ? 'bg-white text-black font-bold' : 'text-[rgba(255,255,255,0.6)] hover:text-white'
                 }`}
               >
-                AST Diff
+                Code Fix PR
               </button>
               <button
                 type="button"
-                onClick={() => setHeroProofTab('voiceover')}
+                onClick={() => setHeroProofTab('screenreader')}
                 className={`px-3 py-1 uppercase tracking-wider transition-all ${
-                  heroProofTab === 'voiceover' ? 'bg-white text-black font-bold' : 'text-[rgba(255,255,255,0.6)] hover:text-white'
+                  heroProofTab === 'screenreader' ? 'bg-white text-black font-bold' : 'text-[rgba(255,255,255,0.6)] hover:text-white'
                 }`}
               >
-                VoiceOver Audio
+                Voice Transcript
               </button>
               <button
                 type="button"
-                onClick={() => setHeroProofTab('certificate')}
+                onClick={() => setHeroProofTab('report')}
                 className={`px-3 py-1 uppercase tracking-wider transition-all ${
-                  heroProofTab === 'certificate' ? 'bg-white text-black font-bold' : 'text-[rgba(255,255,255,0.6)] hover:text-white'
+                  heroProofTab === 'report' ? 'bg-white text-black font-bold' : 'text-[rgba(255,255,255,0.6)] hover:text-white'
                 }`}
               >
-                EAA Certificate
+                Audit Report
               </button>
             </div>
           </div>
 
           {/* Interactive Preview Canvas */}
           <div className="p-6 bg-[#0e1013] border-hairline font-mono text-xs space-y-4">
-            {heroProofTab === 'tarjan' && (
+            
+            {/* Tab 1: Keyboard Path */}
+            {heroProofTab === 'focus' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-[11px] text-[rgba(255,255,255,0.5)]">
-                  <span>TOPOLOGY: DIRECTED FOCUS GRAPH G=(V,E)</span>
-                  <span className="text-[#f43f5e] font-bold">CYCLE DETECTED: SINK_SCC (WCAG 2.1.2)</span>
+                  <span>LIVE KEYBOARD NAVIGATION TRAVERSAL</span>
+                  <span className="text-[#f43f5e] font-bold">FOCUS TRAP DETECTED: #newsletter-modal</span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-center">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-center">
                   <div className="p-4 bg-[#14161b] border-hairline">
-                    <div className="text-[10px] text-[rgba(255,255,255,0.4)]">V1: ENTRY</div>
-                    <div className="font-bold text-white mt-1">#newsletter-email</div>
-                    <div className="text-[10px] text-[#10b981] mt-1">Tab &rarr; out-degree: 1</div>
+                    <div className="text-[10px] text-[rgba(255,255,255,0.4)]">STEP 1</div>
+                    <div className="font-bold text-white mt-1">#nav-link</div>
+                    <div className="text-[10px] text-[#10b981] mt-1">Tab &rarr; Next Input</div>
                   </div>
                   <div className="p-4 bg-[#14161b] border-hairline">
-                    <div className="text-[10px] text-[rgba(255,255,255,0.4)]">V2: TRIGGER</div>
-                    <div className="font-bold text-white mt-1">#subscribe-btn</div>
-                    <div className="text-[10px] text-[#10b981] mt-1">Enter &rarr; opens modal</div>
+                    <div className="text-[10px] text-[rgba(255,255,255,0.4)]">STEP 2</div>
+                    <div className="font-bold text-white mt-1">#open-modal-btn</div>
+                    <div className="text-[10px] text-[#10b981] mt-1">Enter &rarr; Opens Modal</div>
                   </div>
                   <div className="p-4 bg-red-950/30 border border-red-500/40">
-                    <div className="text-[10px] text-red-400 font-bold">V3: SINK NODE</div>
-                    <div className="font-bold text-white mt-1">#trap-modal</div>
-                    <div className="text-[10px] text-red-400 mt-1">Tab &rarr; #claim-btn</div>
+                    <div className="text-[10px] text-red-400 font-bold">STEP 3 (TRAPPED)</div>
+                    <div className="font-bold text-white mt-1">#newsletter-modal</div>
+                    <div className="text-[10px] text-red-400 mt-1">Tab &rarr; #confirm-btn</div>
                   </div>
                   <div className="p-4 bg-red-950/30 border border-red-500/40">
-                    <div className="text-[10px] text-red-400 font-bold">V4: SINK REVERSE</div>
-                    <div className="font-bold text-white mt-1">#claim-btn</div>
-                    <div className="text-[10px] text-red-400 mt-1">Tab &rarr; #trap-modal (CYCLE)</div>
+                    <div className="text-[10px] text-red-400 font-bold">STEP 4 (CLOSED LOOP)</div>
+                    <div className="font-bold text-white mt-1">#confirm-btn</div>
+                    <div className="text-[10px] text-red-400 mt-1">Escape key is ignored!</div>
                   </div>
                 </div>
                 <div className="p-3 bg-[#0a0a0a] border-hairline text-[11px] text-[rgba(255,255,255,0.6)] flex items-center justify-between">
-                  <span>Reproducing sequence: [Tab, Tab, Enter, Tab, Tab, Escape (Ignored)]</span>
+                  <span>Tested Keystrokes: [Tab &rarr; Tab &rarr; Enter &rarr; Tab &rarr; Escape]</span>
                   <button 
                     type="button"
-                    onClick={() => onLaunchStudio('/fixtures/keyboard-trap', 'Prove modal keyboard focus sink cycle', 'keyboard')}
+                    onClick={() => onLaunchStudio('/fixtures/keyboard-trap', 'Test modal keyboard focus escape', 'keyboard')}
                     className="text-white hover:underline flex items-center gap-1 font-bold"
                   >
-                    <span>Replay in Studio</span>
+                    <span>Run in Audit Studio</span>
                     <ArrowUpRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
             )}
 
+            {/* Tab 2: Code Diff PR */}
             {heroProofTab === 'diff' && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-[11px] text-[rgba(255,255,255,0.5)]">
-                  <span>CAUSAL AST REMEDIATION DIFF</span>
-                  <span className="text-[#10b981] font-bold">PEARL SCM: ZERO REGRESSION CERTIFIED</span>
+                  <span>AUTOMATED CODE FIX &middot; READY TO MERGE</span>
+                  <span className="text-[#10b981] font-bold">ZERO REGRESSION CONFIRMED</span>
                 </div>
                 <div className="bg-[#0a0a0a] p-4 border-hairline overflow-x-auto text-[11px] leading-relaxed">
-                  <div className="text-red-400">- &lt;div id=&quot;trap-modal&quot; className=&quot;modal-card&quot;&gt;</div>
-                  <div className="text-[#10b981]">+ &lt;div id=&quot;trap-modal&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot; onKeyDown=&#123;handleEscapeRestore&#125; className=&quot;modal-card&quot;&gt;</div>
-                  <div className="text-[rgba(255,255,255,0.4)]">    &lt;h2&gt;Subscription Confirmed&lt;/h2&gt;</div>
-                  <div className="text-red-400">-   &lt;button id=&quot;claim-btn&quot;&gt;Confirm&lt;/button&gt;</div>
-                  <div className="text-[#10b981]">+   &lt;button id=&quot;claim-btn&quot; aria-label=&quot;Confirm and return focus to page&quot;&gt;Confirm&lt;/button&gt;</div>
+                  <div className="text-red-400">- &lt;div id=&quot;newsletter-modal&quot; className=&quot;modal-overlay&quot;&gt;</div>
+                  <div className="text-[#10b981]">+ &lt;div id=&quot;newsletter-modal&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot; onKeyDown=&#123;handleEscapeKey&#125; className=&quot;modal-overlay&quot;&gt;</div>
+                  <div className="text-[rgba(255,255,255,0.4)]">    &lt;h2&gt;Sign Up for Updates&lt;/h2&gt;</div>
+                  <div className="text-red-400">-   &lt;button id=&quot;close-btn&quot;&gt;&lt;CloseIcon /&gt;&lt;/button&gt;</div>
+                  <div className="text-[#10b981]">+   &lt;button id=&quot;close-btn&quot; aria-label=&quot;Close dialog and return focus&quot;&gt;&lt;CloseIcon /&gt;&lt;/button&gt;</div>
                   <div className="text-[rgba(255,255,255,0.4)]">  &lt;/div&gt;</div>
                 </div>
-                <div className="flex justify-end">
+                <div className="flex justify-between items-center text-[11px]">
+                  <span className="text-[rgba(255,255,255,0.5)]">Fixes WCAG 2.1.2 (Keyboard Trap) &amp; WCAG 4.1.2 (Name/Role/Value)</span>
                   <button
                     type="button"
-                    onClick={() => onLaunchStudio('/fixtures/accname-wcag', 'Inspect Causal AST Patches', 'screen_reader')}
-                    className="text-white hover:underline text-[11px] flex items-center gap-1 font-bold"
+                    onClick={() => onLaunchStudio('/fixtures/accname-wcag', 'Review verified accessibility code diff', 'screen_reader')}
+                    className="text-white hover:underline flex items-center gap-1 font-bold"
                   >
-                    <span>Export to GitHub PR</span>
+                    <span>Inspect Full Diff in Fixes</span>
                     <ArrowUpRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
             )}
 
-            {heroProofTab === 'voiceover' && (
+            {/* Tab 3: Screen Reader Speech */}
+            {heroProofTab === 'screenreader' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-[11px] text-[rgba(255,255,255,0.5)]">
-                  <span>ACOUSTIC SPEECH DUAL-FREQUENCY SIMULATION</span>
-                  <span className="text-amber-400 font-bold">SILENCE DETECTED: 0.00ms ANNOUNCEMENT</span>
+                  <span>SCREEN READER SPEECH OUTPUT TRANSCRIPT</span>
+                  <span className="text-amber-400 font-bold">SPEECH DROPOUT DETECTED</span>
                 </div>
                 <div className="p-4 bg-[#0a0a0a] border-hairline space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Volume2 className="w-4 h-4 text-amber-400 shrink-0" />
-                    <div className="flex-1 h-3 bg-[#17181c] flex items-center gap-0.5 px-1 overflow-hidden">
-                      <div className="w-1 h-2 bg-[#10b981]" />
-                      <div className="w-1 h-3 bg-[#10b981]" />
-                      <div className="w-1 h-1 bg-[#10b981]" />
-                      <div className="w-1 h-2.5 bg-[#10b981]" />
-                      <div className="w-24 h-0.5 bg-red-500/40 mx-2" title="Acoustic silence gap" />
-                      <div className="w-1 h-2 bg-[#10b981]" />
+                  <div className="space-y-2">
+                    <div className="flex items-start gap-3">
+                      <Volume2 className="w-4 h-4 text-[#10b981] shrink-0 mt-0.5" />
+                      <div className="text-[rgba(255,255,255,0.8)]">
+                        <strong className="text-white">&quot;Navigation menu, 4 items.&quot;</strong> &rarr; User pressed Tab.
+                      </div>
                     </div>
-                    <span className="text-[10px] text-red-400 font-bold shrink-0">FAIL: NO ARIA-LIVE</span>
-                  </div>
-                  <div className="text-[11px] text-[rgba(255,255,255,0.7)]">
-                    DOM Mutation: Cart total dynamically changed from $40 to $70.
-                    Speech Buffer: &quot;&quot; (Blind user received zero acoustic notification).
+                    <div className="flex items-start gap-3">
+                      <Volume2 className="w-4 h-4 text-[#10b981] shrink-0 mt-0.5" />
+                      <div className="text-[rgba(255,255,255,0.8)]">
+                        <strong className="text-white">&quot;Special Promotion, dialog open.&quot;</strong> &rarr; Modal appeared.
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 p-2 bg-red-950/20 border border-red-500/20">
+                      <Volume2 className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                      <div className="text-red-400">
+                        <strong>[Silence]</strong> Dynamic discount price changed from $100 to $80, but no speech announcement was triggered. Blind users remain unaware of applied discount.
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {heroProofTab === 'certificate' && (
+            {/* Tab 4: Audit Report */}
+            {heroProofTab === 'report' && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-[11px] text-[rgba(255,255,255,0.5)]">
-                  <span>CRYPTOGRAPHIC COMPLIANCE LEDGER</span>
-                  <span className="text-[#10b981] font-bold">SHA-256 SIGNED &middot; WCAG 2.2 LEVEL AAA</span>
+                  <span>COMPLIANCE AUDIT CERTIFICATE</span>
+                  <span className="text-[#10b981] font-bold">WCAG 2.2 AAA &middot; EAA 2025 READY</span>
                 </div>
                 <div className="p-4 bg-[#0a0a0a] border-hairline space-y-2 text-[11px]">
-                  <div className="flex justify-between">
-                    <span className="text-[rgba(255,255,255,0.5)]">Target Origin</span>
-                    <span className="text-white">https://barrierlens.com</span>
+                  <div className="flex justify-between border-hairline-b pb-1.5">
+                    <span className="text-[rgba(255,255,255,0.5)]">Audited Application</span>
+                    <span className="text-white">Checkout &amp; Onboarding Flow</span>
+                  </div>
+                  <div className="flex justify-between border-hairline-b pb-1.5">
+                    <span className="text-[rgba(255,255,255,0.5)]">Verified Invariants</span>
+                    <span className="text-[#10b981]">14 Passed &middot; 0 Traps Remaining</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[rgba(255,255,255,0.5)]">Audit Jurisdiction</span>
-                    <span className="text-[#10b981]">European Accessibility Act (EAA 2025) &amp; ADA §508</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[rgba(255,255,255,0.5)]">Certificate Hash</span>
-                    <span className="text-[rgba(255,255,255,0.7)] truncate max-w-[280px]">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</span>
+                    <span className="text-[rgba(255,255,255,0.5)]">Legal Protection</span>
+                    <span className="text-white">Audit trail ready for EU European Accessibility Act compliance</span>
                   </div>
                 </div>
               </div>
@@ -750,39 +689,39 @@ export function CinematicLanding({
         </div>
       </section>
 
-      {/* 3. AUTHORITY & SOCIAL PROOF METRICS BAR */}
+      {/* 3. TRUST & SOCIAL PROOF METRICS */}
       <section className="py-12 px-6 sm:px-12 border-hairline-b bg-[#0a0a0a]">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="space-y-1">
-            <div className="text-3xl sm:text-4xl font-mono font-bold text-white">100%</div>
-            <div className="text-xs font-mono uppercase tracking-wider text-[rgba(255,255,255,0.5)]">Mathematical Determinism</div>
-            <p className="text-[11px] text-[rgba(255,255,255,0.4)]">Tarjan SCC graph proofs with zero guesswork.</p>
-          </div>
-          <div className="space-y-1">
-            <div className="text-3xl sm:text-4xl font-mono font-bold text-[#10b981]">0</div>
-            <div className="text-xs font-mono uppercase tracking-wider text-[rgba(255,255,255,0.5)]">False Positives</div>
-            <p className="text-[11px] text-[rgba(255,255,255,0.4)]">On all certified causal graph cycles.</p>
-          </div>
-          <div className="space-y-1">
-            <div className="text-3xl sm:text-4xl font-mono font-bold text-white">3.8x</div>
-            <div className="text-xs font-mono uppercase tracking-wider text-[rgba(255,255,255,0.5)]">Faster Remediation</div>
-            <p className="text-[11px] text-[rgba(255,255,255,0.4)]">Automated verified AST pull requests.</p>
+            <div className="text-3xl sm:text-4xl font-mono font-bold text-white">0%</div>
+            <div className="text-xs font-mono uppercase tracking-wider text-[rgba(255,255,255,0.5)]">False Alarms</div>
+            <p className="text-[11px] text-[rgba(255,255,255,0.4)]">Only real behavioral bugs that affect actual users.</p>
           </div>
           <div className="space-y-1">
             <div className="text-3xl sm:text-4xl font-mono font-bold text-[#10b981]">96.8%</div>
-            <div className="text-xs font-mono uppercase tracking-wider text-[rgba(255,255,255,0.5)]">Dynamic Barrier Catch Rate</div>
-            <p className="text-[11px] text-[rgba(255,255,255,0.4)]">Compared to 38% for static HTML linters.</p>
+            <div className="text-xs font-mono uppercase tracking-wider text-[rgba(255,255,255,0.5)]">Interactive Bug Catch Rate</div>
+            <p className="text-[11px] text-[rgba(255,255,255,0.4)]">Versus 38% for legacy static code scanners.</p>
+          </div>
+          <div className="space-y-1">
+            <div className="text-3xl sm:text-4xl font-mono font-bold text-white">3.8x</div>
+            <div className="text-xs font-mono uppercase tracking-wider text-[rgba(255,255,255,0.5)]">Faster Resolution</div>
+            <p className="text-[11px] text-[rgba(255,255,255,0.4)]">With automated, ready-to-merge GitHub pull requests.</p>
+          </div>
+          <div className="space-y-1">
+            <div className="text-3xl sm:text-4xl font-mono font-bold text-[#10b981]">100%</div>
+            <div className="text-xs font-mono uppercase tracking-wider text-[rgba(255,255,255,0.5)]">Source Code Remediation</div>
+            <p className="text-[11px] text-[rgba(255,255,255,0.4)]">No fragile cosmetic runtime overlay widgets.</p>
           </div>
         </div>
       </section>
 
-      {/* 4. THE BEHAVIORAL CONTRAST: WHY STATIC LINTERS FAIL */}
+      {/* 4. THE CORE CONTRAST: WHY PASSIVE SCANNERS FAIL */}
       <section className="py-24 px-6 sm:px-12 border-hairline-b space-y-16">
         <div className="max-w-7xl mx-auto space-y-12">
           
           <div className="flex items-center justify-between font-mono text-xs uppercase tracking-widest text-[rgba(255,255,255,0.5)] border-hairline-b pb-4">
-            <span>[SECTION 02] THE BEHAVIORAL IMPERATIVE</span>
-            <span>EMPIRICAL WCAG 2.2 AAA VERIFICATION</span>
+            <span>[SECTION 02] THE BEHAVIORAL DIFFERENCE</span>
+            <span>WHY TRADITIONAL TOOLS MISS THE MARK</span>
           </div>
 
           <div className="space-y-4">
@@ -795,30 +734,30 @@ export function CinematicLanding({
               </span>
             </h2>
             <h2 className="headline-giant text-[clamp(2rem,5.5vw,5.5rem)] text-[rgba(255,255,255,0.5)]">
-              PROVE THE TRAP BEFORE PRODUCTION.
+              TEST WHAT YOUR USERS ACTUALLY EXPERIENCE.
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pt-8 border-hairline-t">
             <div className="md:col-span-6 space-y-4">
               <h3 className="text-xl font-bold uppercase tracking-tight text-white font-mono">
-                Over 96.8% of top websites fail basic accessibility guidelines.
+                Over 96% of the top 1,000,000 websites fail accessibility standards.
               </h3>
               <p className="text-sm text-[rgba(255,255,255,0.65)] leading-relaxed">
-                Passive linters (Axe, Lighthouse) return hundreds of false-positive warnings that development teams ignore. Meanwhile, cosmetic JavaScript overlay widgets create immense federal ADA and European Accessibility Act (EAA 2025) compliance liabilities. BarrierLens bridges this chasm by generating mathematically irrefutable causal proofs.
+                Passive scanners inundate engineering teams with hundreds of low-priority warning flags, but miss critical interactive flaws like keyboard focus traps in modal dialogs, reversed responsive reading sequences, and silent error states. BarrierLens focuses on genuine user interaction to ensure your product is truly accessible.
               </p>
             </div>
 
             <div className="md:col-span-6 grid grid-cols-2 gap-4">
               <div className="p-4 bg-[#121316] border-hairline space-y-1">
                 <div className="text-3xl font-mono font-bold text-white">30-40%</div>
-                <div className="text-xs uppercase tracking-wider text-[rgba(255,255,255,0.5)] font-mono">Linter Defect Detection Limit</div>
-                <p className="text-[11px] text-[rgba(255,255,255,0.4)] pt-2">Linters miss asynchronous state mutations, keyboard sinks, and disordered reading flows.</p>
+                <div className="text-xs uppercase tracking-wider text-[rgba(255,255,255,0.5)] font-mono">Static Linter Detection Limit</div>
+                <p className="text-[11px] text-[rgba(255,255,255,0.4)] pt-2">Linters miss dynamic state changes, modal traps, and disordered reading flows.</p>
               </div>
               <div className="p-4 bg-[#121316] border-hairline space-y-1">
                 <div className="text-3xl font-mono font-bold text-[#10b981]">100%</div>
-                <div className="text-xs uppercase tracking-wider text-[rgba(255,255,255,0.5)] font-mono">Mathematical Determinism</div>
-                <p className="text-[11px] text-[rgba(255,255,255,0.4)] pt-2">Tarjan SCC algorithm proves directed cycle closure with zero heuristic estimation.</p>
+                <div className="text-xs uppercase tracking-wider text-[rgba(255,255,255,0.5)] font-mono">Interactive Coverage</div>
+                <p className="text-[11px] text-[rgba(255,255,255,0.4)] pt-2">Tests actual user actions across complex SPAs, drawers, and form journeys.</p>
               </div>
             </div>
           </div>
@@ -826,18 +765,18 @@ export function CinematicLanding({
         </div>
       </section>
 
-      {/* 5. CORE ARCHITECTURAL INVARIANTS (5 EXHIBITS) */}
+      {/* 5. CORE PRODUCT CAPABILITIES (5 FEATURE EXHIBITS) */}
       <section id="proofs" className="py-24 px-6 sm:px-12 border-hairline-b space-y-12">
         <div className="max-w-7xl mx-auto space-y-10">
           
           <div className="flex items-center justify-between border-hairline-b pb-4">
             <div className="flex items-center gap-3">
               <span className="text-xs font-mono text-white uppercase tracking-widest font-bold">
-                [03] CORE ARCHITECTURAL INVARIANTS
+                [03] CORE PRODUCT CAPABILITIES
               </span>
             </div>
             <div className="flex items-center gap-4 text-xs font-mono">
-              <span className="text-[rgba(255,255,255,0.5)]">EXHIBIT</span>
+              <span className="text-[rgba(255,255,255,0.5)]">FEATURE</span>
               <span className="text-white font-bold">{featureSlides[activeSlide].num} / 05</span>
             </div>
           </div>
@@ -865,7 +804,7 @@ export function CinematicLanding({
           <div className="p-8 sm:p-12 bg-[#121316] border-hairline space-y-8">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-hairline-b pb-8">
               
-              {/* Giant Letter-Chunk Title Split */}
+              {/* Letter-Chunk Title Split */}
               <div className="space-y-2">
                 <div className="flex items-center gap-4">
                   {featureSlides[activeSlide].chunks.map((chunk, i) => (
@@ -909,7 +848,7 @@ export function CinematicLanding({
                     onClick={() => onLaunchStudio(featureSlides[activeSlide].actionUrl, featureSlides[activeSlide].actionGoal, 'keyboard')}
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black text-xs font-mono font-bold uppercase tracking-wider hover:bg-[rgba(255,255,255,0.85)] transition-all"
                   >
-                    <span>TEST THIS INVARIANT IN AUDIT STUDIO</span>
+                    <span>LAUNCH THIS TEST IN AUDIT STUDIO</span>
                     <ArrowUpRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -918,24 +857,24 @@ export function CinematicLanding({
               {/* Interactive Mini-Simulation Graphic */}
               <div className="lg:col-span-5 p-6 bg-[#0a0a0a] border-hairline space-y-4">
                 <div className="flex items-center justify-between text-xs font-mono text-[rgba(255,255,255,0.5)]">
-                  <span>LIVE PROOF TOPOLOGY</span>
-                  <span className={tarjanStep === 3 || tarjanStep === 4 ? 'text-[#f43f5e]' : 'text-[#10b981]'}>
-                    {tarjanStep === 3 || tarjanStep === 4 ? '● SINK SCC LOCKED' : '○ UNCONSTRAINED'}
+                  <span>KEYBOARD NAVIGATION STEPPER</span>
+                  <span className={focusStep === 3 || focusStep === 4 ? 'text-[#f43f5e]' : 'text-[#10b981]'}>
+                    {focusStep === 3 || focusStep === 4 ? '● FOCUS LOCKED IN MODAL' : '○ NAVIGATION CLEAN'}
                   </span>
                 </div>
 
                 {/* Node Sequence */}
                 <div className="grid grid-cols-4 gap-2 text-center text-xs font-mono">
-                  <div className={`p-2 border-hairline ${tarjanStep === 1 ? 'bg-white text-black font-bold' : 'bg-[#121316] text-[rgba(255,255,255,0.6)]'}`}>
-                    ROOT
+                  <div className={`p-2 border-hairline ${focusStep === 1 ? 'bg-white text-black font-bold' : 'bg-[#121316] text-[rgba(255,255,255,0.6)]'}`}>
+                    PAGE
                   </div>
-                  <div className={`p-2 border-hairline ${tarjanStep === 2 ? 'bg-white text-black font-bold' : 'bg-[#121316] text-[rgba(255,255,255,0.6)]'}`}>
+                  <div className={`p-2 border-hairline ${focusStep === 2 ? 'bg-white text-black font-bold' : 'bg-[#121316] text-[rgba(255,255,255,0.6)]'}`}>
                     NAV
                   </div>
-                  <div className={`p-2 border-hairline ${tarjanStep === 3 ? 'bg-[#f43f5e] text-white font-bold' : 'bg-[#121316] text-[rgba(255,255,255,0.6)]'}`}>
+                  <div className={`p-2 border-hairline ${focusStep === 3 ? 'bg-[#f43f5e] text-white font-bold' : 'bg-[#121316] text-[rgba(255,255,255,0.6)]'}`}>
                     MODAL
                   </div>
-                  <div className={`p-2 border-hairline ${tarjanStep === 4 ? 'bg-[#f43f5e] text-white font-bold' : 'bg-[#121316] text-[rgba(255,255,255,0.6)]'}`}>
+                  <div className={`p-2 border-hairline ${focusStep === 4 ? 'bg-[#f43f5e] text-white font-bold' : 'bg-[#121316] text-[rgba(255,255,255,0.6)]'}`}>
                     BUTTON
                   </div>
                 </div>
@@ -943,20 +882,20 @@ export function CinematicLanding({
                 <div className="flex items-center justify-between pt-2">
                   <button
                     type="button"
-                    onClick={handleNextTarjan}
+                    onClick={handleNextFocusStep}
                     className="px-3 py-1.5 bg-[#17181c] hover:bg-[#202228] text-xs font-mono text-white border-hairline flex items-center gap-1.5"
                   >
-                    <span>STEP TAB KEY</span>
+                    <span>PRESS TAB KEY</span>
                     <ArrowRight className="w-3 h-3" />
                   </button>
                   <button
                     type="button"
-                    onClick={() => setTrapEscaped(!trapEscaped)}
+                    onClick={() => setIsTrapEscaped(!isTrapEscaped)}
                     className={`px-3 py-1.5 text-xs font-mono border-hairline transition-all ${
-                      trapEscaped ? 'bg-[#10b981] text-black font-bold' : 'bg-[#17181c] text-[rgba(255,255,255,0.6)]'
+                      isTrapEscaped ? 'bg-[#10b981] text-black font-bold' : 'bg-[#17181c] text-[rgba(255,255,255,0.6)]'
                     }`}
                   >
-                    {trapEscaped ? 'ESCAPE BINDING: FIXED' : 'ESCAPE BINDING: MISSING'}
+                    {isTrapEscaped ? 'ESCAPE KEY: FIXED' : 'ESCAPE KEY: UNBOUND'}
                   </button>
                 </div>
               </div>
@@ -968,7 +907,7 @@ export function CinematicLanding({
         </div>
       </section>
 
-      {/* 6. HOW IT WORKS: 3-STEP REASONING PIPELINE */}
+      {/* 6. HOW IT WORKS: 3 SIMPLE STEPS */}
       <section id="how-it-works" className="py-24 px-6 sm:px-12 border-hairline-b bg-[#0a0a0a]">
         <div className="max-w-7xl mx-auto space-y-12">
           
@@ -976,43 +915,43 @@ export function CinematicLanding({
             <span className="text-xs font-mono text-[rgba(255,255,255,0.5)] uppercase tracking-widest">
               [SECTION 04] HOW IT WORKS
             </span>
-            <span className="text-xs font-mono text-white">THE 3-STAGE REASONING PIPELINE</span>
+            <span className="text-xs font-mono text-white">FROM URL TO VERIFIED CODE FIX</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="p-6 bg-[#121316] border-hairline space-y-4">
-              <div className="text-xs font-mono font-bold text-[#10b981]">STAGE 01</div>
-              <h3 className="text-lg font-bold text-white font-mono uppercase">Target Connection &amp; Persona Setup</h3>
+              <div className="text-xs font-mono font-bold text-[#10b981]">STEP 01</div>
+              <h3 className="text-lg font-bold text-white font-mono uppercase">Enter URL or Connect Repo</h3>
               <p className="text-xs text-[rgba(255,255,255,0.65)] leading-relaxed">
-                Provide your staging URL, production domain, or GitHub repository. Select assistive personas—Keyboard-Only, VoiceOver Screen Reader, or Motor Tremor. Headless Chromium CDP initializes the virtual session.
+                Connect your staging URL, production website, or GitHub repository. Choose the assistive personas you want to test—Keyboard users, Screen Reader VoiceOver, or Motor Tremors.
               </p>
               <div className="pt-2 text-[11px] font-mono text-[rgba(255,255,255,0.4)]">
-                &bull; Chrome DevTools Protocol 9222<br />
-                &bull; Dynamic DOM Snapshotting
+                &bull; Zero complex setup required<br />
+                &bull; Works with React, Vue, Next.js, and static sites
               </div>
             </div>
 
             <div className="p-6 bg-[#121316] border-hairline space-y-4">
-              <div className="text-xs font-mono font-bold text-[#10b981]">STAGE 02</div>
-              <h3 className="text-lg font-bold text-white font-mono uppercase">Autonomous Journey Traversal</h3>
+              <div className="text-xs font-mono font-bold text-[#10b981]">STEP 02</div>
+              <h3 className="text-lg font-bold text-white font-mono uppercase">Autonomous Interactive Traversal</h3>
               <p className="text-xs text-[rgba(255,255,255,0.65)] leading-relaxed">
-                Amazon Bedrock Nova swarms traverse user journeys, clicking modals, triggering form validations, and navigating responsive menus. Tarjan SCC algorithms constantly test directed graph cycles to detect focus lockouts.
+                BarrierLens navigates multi-step user journeys: clicking accordions, opening modal dialogues, and filling checkout forms. It verifies keyboard escape paths and listens for speech synthesis announcements.
               </p>
               <div className="pt-2 text-[11px] font-mono text-[rgba(255,255,255,0.4)]">
-                &bull; Tarjan Strongly Connected Components<br />
-                &bull; Kendall Tau Reading Concordance
+                &bull; Tests real interactive states<br />
+                &bull; Eliminates false-positive noise
               </div>
             </div>
 
             <div className="p-6 bg-[#121316] border-hairline space-y-4">
-              <div className="text-xs font-mono font-bold text-[#10b981]">STAGE 03</div>
-              <h3 className="text-lg font-bold text-white font-mono uppercase">Causal AST Fix &amp; 1-Click PR</h3>
+              <div className="text-xs font-mono font-bold text-[#10b981]">STEP 03</div>
+              <h3 className="text-lg font-bold text-white font-mono uppercase">Verified Code Fixes &amp; PRs</h3>
               <p className="text-xs text-[rgba(255,255,255,0.65)] leading-relaxed">
-                Judea Pearl’s Structural Causal Models synthesize minimal surgical code diffs. The engine automatically re-verifies the fix headless to guarantee zero regressions, then exports a GitHub Pull Request with signed EAA proof.
+                Review verified code diffs with complete context. BarrierLens re-tests the fix in the background to ensure no regressions were introduced, and opens a ready-to-merge GitHub pull request.
               </p>
               <div className="pt-2 text-[11px] font-mono text-[rgba(255,255,255,0.4)]">
-                &bull; Zero-Regression Replay<br />
-                &bull; Automated GitHub PR
+                &bull; 1-click GitHub Pull Requests<br />
+                &bull; Certified compliance audit ledger
               </div>
             </div>
           </div>
@@ -1020,7 +959,7 @@ export function CinematicLanding({
         </div>
       </section>
 
-      {/* 7. GROUND-TRUTH BENCHMARKS (LIST ⇄ GRID VIEW) */}
+      {/* 7. GROUND-TRUTH TESTBEDS (LIST ⇄ GRID VIEW) */}
       <section id="benchmarks" className="py-24 px-6 sm:px-12 border-hairline-b space-y-12">
         <div className="max-w-7xl mx-auto space-y-8">
           
@@ -1028,10 +967,10 @@ export function CinematicLanding({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-hairline-b pb-4">
             <div>
               <div className="text-xs font-mono text-[rgba(255,255,255,0.5)] uppercase tracking-widest">
-                [SECTION 05] GROUND-TRUTH BENCHMARK SUITE
+                [SECTION 05] COMMON ACCESSIBILITY BARRIERS
               </div>
               <h2 className="text-2xl font-bold uppercase tracking-tight text-white font-mono">
-                Proved Behavioral Accessibility Invariants
+                Interactive Test Cases You Can Audit
               </h2>
             </div>
 
@@ -1090,10 +1029,10 @@ export function CinematicLanding({
                       {item.wcag}
                     </span>
                     <span className="px-2 py-0.5 bg-red-500/10 text-[#f43f5e] border border-red-500/20 font-bold">
-                      SEV {item.severity}
+                      {item.severity}
                     </span>
                     <span className="hidden lg:inline text-[rgba(255,255,255,0.4)]">
-                      {item.proof}
+                      {item.impact}
                     </span>
                     <ArrowUpRight className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
@@ -1102,7 +1041,7 @@ export function CinematicLanding({
             </div>
           ) : (
             /* Grid View */
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {proofItems.map((item) => (
                 <div
                   key={item.id}
@@ -1112,7 +1051,7 @@ export function CinematicLanding({
                   <div className="space-y-2">
                     <div className="flex items-center justify-between font-mono text-xs text-[rgba(255,255,255,0.4)]">
                       <span>{item.id}</span>
-                      <span className="text-[#f43f5e] font-bold">SEV {item.severity}</span>
+                      <span className="text-[#f43f5e] font-bold">{item.severity}</span>
                     </div>
                     <h3 className="font-bold text-sm text-white group-hover:text-white transition-colors font-mono">
                       {item.name}
@@ -1140,20 +1079,19 @@ export function CinematicLanding({
           
           <div className="flex items-center justify-between border-hairline-b pb-4">
             <span className="text-xs font-mono text-[rgba(255,255,255,0.5)] uppercase tracking-widest">
-              [SECTION 06] ARCHITECTURAL COMPARISON
+              [SECTION 06] PRODUCT COMPARISON
             </span>
-            <span className="text-xs font-mono text-white">THE DETERMINISTIC DIFFERENCE</span>
+            <span className="text-xs font-mono text-white">WHY ENGINEERING TEAMS CHOOSE BARRIERLENS</span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left font-mono text-xs border-hairline divide-y divide-[rgba(255,255,255,0.1)]">
               <thead>
                 <tr className="bg-[#121316] text-[rgba(255,255,255,0.7)] uppercase tracking-wider text-[11px]">
-                  <th className="p-4 border-hairline-r">Capability</th>
+                  <th className="p-4 border-hairline-r">Accessibility Capability</th>
                   <th className="p-4 bg-white text-black font-black border-hairline-r">BarrierLens 2.0</th>
-                  <th className="p-4 border-hairline-r">Axe-Core / Linter</th>
-                  <th className="p-4 border-hairline-r">Lighthouse</th>
-                  <th className="p-4">JS Overlays</th>
+                  <th className="p-4 border-hairline-r">Static Linters (Axe/Lighthouse)</th>
+                  <th className="p-4">Cosmetic Overlay Widgets</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[rgba(255,255,255,0.08)] bg-[#0a0a0a]">
@@ -1161,8 +1099,7 @@ export function CinematicLanding({
                   <tr key={i} className="hover:bg-[#121316] transition-colors">
                     <td className="p-4 font-bold text-white border-hairline-r">{row.feature}</td>
                     <td className="p-4 bg-white/5 font-bold text-[#10b981] border-hairline-r">{row.barrierlens}</td>
-                    <td className="p-4 text-[rgba(255,255,255,0.6)] border-hairline-r">{row.axe}</td>
-                    <td className="p-4 text-[rgba(255,255,255,0.6)] border-hairline-r">{row.lighthouse}</td>
+                    <td className="p-4 text-[rgba(255,255,255,0.6)] border-hairline-r">{row.linters}</td>
                     <td className="p-4 text-red-400">{row.overlays}</td>
                   </tr>
                 ))}
@@ -1181,7 +1118,7 @@ export function CinematicLanding({
             <span className="text-xs font-mono text-[rgba(255,255,255,0.5)] uppercase tracking-widest">
               [SECTION 07] TRANSPARENT PRICING
             </span>
-            <span className="text-xs font-mono text-white">PLANS FOR TEAMS OF ALL SIZES</span>
+            <span className="text-xs font-mono text-white">SIMPLE PLANS FOR TEAMS OF ALL SIZES</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -1240,61 +1177,15 @@ export function CinematicLanding({
         </div>
       </section>
 
-      {/* 10. ENGINEERING JOURNAL & RFCS */}
-      <section id="journal" className="py-24 px-6 sm:px-12 border-hairline-b space-y-10">
-        <div className="max-w-7xl mx-auto space-y-8">
-          
-          <div className="flex items-center justify-between border-hairline-b pb-4">
-            <span className="text-xs font-mono text-[rgba(255,255,255,0.5)] uppercase tracking-widest">
-              [SECTION 08] ENGINEERING JOURNAL &amp; RFCS
-            </span>
-            <span className="text-xs font-mono text-white">
-              6 ARTICLES PUBLISHED
-            </span>
-          </div>
-
-          <div className="divide-y divide-[rgba(255,255,255,0.14)] border-hairline">
-            {journalArticles.map((article) => (
-              <div
-                key={article.id}
-                className="py-6 px-6 hover:bg-[#121316] transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 group"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-3 text-xs font-mono text-[rgba(255,255,255,0.4)]">
-                    <span>{article.id}</span>
-                    <span>&middot;</span>
-                    <span>{article.date}</span>
-                  </div>
-                  <h3 className="text-base sm:text-lg font-bold text-white group-hover:translate-x-1.5 transition-transform font-mono">
-                    {article.title}
-                  </h3>
-                  <p className="text-xs text-[rgba(255,255,255,0.6)] max-w-2xl leading-relaxed">
-                    {article.desc}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <span className="px-2.5 py-1 bg-[#0a0a0a] border-hairline text-xs font-mono text-white">
-                    {article.category}
-                  </span>
-                  <ArrowRight className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      {/* 11. FREQUENTLY ASKED QUESTIONS (FAQ) */}
+      {/* 10. FREQUENTLY ASKED QUESTIONS (FAQ) */}
       <section id="faq" className="py-24 px-6 sm:px-12 border-hairline-b bg-[#07080a]">
         <div className="max-w-4xl mx-auto space-y-8">
           
           <div className="flex items-center justify-between border-hairline-b pb-4">
             <span className="text-xs font-mono text-[rgba(255,255,255,0.5)] uppercase tracking-widest">
-              [SECTION 09] FREQUENTLY ASKED QUESTIONS
+              [SECTION 08] FREQUENTLY ASKED QUESTIONS
             </span>
-            <span className="text-xs font-mono text-white">TECHNICAL &amp; LEGAL CLEARANCE</span>
+            <span className="text-xs font-mono text-white">EVERYTHING YOU NEED TO KNOW</span>
           </div>
 
           <div className="space-y-4 font-mono">
@@ -1320,32 +1211,32 @@ export function CinematicLanding({
         </div>
       </section>
 
-      {/* 12. INFINITE KINETIC MARQUEE */}
+      {/* 11. INFINITE KINETIC MARQUEE: Value & Compliance Standards (No Backend Leaks) */}
       <section className="py-16 border-hairline-b overflow-hidden space-y-4 bg-[#0a0a0a]">
         
         {/* Row 1: Forward Marquee */}
         <div className="animate-marquee whitespace-nowrap">
           <span className="headline-giant text-4xl sm:text-6xl text-[rgba(255,255,255,0.85)] tracking-wider">
-            AMAZON BEDROCK NOVA MICRO &bull; PLAYWRIGHT CDP CHROME &bull; NEON PGVECTOR 768-D &bull; TARJAN SCC DIRECTED GRAPH &bull; KENDALL TAU CONCORDANCE &bull; PEARL SCM DO-CALCULUS &bull; WCAG 2.2 AAA INVARIANTS &bull;&nbsp;
+            KEYBOARD FOCUS VERIFICATION &bull; SCREEN READER SPEECH SIMULATION &bull; WCAG 2.2 LEVEL AAA &bull; EUROPEAN ACCESSIBILITY ACT 2025 &bull; 0% FALSE POSITIVES &bull; AUTOMATED GITHUB PULL REQUESTS &bull;&nbsp;
           </span>
           <span className="headline-giant text-4xl sm:text-6xl text-[rgba(255,255,255,0.85)] tracking-wider">
-            AMAZON BEDROCK NOVA MICRO &bull; PLAYWRIGHT CDP CHROME &bull; NEON PGVECTOR 768-D &bull; TARJAN SCC DIRECTED GRAPH &bull; KENDALL TAU CONCORDANCE &bull; PEARL SCM DO-CALCULUS &bull; WCAG 2.2 AAA INVARIANTS &bull;&nbsp;
+            KEYBOARD FOCUS VERIFICATION &bull; SCREEN READER SPEECH SIMULATION &bull; WCAG 2.2 LEVEL AAA &bull; EUROPEAN ACCESSIBILITY ACT 2025 &bull; 0% FALSE POSITIVES &bull; AUTOMATED GITHUB PULL REQUESTS &bull;&nbsp;
           </span>
         </div>
 
         {/* Row 2: Reverse Marquee */}
         <div className="animate-marquee-reverse whitespace-nowrap">
           <span className="headline-giant text-4xl sm:text-6xl text-[rgba(255,255,255,0.35)] tracking-wider">
-            VOICEOVER ACOUSTIC STREAM &bull; PARKINSON MOTOR TREMOR SIMULATOR &bull; CRYPTOGRAPHIC CAUSAL CERTIFICATES &bull; AWS S3 EVIDENCE VAULT &bull; SURGICAL AST REPAIR DIFFS &bull;&nbsp;
+            SURGICAL CODE DIFFS &bull; CONTINUOUS CI/CD GUARDRAILS &bull; VISUAL READING ORDER CONCORDANCE &bull; ZERO REGRESSION ASSURANCE &bull; AUDIT COMPLIANCE CERTIFICATES &bull;&nbsp;
           </span>
           <span className="headline-giant text-4xl sm:text-6xl text-[rgba(255,255,255,0.35)] tracking-wider">
-            VOICEOVER ACOUSTIC STREAM &bull; PARKINSON MOTOR TREMOR SIMULATOR &bull; CRYPTOGRAPHIC CAUSAL CERTIFICATES &bull; AWS S3 EVIDENCE VAULT &bull; SURGICAL AST REPAIR DIFFS &bull;&nbsp;
+            SURGICAL CODE DIFFS &bull; CONTINUOUS CI/CD GUARDRAILS &bull; VISUAL READING ORDER CONCORDANCE &bull; ZERO REGRESSION ASSURANCE &bull; AUDIT COMPLIANCE CERTIFICATES &bull;&nbsp;
           </span>
         </div>
 
       </section>
 
-      {/* 13. FOOTER (Giant edge-to-edge split wordmark, legal, contact) */}
+      {/* 12. CLEAN ENTERPRISE FOOTER (No IP leaks, no port leaks) */}
       <footer className="pt-20 pb-12 px-6 sm:px-12 space-y-16">
         
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 border-hairline-b pb-16">
@@ -1354,19 +1245,19 @@ export function CinematicLanding({
           <div className="md:col-span-5 space-y-4">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 bg-[#10b981]" />
-              <span className="font-bold text-sm tracking-tight text-white uppercase font-mono">BarrierLens AI</span>
+              <span className="font-bold text-sm tracking-tight text-white uppercase font-mono">BarrierLens</span>
             </div>
             <p className="text-xs text-[rgba(255,255,255,0.65)] leading-relaxed max-w-md">
-              The autonomous accessibility verification platform mathematically proving web barriers before production code ships. Deployed natively on Amazon Web Services.
+              The autonomous accessibility verification platform that tests web applications like real humans with assistive needs do—delivering automated code fixes with zero false alarms.
             </p>
             <div className="text-[11px] font-mono text-[rgba(255,255,255,0.4)]">
-              HOSTED AT: 43.205.254.136 (AWS AP-SOUTH-1)
+              WCAG 2.2 LEVEL AAA &middot; EAA 2025 &middot; ADA TITLE III
             </div>
           </div>
 
           {/* Col 2: Navigation Links */}
           <div className="md:col-span-3 space-y-3 font-mono text-xs">
-            <div className="text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Workspaces</div>
+            <div className="text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Product Workspaces</div>
             <ul className="space-y-2">
               <li>
                 <button
@@ -1380,10 +1271,10 @@ export function CinematicLanding({
               <li>
                 <button
                   type="button"
-                  onClick={() => onLaunchStudio('/fixtures/keyboard-trap', 'Inspect Tarjan focus graph', 'keyboard')}
+                  onClick={() => onLaunchStudio('/fixtures/keyboard-trap', 'Inspect focus trap path', 'keyboard')}
                   className="text-[rgba(255,255,255,0.7)] hover:text-white"
                 >
-                  &gt; Evidence &amp; Tarjan Proofs
+                  &gt; Issues &amp; Proof Inspector
                 </button>
               </li>
               <li>
@@ -1392,33 +1283,27 @@ export function CinematicLanding({
                   onClick={() => onLaunchStudio('/fixtures/accname-wcag', 'Inspect Causal AST Patches', 'screen_reader')}
                   className="text-[rgba(255,255,255,0.7)] hover:text-white"
                 >
-                  &gt; Verified Causal Fixes
+                  &gt; Verified Code Fixes
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Col 3: Engineering Documentation */}
+          {/* Col 3: Compliance & Legal */}
           <div className="md:col-span-4 space-y-3 font-mono text-xs">
-            <div className="text-[rgba(255,255,255,0.4)] uppercase tracking-wider">System Specifications</div>
-            <ul className="space-y-2">
-              <li>
-                <a href="/api/aws/status" target="_blank" rel="noreferrer" className="text-[rgba(255,255,255,0.7)] hover:text-white flex items-center gap-1.5">
-                  <span>&gt; AWS Bedrock Telemetry API</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
+            <div className="text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Compliance &amp; Standards</div>
+            <ul className="space-y-2 text-[rgba(255,255,255,0.7)]">
+              <li className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#10b981]" />
+                <span>W3C WCAG 2.2 Specification (Level A, AA, AAA)</span>
               </li>
-              <li>
-                <a href="/api/health" target="_blank" rel="noreferrer" className="text-[rgba(255,255,255,0.7)] hover:text-white flex items-center gap-1.5">
-                  <span>&gt; Neon Postgres Health API</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
+              <li className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#10b981]" />
+                <span>European Accessibility Act (Directive 2019/882)</span>
               </li>
-              <li>
-                <a href="/api/backend/health" target="_blank" rel="noreferrer" className="text-[rgba(255,255,255,0.7)] hover:text-white flex items-center gap-1.5">
-                  <span>&gt; Python ML FastAPI (:8000)</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
+              <li className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#10b981]" />
+                <span>US Americans with Disabilities Act (ADA Title III)</span>
               </li>
             </ul>
           </div>
@@ -1440,12 +1325,12 @@ export function CinematicLanding({
         {/* Legal & Copyright */}
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[11px] text-[rgba(255,255,255,0.4)] pt-4 border-hairline-t">
           <div>
-            &copy; 2026 Aaditya Uniyal. All rights reserved.
+            &copy; 2026 BarrierLens Inc. All rights reserved.
           </div>
           <div className="flex items-center gap-6">
             <span>WCAG 2.2 LEVEL AAA</span>
             <span>EAA 2025 COMPLIANT</span>
-            <span>AWS CLOUD NATIVE</span>
+            <span>ENTERPRISE SOC2 READY</span>
           </div>
         </div>
 
