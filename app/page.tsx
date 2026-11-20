@@ -237,11 +237,14 @@ export default function Home() {
         return;
       }
 
+      if (e.key === '0') setActiveScreen('story');
       if (e.key === '1') setActiveScreen('overview');
-      if (e.key === '2') setActiveScreen('websites');
-      if (e.key === '3') setActiveScreen('audits');
-      if (e.key === '4') setActiveScreen('issues');
-      if (e.key === '5') setActiveScreen('fixes');
+      if (e.key === '2') setActiveScreen('audits');
+      if (e.key === '3') setActiveScreen('issues');
+      if (e.key === '4') setActiveScreen('fixes');
+      if (e.key === '5') setActiveScreen('arena');
+      if (e.key === '6') setActiveScreen('genome');
+      if (e.key === '7') setActiveScreen('settings');
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -464,6 +467,7 @@ export default function Home() {
         servicesCount={servicesHealth}
         userSession={userSession}
         onOpenAuth={() => setIsAuthModalOpen(true)}
+        onSignOut={() => setUserSession(null)}
       />
 
       {/* 2. Apple Passkey Auth Modal */}
@@ -471,7 +475,10 @@ export default function Home() {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         currentSession={userSession}
-        onAuthenticate={(session) => setUserSession(session)}
+        onAuthenticate={(session) => {
+          setUserSession(session);
+          setActiveScreen('overview');
+        }}
         onSignOut={() => setUserSession(null)}
       />
 
@@ -497,6 +504,7 @@ export default function Home() {
             if (customGoal) setGoal(customGoal);
             setActiveScreen('audits');
           }}
+          onOpenAuth={() => setIsAuthModalOpen(true)}
         />
       ) : (
         <>
