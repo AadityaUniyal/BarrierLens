@@ -21,7 +21,7 @@ import { VisualTwinSimulator } from '@/components/apple/VisualTwinSimulator';
 import { VaultAdminView } from '@/components/apple/VaultAdminView';
 import { ComposeView } from '@/components/apple/ComposeView';
 import { TraceTheater } from '@/components/apple/TraceTheater';
-import { LandingStory } from '@/components/apple/LandingStory';
+import { CinematicLanding } from '@/components/cinematic/CinematicLanding';
 import { AppleAuthModal, UserSession } from '@/components/apple/AppleAuthModal';
 import { authClient } from '@/lib/auth-client';
 import { AuditRun, BarrierFinding, PersonaType, VerifiedFixResult } from '@/lib/barrierlens/types';
@@ -95,7 +95,7 @@ const BENCHMARK_SAMPLE_FINDINGS: BarrierFinding[] = [
 ];
 
 export default function Home() {
-  const [activeScreen, setActiveScreen] = useState<ScreenId>('audits');
+  const [activeScreen, setActiveScreen] = useState<ScreenId>('story');
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
@@ -483,8 +483,24 @@ export default function Home() {
         onRunAudit={handleRunAudit}
       />
 
-      {/* 4. Main Protected Cupertino Viewport */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8">
+      {/* 4. Viewport: Cinematic Landing (Full-Bleed) vs Production App Workspace */}
+      {activeScreen === 'story' ? (
+        <CinematicLanding
+          onLaunchStudio={(url, customGoal, customPersona) => {
+            if (url) setTargetUrl(url);
+            if (customGoal) setGoal(customGoal);
+            if (customPersona) setPersona(customPersona);
+            setActiveScreen('audits');
+          }}
+          onSelectBenchmark={(url, customGoal) => {
+            setTargetUrl(url);
+            if (customGoal) setGoal(customGoal);
+            setActiveScreen('audits');
+          }}
+        />
+      ) : (
+        <>
+          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
         {/* Hub 1: Overview & Pulse HUD */}
         {(activeScreen === 'overview' || activeScreen === 'pulse') && (
           <PulseDashboard
@@ -687,29 +703,25 @@ export default function Home() {
           <PublicScorecardView auditRun={auditResult} />
         )}
 
-        {activeScreen === 'story' && (
-          <LandingStory
-            onEnterStudio={() => setActiveScreen('audits')}
-            onOpenAuth={() => setIsAuthModalOpen(true)}
-          />
-        )}
-      </main>
+        </main>
 
-      {/* Clean Linear Footer */}
-      <footer className="border-t border-[#23262a] py-6 px-6 text-xs text-[#9ba1a6] bg-[#0c0d0e]">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#30a46c]" />
-            <span className="font-semibold text-[#f4f5f6]">BarrierLens</span>
-            <span className="text-[#6b7280]">· Task-Conditioned Autonomous Accessibility</span>
+        {/* Clean Editorial App Footer */}
+        <footer className="border-hairline-t py-6 px-6 text-xs text-[rgba(255,255,255,0.6)] bg-[#0a0a0a]">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 font-mono">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-[#10b981]" />
+              <span className="font-bold text-white uppercase">BarrierLens 2.0</span>
+              <span className="text-[rgba(255,255,255,0.4)]">· Task-Conditioned Autonomous Accessibility</span>
+            </div>
+            <div className="flex items-center gap-4 text-[11px] text-[rgba(255,255,255,0.4)]">
+              <span>PLAYWRIGHT CDP</span>
+              <span>AWS BEDROCK NOVA</span>
+              <span>WCAG 2.2 LEVEL AAA</span>
+            </div>
           </div>
-          <div className="flex items-center gap-4 font-mono text-[11px] text-[#6b7280]">
-            <span>Playwright CDP</span>
-            <span>Encrypted Ledger</span>
-            <span>WCAG 2.2 Level AAA</span>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      </>
+      )}
     </div>
   );
 }
