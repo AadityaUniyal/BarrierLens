@@ -61,7 +61,8 @@ export async function POST(req: NextRequest) {
         VALUES (${keyId}, ${userId}, ${name}, ${keyPrefix}, ${keyHash}, ${scopes}, 120, ${createdAt});
       `;
     } catch (e: any) {
-      console.warn('[API Keys] Neon insert warning:', e.message);
+      console.error('[API Keys] Neon insert failure:', e.message);
+      return NextResponse.json({ success: false, error: e.message }, { status: 500 });
     }
 
     // Return the secretKey plaintext ONLY ONCE upon creation
@@ -95,7 +96,8 @@ export async function DELETE(req: NextRequest) {
     try {
       await sql`DELETE FROM api_keys WHERE id = ${id}::uuid AND user_id = ${userId};`;
     } catch (e: any) {
-      console.warn('[API Keys] Neon delete warning:', e.message);
+      console.error('[API Keys] Neon delete failure:', e.message);
+      return NextResponse.json({ success: false, error: e.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, message: `Key ${id} revoked.` });

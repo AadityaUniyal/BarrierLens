@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { 
@@ -275,7 +275,7 @@ export function CDPPatchSimulator({
         <div className="flex items-center gap-2">
           {availableFindings.length > 1 && (
             <div className="flex items-center gap-1 text-[11px] font-mono">
-              <span className="text-[#62676d]">Finding:</span>
+              <span className="text-[#9ba1a6]">Finding:</span>
               <select
                 value={selectedFindingIdx}
                 onChange={(e) => {
@@ -293,9 +293,9 @@ export function CDPPatchSimulator({
             </div>
           )}
 
-          <div className="hidden md:flex items-center gap-1 text-[10px] font-mono text-[#62676d] bg-[#141517] px-2 py-1 rounded border border-[#23262a]">
+          <div className="hidden md:flex items-center gap-1 text-[10px] font-mono text-[#9ba1a6] bg-[#141517] px-2 py-1 rounded border border-[#23262a]">
             <span>Press</span>
-            <kbd className="px-1 py-0.2 rounded bg-[#23262a] text-[#f4f5f6]">P</kbd>
+            <kbd className="px-1 py-0.5 rounded bg-[#23262a] text-[#f4f5f6]">P</kbd>
             <span>to toggle patch</span>
           </div>
         </div>
@@ -345,7 +345,7 @@ export function CDPPatchSimulator({
                   <span className="text-[10px] font-mono text-[#ff453a] uppercase font-bold flex items-center gap-1">
                     <Lock className="w-3 h-3" /> Before (Unpatched Trap)
                   </span>
-                  <span className="text-[10px] font-mono text-[#62676d]">Sink SCC Degree: 2</span>
+                  <span className="text-[10px] font-mono text-[#9ba1a6]">Sink SCC Degree: 2</span>
                 </div>
 
                 <div className="p-3 rounded-lg bg-[#0c0d0e] border border-red-500/20 space-y-2">
@@ -363,7 +363,7 @@ export function CDPPatchSimulator({
                   </div>
                 </div>
 
-                <div className="text-[10px] font-mono text-[#62676d] flex items-center gap-1">
+                <div className="text-[10px] font-mono text-[#9ba1a6] flex items-center gap-1">
                   <span>Cycle:</span>
                   <code className="text-red-300">#trap-modal ⇄ #claim-btn</code>
                 </div>
@@ -381,7 +381,7 @@ export function CDPPatchSimulator({
                 <div className="p-3 rounded-lg bg-[#0c0d0e] border border-emerald-500/20 space-y-2">
                   <div className="text-xs font-semibold text-[#f4f5f6] flex items-center justify-between">
                     <span>Confirmation Dialog</span>
-                    <span className="text-[10px] font-mono text-[#30d158] bg-emerald-500/10 px-1.5 py-0.2 rounded">
+                    <span className="text-[10px] font-mono text-[#30d158] bg-emerald-500/10 px-1.5 py-0.5 rounded">
                       aria-modal=&quot;true&quot;
                     </span>
                   </div>
@@ -398,7 +398,7 @@ export function CDPPatchSimulator({
                   </div>
                 </div>
 
-                <div className="text-[10px] font-mono text-[#62676d] flex items-center gap-1">
+                <div className="text-[10px] font-mono text-[#9ba1a6] flex items-center gap-1">
                   <span>Restoration:</span>
                   <code className="text-emerald-300">#trap-modal ──[Esc]──▶ #newsletter-email</code>
                 </div>
@@ -520,7 +520,7 @@ export function CDPPatchSimulator({
                 {showFlowVectors && (
                   <div className="my-2 p-3 rounded-xl bg-[#0c0d0e] border border-[#23262a] space-y-2">
                     <div className="flex items-center justify-between text-[10px] font-mono text-[#9ba1a6]">
-                      <span className="font-semibold uppercase tracking-wider text-[#62676d]">
+                      <span className="font-semibold uppercase tracking-wider text-[#9ba1a6]">
                         Visual Focus Vector Flow (Kendall&apos;s &tau;)
                       </span>
                       <span className={patchMode === 'unpatched' ? 'text-[#ff453a] font-bold' : 'text-[#30d158] font-bold'}>
@@ -583,17 +583,17 @@ export function CDPPatchSimulator({
 
                 {/* Traversal Pathway Graphic */}
                 <div className="p-3 rounded-lg bg-[#0c0d0e] border border-[#23262a] flex items-center justify-between text-[11px] font-mono">
-                  <span className="text-[#62676d]">Traversal Path:</span>
+                  <span className="text-[#9ba1a6]">Traversal Path:</span>
                   <div className="flex items-center gap-1.5 text-xs">
-                    <span className={focusStep === 0 ? 'text-[#5e6ad2] font-bold' : 'text-[#62676d]'}>#trigger</span>
-                    <span className="text-[#62676d]">→</span>
-                    <span className={focusStep === 1 ? 'text-amber-400 font-bold' : 'text-[#62676d]'}>#trap-modal</span>
-                    <span className="text-[#62676d]">⇄</span>
-                    <span className={focusStep === 2 ? 'text-amber-400 font-bold' : 'text-[#62676d]'}>#claim-btn</span>
+                    <span className={focusStep === 0 ? 'text-[#5e6ad2] font-bold' : 'text-[#9ba1a6]'}>#trigger</span>
+                    <span className="text-[#9ba1a6]">→</span>
+                    <span className={focusStep === 1 ? 'text-amber-400 font-bold' : 'text-[#9ba1a6]'}>#trap-modal</span>
+                    <span className="text-[#9ba1a6]">⇄</span>
+                    <span className={focusStep === 2 ? 'text-amber-400 font-bold' : 'text-[#9ba1a6]'}>#claim-btn</span>
                     {patchMode === 'patched' && (
                       <>
                         <span className="text-emerald-400">──[Esc]──▶</span>
-                        <span className={isEscaped ? 'text-emerald-400 font-bold' : 'text-[#62676d]'}>#trigger</span>
+                        <span className={isEscaped ? 'text-emerald-400 font-bold' : 'text-[#9ba1a6]'}>#trigger</span>
                       </>
                     )}
                   </div>
@@ -631,7 +631,7 @@ export function CDPPatchSimulator({
         {/* Interactive Keyboard Test Controls */}
         <div className="pt-3 border-t border-[#23262a] flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-[#62676d]">Simulate Keystroke:</span>
+            <span className="text-[11px] text-[#9ba1a6]">Simulate Keystroke:</span>
             <button
               type="button"
               onClick={() => handleSimulateKey('Tab')}
@@ -685,9 +685,9 @@ export function CDPPatchSimulator({
           <div className="flex items-center justify-between text-[11px] text-[#9ba1a6] pb-1 border-b border-[#23262a]">
             <div className="flex items-center gap-2">
               <span className="text-[#30d158] font-bold font-mono">Verified Surgical Fix</span>
-              <span className="text-[#62676d]">· Minimal Pearl SCM Invasiveness Level 1</span>
+              <span className="text-[#9ba1a6]">· Minimal Pearl SCM Invasiveness Level 1</span>
             </div>
-            <span className="text-[10px] text-[#62676d]">remedy/trap-escape-handler.tsx</span>
+            <span className="text-[10px] text-[#9ba1a6]">remedy/trap-escape-handler.tsx</span>
           </div>
 
           <pre className="p-3 rounded-lg bg-[#141517] border border-[#23262a] text-[11px] overflow-x-auto leading-relaxed text-[#f4f5f6]">
@@ -697,11 +697,11 @@ export function CDPPatchSimulator({
                 <span className="text-red-400 block">-   &lt;h2&gt;Special Confirmation&lt;/h2&gt;</span>
                 <span className="text-red-400 block">-   &lt;button id=&quot;claim-btn&quot;&gt;Confirm&lt;/button&gt;</span>
                 <span className="text-red-400 block">- &lt;/div&gt;</span>
-                <span className="text-[#62676d] block pt-1">// Trapped: Missing onKeyDown listener, aria-modal, and focus restore pointer</span>
+                <span className="text-[#9ba1a6] block pt-1">// Trapped: Missing onKeyDown listener, aria-modal, and focus restore pointer</span>
               </code>
             ) : (
               <code>
-                <span className="text-[#62676d] block">// Causal Repair: do(X = aria-modal, onKeyDown = escapeHandler)</span>
+                <span className="text-[#9ba1a6] block">// Causal Repair: do(X = aria-modal, onKeyDown = escapeHandler)</span>
                 <span className="text-emerald-400 block">+ &lt;dialog</span>
                 <span className="text-emerald-400 block">+   id=&quot;trap-modal&quot;</span>
                 <span className="text-emerald-400 block">+   role=&quot;dialog&quot;</span>

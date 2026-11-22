@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { 
@@ -136,7 +136,7 @@ export function PulseDashboard({
               style={{ width: `${overallTraversability}%` }}
             />
           </div>
-          <p className="text-[11px] text-[#62676d] pt-1">
+          <p className="text-[11px] text-[#9ba1a6] pt-1">
             Aggregate score across spatial, auditory, and cognitive bounds.
           </p>
         </div>
@@ -158,7 +158,7 @@ export function PulseDashboard({
               style={{ width: `${spatialScore}%` }}
             />
           </div>
-          <p className="text-[11px] text-[#62676d] pt-1">
+          <p className="text-[11px] text-[#9ba1a6] pt-1">
             Keyboard sink traps: <strong className="text-[#f4f5f6] font-mono">{criticalFindings} detected</strong>
           </p>
         </div>
@@ -180,7 +180,7 @@ export function PulseDashboard({
               style={{ width: `${auditoryScore}%` }}
             />
           </div>
-          <p className="text-[11px] text-[#62676d] pt-1">
+          <p className="text-[11px] text-[#9ba1a6] pt-1">
             Kendall Tau correlation: <strong className="text-[#30d158] font-mono">τ = {active?.kendallTau?.tau ?? 0.52}</strong>
           </p>
         </div>
@@ -202,7 +202,7 @@ export function PulseDashboard({
               style={{ width: `${cognitiveScore}%` }}
             />
           </div>
-          <p className="text-[11px] text-[#62676d] pt-1">
+          <p className="text-[11px] text-[#9ba1a6] pt-1">
             Constrained steps vs. baseline unconstrained clicks.
           </p>
         </div>
@@ -315,7 +315,7 @@ export function PulseDashboard({
                 <Activity className="w-5 h-5 text-[#9ba1a6]" />
               </div>
               <p className="text-sm font-medium text-[#9ba1a6]">No audits yet</p>
-              <p className="text-xs text-[#62676d] mt-1">Run your first audit to see traversal results here.</p>
+              <p className="text-xs text-[#9ba1a6] mt-1">Run your first audit to see traversal results here.</p>
               <button
                 onClick={onRunQuickAudit}
                 className="mt-4 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#5e6ad2]/10 border border-[#5e6ad2]/20 text-[#5e6ad2] text-xs font-medium hover:bg-[#5e6ad2]/20 transition-all"
@@ -327,7 +327,7 @@ export function PulseDashboard({
           ) : (
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-[#23262a] text-[10px] font-mono text-[#62676d] uppercase tracking-wider">
+              <tr className="border-b border-[#23262a] text-[10px] font-mono text-[#9ba1a6] uppercase tracking-wider">
                 <th className="py-2.5 px-3">Target Domain</th>
                 <th className="py-2.5 px-3">Constraint Persona</th>
                 <th className="py-2.5 px-3">Task Goal</th>

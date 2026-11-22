@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { 
   X, 
   Printer, 
@@ -27,6 +27,44 @@ export function ExecutiveReportModal({
   auditRun,
   grade = 'A'
 }: ExecutiveReportModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const runId = auditRun?.id || 'run_verified_latest';
@@ -56,8 +94,15 @@ export function ExecutiveReportModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md p-4 sm:p-6 flex items-center justify-center animate-in fade-in duration-150 print:p-0 print:bg-white print:static">
+    <div 
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md p-4 sm:p-6 flex items-center justify-center animate-in fade-in duration-150 print:p-0 print:bg-white print:static"
+      onClick={onClose}
+    >
       <div 
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="report-modal-title"
         className="w-full max-w-4xl bg-[#141517] border border-[#23262a] rounded-xl overflow-hidden shadow-2xl text-[#f4f5f6] my-8 relative print:border-none print:shadow-none print:bg-white print:text-black print:my-0"
         onClick={(e) => e.stopPropagation()}
       >
@@ -65,7 +110,7 @@ export function ExecutiveReportModal({
         <div className="flex items-center justify-between px-6 py-3.5 bg-[#0c0d0e] border-b border-[#23262a] print:hidden">
           <div className="flex items-center gap-2">
             <FileCheck2 className="w-4 h-4 text-[#5e6ad2]" />
-            <span className="text-xs font-mono font-medium text-[#9ba1a6]">
+            <span id="report-modal-title" className="text-xs font-mono font-medium text-[#9ba1a6]">
               Executive Audit Document Preview
             </span>
           </div>
@@ -87,6 +132,7 @@ export function ExecutiveReportModal({
             </button>
             <button
               onClick={onClose}
+              aria-label="Close dialog"
               className="p-1.5 rounded-lg bg-[#181a1d] hover:bg-[#23262a] text-[#9ba1a6] hover:text-[#f4f5f6] transition-colors ml-2"
               title="Close (Esc)"
             >

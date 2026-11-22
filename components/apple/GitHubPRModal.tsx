@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, 
   GitPullRequest, 
@@ -41,6 +41,43 @@ export function GitHubPRModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
   const [result, setResult] = useState<{
     prUrl: string;
     prNumber?: number;
@@ -140,6 +177,7 @@ export function GitHubPRModal({
       onClick={onClose}
     >
       <div 
+        ref={modalRef}
         className="w-full max-w-2xl bg-[#141517] border border-[#23262a] rounded-xl overflow-hidden shadow-2xl text-[#f4f5f6] my-8 relative"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
@@ -164,6 +202,7 @@ export function GitHubPRModal({
 
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="p-1.5 rounded-md bg-[#181a1d] hover:bg-[#23262a] text-[#9ba1a6] hover:text-[#f4f5f6] transition-colors"
           >
             <X className="w-4 h-4" />
@@ -193,7 +232,7 @@ export function GitHubPRModal({
                 value={repoInput}
                 onChange={(e) => setRepoInput(e.target.value)}
                 placeholder="owner/repo (e.g. AadityaUniyal/BarrierLens)"
-                className="w-full px-3 py-2 rounded-lg bg-[#0c0d0e] border border-[#23262a] text-xs font-mono text-[#f4f5f6] placeholder-[#5a626a] focus:outline-none focus:border-[#5e6ad2]"
+                className="w-full px-3 py-2 rounded-lg bg-[#0c0d0e] border border-[#23262a] text-xs font-mono text-[#f4f5f6] placeholder-[#8b929a] focus:outline-none focus:border-[#5e6ad2]"
               />
             </div>
 
@@ -207,7 +246,7 @@ export function GitHubPRModal({
                 value={baseBranch}
                 onChange={(e) => setBaseBranch(e.target.value)}
                 placeholder="main"
-                className="w-full px-3 py-2 rounded-lg bg-[#0c0d0e] border border-[#23262a] text-xs font-mono text-[#f4f5f6] placeholder-[#5a626a] focus:outline-none focus:border-[#5e6ad2]"
+                className="w-full px-3 py-2 rounded-lg bg-[#0c0d0e] border border-[#23262a] text-xs font-mono text-[#f4f5f6] placeholder-[#8b929a] focus:outline-none focus:border-[#5e6ad2]"
               />
             </div>
           </div>
@@ -223,7 +262,7 @@ export function GitHubPRModal({
               value={filePath}
               onChange={(e) => setFilePath(e.target.value)}
               placeholder="components/a11y-fix.tsx"
-              className="w-full px-3 py-2 rounded-lg bg-[#0c0d0e] border border-[#23262a] text-xs font-mono text-[#f4f5f6] placeholder-[#5a626a] focus:outline-none focus:border-[#5e6ad2]"
+              className="w-full px-3 py-2 rounded-lg bg-[#0c0d0e] border border-[#23262a] text-xs font-mono text-[#f4f5f6] placeholder-[#8b929a] focus:outline-none focus:border-[#5e6ad2]"
             />
           </div>
 
@@ -233,7 +272,7 @@ export function GitHubPRModal({
               <label className="text-xs font-medium text-[#9ba1a6] flex items-center gap-1.5">
                 <Key className="w-3.5 h-3.5 text-[#f76808]" />
                 <span>GitHub Personal Access Token (PAT)</span>
-                <span className="text-[10px] text-[#6b7280] font-normal">(Optional)</span>
+                <span className="text-[10px] text-[#9ba1a6] font-normal">(Optional)</span>
               </label>
               <a
                 href="https://github.com/settings/tokens/new?scopes=repo&description=BarrierLens+Automated+Auditor"
@@ -251,7 +290,7 @@ export function GitHubPRModal({
               value={tokenInput}
               onChange={(e) => setTokenInput(e.target.value)}
               placeholder="ghp_... (needs 'repo' or 'contents:write, pull_requests:write' scope)"
-              className="w-full px-3 py-2 rounded-lg bg-[#0c0d0e] border border-[#23262a] text-xs font-mono text-[#f4f5f6] placeholder-[#5a626a] focus:outline-none focus:border-[#5e6ad2]"
+              className="w-full px-3 py-2 rounded-lg bg-[#0c0d0e] border border-[#23262a] text-xs font-mono text-[#f4f5f6] placeholder-[#8b929a] focus:outline-none focus:border-[#5e6ad2]"
             />
 
             <div className="flex items-center gap-2">

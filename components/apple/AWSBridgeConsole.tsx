@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { 
@@ -150,7 +150,7 @@ export function AWSBridgeConsole() {
         {/* Card 1: CLI Environment */}
         <div className="rounded-xl p-4 bg-[#141517] border border-[#23262a] space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono uppercase text-[#62676d] tracking-wider block">
+            <span className="text-[10px] font-mono uppercase text-[#9ba1a6] tracking-wider block">
               CLI Environment
             </span>
             <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
@@ -160,15 +160,15 @@ export function AWSBridgeConsole() {
 
           <div className="space-y-1 text-xs font-mono">
             <div>
-              <span className="text-[#62676d] block text-[10px]">VERSION</span>
+              <span className="text-[#9ba1a6] block text-[10px]">VERSION</span>
               <span className="text-[#f4f5f6] text-[11px]">{awsStatus.version}</span>
             </div>
             <div>
-              <span className="text-[#62676d] block text-[10px]">ACCOUNT</span>
+              <span className="text-[#9ba1a6] block text-[10px]">ACCOUNT</span>
               <span className="text-[#f4f5f6] text-[11px]">{awsStatus.account}</span>
             </div>
             <div>
-              <span className="text-[#62676d] block text-[10px]">REGION</span>
+              <span className="text-[#9ba1a6] block text-[10px]">REGION</span>
               <span className="text-[#f4f5f6] text-[11px]">{awsStatus.region}</span>
             </div>
           </div>
@@ -177,7 +177,7 @@ export function AWSBridgeConsole() {
         {/* Card 2: Auth State */}
         <div className="rounded-xl p-4 bg-[#141517] border border-[#23262a] space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono uppercase text-[#62676d] tracking-wider block">
+            <span className="text-[10px] font-mono uppercase text-[#9ba1a6] tracking-wider block">
               Authentication
             </span>
             <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
@@ -197,7 +197,7 @@ export function AWSBridgeConsole() {
         {/* Card 3: $120 Budget Sentinel & Quota */}
         <div className="rounded-xl p-4 bg-[#141517] border border-[#23262a] space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono uppercase text-[#62676d] tracking-wider block">
+            <span className="text-[10px] font-mono uppercase text-[#9ba1a6] tracking-wider block">
               Budget Quota
             </span>
             <span className="text-[10px] font-mono text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
@@ -207,15 +207,15 @@ export function AWSBridgeConsole() {
 
           <div className="space-y-1 text-xs font-mono">
             <div className="flex justify-between">
-              <span className="text-[#62676d]">Remaining:</span>
+              <span className="text-[#9ba1a6]">Remaining:</span>
               <span className="text-emerald-400 font-semibold">${budget.remaining.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#62676d]">Est. Runs:</span>
+              <span className="text-[#9ba1a6]">Est. Runs:</span>
               <span className="text-[#f4f5f6]">~{budget.estimatedRuns.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#62676d]">Vault Storage:</span>
+              <span className="text-[#9ba1a6]">Vault Storage:</span>
               <span className="text-emerald-400 font-semibold">$0.00 Active Tier</span>
             </div>
           </div>
@@ -224,7 +224,7 @@ export function AWSBridgeConsole() {
         {/* Card 4: Zero-Egress Sandbox */}
         <div className="rounded-xl p-4 bg-[#141517] border border-[#23262a] space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono uppercase text-[#62676d] tracking-wider block">
+            <span className="text-[10px] font-mono uppercase text-[#9ba1a6] tracking-wider block">
               Zero-Egress Sandbox
             </span>
             <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
@@ -234,15 +234,15 @@ export function AWSBridgeConsole() {
 
           <div className="space-y-1 text-xs font-mono">
             <div className="flex justify-between">
-              <span className="text-[#62676d]">Memory Cap:</span>
+              <span className="text-[#9ba1a6]">Memory Cap:</span>
               <span className="text-[#f4f5f6]">512 MB cgroups</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#62676d]">IMDS Blocked:</span>
+              <span className="text-[#9ba1a6]">IMDS Blocked:</span>
               <span className="text-emerald-400">169.254.169.254</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#62676d]">Filesystem:</span>
+              <span className="text-[#9ba1a6]">Filesystem:</span>
               <span className="text-emerald-400">READ-ONLY</span>
             </div>
           </div>
@@ -258,7 +258,7 @@ export function AWSBridgeConsole() {
               Autonomous Reasoning Model Playground
             </h3>
           </div>
-          <span className="text-[11px] font-mono text-[#62676d]">
+          <span className="text-[11px] font-mono text-[#9ba1a6]">
             Fast Reasoning Tier &bull; Deep Reasoning Tier
           </span>
         </div>
@@ -292,7 +292,7 @@ export function AWSBridgeConsole() {
       {/* 4. Terminal CLI Commands Card */}
       <div className="rounded-xl p-5 bg-[#141517] border border-[#23262a] space-y-3">
         <h3 className="text-xs font-mono uppercase tracking-wider text-[#f4f5f6] flex items-center gap-2">
-          <Terminal className="w-4 h-4 text-[#62676d]" />
+          <Terminal className="w-4 h-4 text-[#9ba1a6]" />
           Terminal Agent CLI Commands
         </h3>
         <p className="text-[12px] text-[#9ba1a6]">
@@ -301,15 +301,15 @@ export function AWSBridgeConsole() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 pt-1">
           <div className="p-3 rounded-lg bg-[#0c0d0e] border border-[#23262a] space-y-1">
-            <span className="text-[10px] font-mono uppercase text-[#62676d]">Status Check</span>
+            <span className="text-[10px] font-mono uppercase text-[#9ba1a6]">Status Check</span>
             <code className="text-xs font-mono text-[#f4f5f6] block">npm run status:check</code>
           </div>
           <div className="p-3 rounded-lg bg-[#0c0d0e] border border-[#23262a] space-y-1">
-            <span className="text-[10px] font-mono uppercase text-[#62676d]">Neural Inference</span>
+            <span className="text-[10px] font-mono uppercase text-[#9ba1a6]">Neural Inference</span>
             <code className="text-xs font-mono text-[#f4f5f6] block">npm run agent:reason</code>
           </div>
           <div className="p-3 rounded-lg bg-[#0c0d0e] border border-[#23262a] space-y-1">
-            <span className="text-[10px] font-mono uppercase text-[#62676d]">Sandbox Audit</span>
+            <span className="text-[10px] font-mono uppercase text-[#9ba1a6]">Sandbox Audit</span>
             <code className="text-xs font-mono text-[#f4f5f6] block">npm run sandbox:verify</code>
           </div>
         </div>

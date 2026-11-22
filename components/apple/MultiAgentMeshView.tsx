@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { 
@@ -274,7 +274,7 @@ export function MultiAgentMeshView() {
         {/* Target URL and Mission Goal Input Bar */}
         <div className="mt-4 pt-4 border-t border-[#23262a] grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label className="text-[10px] font-mono uppercase text-[#62676d] block mb-1">Target Surface URL</label>
+            <label className="text-[10px] font-mono uppercase text-[#9ba1a6] block mb-1">Target Surface URL</label>
             <input
               type="text"
               value={targetUrl}
@@ -284,7 +284,7 @@ export function MultiAgentMeshView() {
             />
           </div>
           <div>
-            <label className="text-[10px] font-mono uppercase text-[#62676d] block mb-1">Autonomous Mission Goal</label>
+            <label className="text-[10px] font-mono uppercase text-[#9ba1a6] block mb-1">Autonomous Mission Goal</label>
             <input
               type="text"
               value={goal}
@@ -303,7 +303,7 @@ export function MultiAgentMeshView() {
             <Cpu className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[10px] font-mono uppercase text-[#62676d] block">Cognitive Reasoner</span>
+            <span className="text-[10px] font-mono uppercase text-[#9ba1a6] block">Cognitive Reasoner</span>
             <span className="text-xs font-semibold text-[#f4f5f6]">Intelligence Engine</span>
           </div>
         </div>
@@ -313,7 +313,7 @@ export function MultiAgentMeshView() {
             <Network className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[10px] font-mono uppercase text-[#62676d] block">Distributed Bus</span>
+            <span className="text-[10px] font-mono uppercase text-[#9ba1a6] block">Distributed Bus</span>
             <span className="text-xs font-semibold text-[#f4f5f6]">Continuous Pub/Sub</span>
           </div>
         </div>
@@ -323,7 +323,7 @@ export function MultiAgentMeshView() {
             <HardDrive className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[10px] font-mono uppercase text-[#62676d] block">Evidence Vault</span>
+            <span className="text-[10px] font-mono uppercase text-[#9ba1a6] block">Evidence Vault</span>
             <span className="text-xs font-semibold text-[#f4f5f6]">Artifacts &amp; Traces</span>
           </div>
         </div>
@@ -333,7 +333,7 @@ export function MultiAgentMeshView() {
             <Lock className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[10px] font-mono uppercase text-[#62676d] block">Zero-Egress Sandbox</span>
+            <span className="text-[10px] font-mono uppercase text-[#9ba1a6] block">Zero-Egress Sandbox</span>
             <span className="text-xs font-semibold text-emerald-400">Isolated Replay</span>
           </div>
         </div>
@@ -355,7 +355,7 @@ export function MultiAgentMeshView() {
                   </div>
                   <div>
                     <h3 className="text-xs font-semibold text-[#f4f5f6]">{agent.name}</h3>
-                    <span className="text-[10px] font-mono text-[#62676d]">{agent.strand}</span>
+                    <span className="text-[10px] font-mono text-[#9ba1a6]">{agent.strand}</span>
                   </div>
                 </div>
 
@@ -395,7 +395,7 @@ export function MultiAgentMeshView() {
         <div className="p-3.5 rounded-lg bg-[#0c0d0e] border border-[#23262a] font-mono text-[11px] space-y-2 max-h-56 overflow-y-auto">
           {agentLogs.map((log, idx) => (
             <div key={idx} className="flex items-start gap-2 leading-relaxed">
-              <span className="text-[#62676d] shrink-0">[{log.time}]</span>
+              <span className="text-[#9ba1a6] shrink-0">[{log.time}]</span>
               <span className={`font-semibold shrink-0 ${log.color}`}>{log.from} → {log.to}:</span>
               <span className="text-[#f4f5f6]">{log.text}</span>
             </div>

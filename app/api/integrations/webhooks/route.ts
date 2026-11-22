@@ -91,7 +91,8 @@ export async function POST(req: NextRequest) {
           VALUES (${webhookId}, ${userId}, ${targetUrl}, ${generatedSecret}, ${webhookEvents}, ${createdAt});
         `;
       } catch (dbErr: any) {
-        console.warn('[Webhooks API] Neon DB insert notice:', dbErr.message);
+        console.error('[Webhooks API] Neon DB insert failure:', dbErr.message);
+        return NextResponse.json({ success: false, error: dbErr.message }, { status: 500 });
       }
 
       return NextResponse.json({
@@ -277,7 +278,8 @@ export async function DELETE(req: NextRequest) {
         WHERE id = ${id}::uuid AND user_id = ${userId};
       `;
     } catch (e: any) {
-      console.warn('[Webhooks API] Neon delete notice:', e.message);
+      console.error('[Webhooks API] Neon delete failure:', e.message);
+      return NextResponse.json({ success: false, error: e.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, message: `Webhook ${id} removed.` });

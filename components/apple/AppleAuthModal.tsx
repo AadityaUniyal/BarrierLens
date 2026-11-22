@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Key, 
   ShieldCheck, 
@@ -10,7 +10,9 @@ import {
   X, 
   Fingerprint, 
   User,
-  Zap
+  Zap,
+  AlertTriangle,
+  RotateCcw
 } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 
@@ -54,6 +56,44 @@ export function AppleAuthModal({
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authSuccess, setAuthSuccess] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -79,6 +119,7 @@ export function AppleAuthModal({
 
   const handlePasskeyAuth = async () => {
     setIsAuthenticating(true);
+    setErrorMessage(null);
     setStatusMessage('Prompting FIDO2 WebAuthn / Passkey...');
 
     try {
@@ -111,13 +152,17 @@ export function AppleAuthModal({
       }
     } catch (err: any) {
       console.warn('[Passkey] Authentication error:', err?.message || err);
-      // Fallback gracefully to demo auditor session if hardware token is not attached
-      handleInstantDemoLogin();
+      setIsAuthenticating(false);
+      setStatusMessage('');
+      setErrorMessage(
+        err?.message || 'Passkey authentication failed or was cancelled by user. Ensure WebAuthn is supported on your device and retry.'
+      );
     }
   };
 
   const handleGitHubAuth = async () => {
     setIsAuthenticating(true);
+    setErrorMessage(null);
     setStatusMessage('Connecting to GitHub OAuth...');
     try {
       await authClient.signIn.social({
@@ -125,9 +170,12 @@ export function AppleAuthModal({
         callbackURL: window.location.href,
       });
     } catch (err: any) {
+      console.warn('[GitHub] Authentication error:', err?.message || err);
       setIsAuthenticating(false);
-      setStatusMessage('GitHub OAuth fallback: ' + (err?.message || 'Provider unavailable'));
-      handleInstantDemoLogin();
+      setStatusMessage('');
+      setErrorMessage(
+        'GitHub OAuth failed: ' + (err?.message || 'Provider unavailable or OAuth credentials unconfigured. Please retry or contact your workspace admin.')
+      );
     }
   };
 
@@ -140,12 +188,19 @@ export function AppleAuthModal({
       />
 
       {/* Modal Dialog with hairline borders and editorial dark aesthetic */}
-      <div className="relative w-full max-w-md bg-[#121316] border-hairline p-6 shadow-2xl z-10 space-y-6">
+      <div 
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="auth-modal-title"
+        className="relative w-full max-w-md bg-[#121316] border-hairline p-6 shadow-2xl z-10 space-y-6"
+      >
         
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
+          aria-label="Close dialog"
           className="absolute top-4 right-4 w-7 h-7 bg-[#0a0a0a] hover:bg-[#1a1c20] border-hairline flex items-center justify-center text-[rgba(255,255,255,0.6)] hover:text-white transition-all"
         >
           <X className="w-3.5 h-3.5" />
@@ -160,7 +215,7 @@ export function AppleAuthModal({
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold text-white font-mono">{currentSession.name}</h3>
+                  <h3 id="auth-modal-title" className="text-sm font-bold text-white font-mono">{currentSession.name}</h3>
                   <span className="px-1.5 py-0.5 text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
                     <ShieldCheck className="w-3 h-3" />
                     Verified
@@ -219,7 +274,7 @@ export function AppleAuthModal({
                   BarrierLens Authentication
                 </span>
               </div>
-              <h2 className="text-lg font-bold text-white font-mono uppercase tracking-tight">
+              <h2 id="auth-modal-title" className="text-lg font-bold text-white font-mono uppercase tracking-tight">
                 Sign In to Console
               </h2>
               <p className="text-xs text-[rgba(255,255,255,0.65)] leading-relaxed">
@@ -231,7 +286,7 @@ export function AppleAuthModal({
             <div className="p-1 bg-[#0a0a0a] border-hairline grid grid-cols-3 gap-1 text-xs font-mono">
               <button
                 type="button"
-                onClick={() => setActiveTab('instant')}
+                onClick={() => { setActiveTab('instant'); setErrorMessage(null); }}
                 className={`py-1.5 transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider ${
                   activeTab === 'instant'
                     ? 'bg-white text-black font-bold'
@@ -243,7 +298,7 @@ export function AppleAuthModal({
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab('passkey')}
+                onClick={() => { setActiveTab('passkey'); setErrorMessage(null); }}
                 className={`py-1.5 transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider ${
                   activeTab === 'passkey'
                     ? 'bg-white text-black font-bold'
@@ -255,7 +310,7 @@ export function AppleAuthModal({
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab('github')}
+                onClick={() => { setActiveTab('github'); setErrorMessage(null); }}
                 className={`py-1.5 transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider ${
                   activeTab === 'github'
                     ? 'bg-white text-black font-bold'
@@ -266,6 +321,56 @@ export function AppleAuthModal({
                 <span>GitHub</span>
               </button>
             </div>
+
+            {/* Actionable Error Banner */}
+            {errorMessage && (
+              <div 
+                role="alert"
+                aria-live="assertive"
+                className="p-3 bg-red-500/10 border border-red-500/20 text-xs font-mono text-red-400 space-y-2"
+              >
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="font-bold text-red-300">Authentication Failed</p>
+                    <p className="text-[rgba(255,255,255,0.75)] text-[11px] leading-relaxed">{errorMessage}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setErrorMessage(null);
+                      if (activeTab === 'passkey') handlePasskeyAuth();
+                      else if (activeTab === 'github') handleGitHubAuth();
+                    }}
+                    className="px-2.5 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-300 text-[10px] uppercase tracking-wider font-bold flex items-center gap-1 transition-colors"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Retry Authentication</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setErrorMessage(null)}
+                    className="px-2.5 py-1 text-[rgba(255,255,255,0.5)] hover:text-white text-[10px] uppercase tracking-wider transition-colors"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Status Message */}
+            {isAuthenticating && statusMessage && (
+              <div 
+                role="status"
+                aria-live="polite"
+                className="p-2.5 bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-blue-300 flex items-center gap-2"
+              >
+                <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                <span>{statusMessage}</span>
+              </div>
+            )}
 
             {/* Tab 1: Instant Demo Access */}
             {activeTab === 'instant' && (

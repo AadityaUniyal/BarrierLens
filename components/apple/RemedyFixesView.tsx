@@ -142,11 +142,11 @@ export function RemedyFixesView({
                         {finding.kind.replace(/_/g, ' ')}
                       </span>
                       {isVerified ? (
-                        <span className="flex items-center gap-1 font-mono text-[10px] text-[#30a46c] bg-[#30a46c]/10 px-1.5 py-0.2 rounded border border-[#30a46c]/20">
+                        <span className="flex items-center gap-1 font-mono text-[10px] text-[#30a46c] bg-[#30a46c]/10 px-1.5 py-0.5 rounded border border-[#30a46c]/20">
                           Verified
                         </span>
                       ) : (
-                        <span className="font-mono text-[10px] text-[#f76808] bg-[#f76808]/10 px-1.5 py-0.2 rounded border border-[#f76808]/20">
+                        <span className="font-mono text-[10px] text-[#f76808] bg-[#f76808]/10 px-1.5 py-0.5 rounded border border-[#f76808]/20">
                           Unverified
                         </span>
                       )}

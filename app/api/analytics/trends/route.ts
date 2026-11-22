@@ -103,10 +103,11 @@ export async function GET(req: NextRequest) {
       const totalN = parseInt(totalFindingsRes[0]?.n || '0');
       if (totalN > 0) {
         const wcagCounts = await sql`
-          SELECT wcag, count(*) as n
-          FROM findings
-          WHERE wcag IN ('2.1.2', '4.1.2', '1.3.2', '4.1.3')
-          GROUP BY wcag;
+          SELECT unnested_wcag as wcag, count(*) as n
+          FROM findings, unnest(wcag) as unnested_wcag
+          WHERE ARRAY['2.1.2', '4.1.2', '1.3.2', '4.1.3']::text[] && wcag
+            AND unnested_wcag IN ('2.1.2', '4.1.2', '1.3.2', '4.1.3')
+          GROUP BY unnested_wcag;
         `;
         const byWcag: Record<string, number> = {};
         for (const row of wcagCounts) byWcag[row.wcag] = parseInt(row.n || '0');

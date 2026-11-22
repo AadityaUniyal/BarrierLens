@@ -81,8 +81,22 @@ export async function GET() {
       result.s3Error = s3Err.message;
     }
 
-    // 4. Bedrock Active Status
-    result.bedrock.active = true;
+    // 4. Bedrock Active Status (real probe via BedrockClient)
+    try {
+      const { BedrockClient, ListFoundationModelsCommand } = await import('@aws-sdk/client-bedrock');
+      const bedrockClient = new BedrockClient({
+        region: process.env.BEDROCK_REGION || 'us-east-1',
+        credentials: { accessKeyId, secretAccessKey }
+      });
+      const modelsRes = await bedrockClient.send(new ListFoundationModelsCommand({
+        byProvider: 'Amazon'
+      }));
+      result.bedrock.active = Boolean(modelsRes.modelSummaries && modelsRes.modelSummaries.length > 0);
+      result.bedrock.modelsCount = modelsRes.modelSummaries?.length || 0;
+    } catch (bedrockErr: any) {
+      result.bedrock.active = false;
+      result.bedrock.error = bedrockErr.message;
+    }
   }
 
   // 5. Query Budget Sentinel

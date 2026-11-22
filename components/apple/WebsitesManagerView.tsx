@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { 
@@ -255,7 +255,7 @@ export function WebsitesManagerView({ onStartAuditForSite }: WebsitesManagerView
         <div className="space-y-3">
           {websites.length === 0 ? (
             <div className="rounded-xl p-12 text-center bg-[#141517] border border-[#23262a]">
-              <Globe className="w-9 h-9 text-[#62676d] mx-auto mb-3" />
+              <Globe className="w-9 h-9 text-[#9ba1a6] mx-auto mb-3" />
               <h3 className="text-sm font-semibold text-[#f4f5f6] mb-1">No Web Properties Registered</h3>
               <p className="text-xs text-[#9ba1a6] max-w-sm mx-auto mb-4">
                 Add your staging or production origin to begin automated crawl discovery and ISO-compliant accessibility proofs.
@@ -348,7 +348,7 @@ export function WebsitesManagerView({ onStartAuditForSite }: WebsitesManagerView
 
                   <button
                     onClick={() => handleDeleteWebsite(site.id)}
-                    className="p-1.5 rounded-lg text-[#62676d] hover:text-[#ff453a] hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20"
+                    className="p-1.5 rounded-lg text-[#9ba1a6] hover:text-[#ff453a] hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20"
                     title="Remove Property"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -365,7 +365,7 @@ export function WebsitesManagerView({ onStartAuditForSite }: WebsitesManagerView
         <div className="space-y-3">
           {journeys.length === 0 ? (
             <div className="rounded-xl p-12 text-center bg-[#141517] border border-[#23262a]">
-              <Compass className="w-9 h-9 text-[#62676d] mx-auto mb-3" />
+              <Compass className="w-9 h-9 text-[#9ba1a6] mx-auto mb-3" />
               <h3 className="text-sm font-semibold text-[#f4f5f6] mb-1">No Journeys Configured</h3>
               <p className="text-xs text-[#9ba1a6] max-w-sm mx-auto mb-4">
                 Define end-to-end task sequences like registration, search, multi-step checkout, or dialog flows.
@@ -398,7 +398,7 @@ export function WebsitesManagerView({ onStartAuditForSite }: WebsitesManagerView
                         }`}>
                           {journey.criticality}
                         </span>
-                        <span className="text-[11px] font-mono text-[#62676d]">v{journey.version}</span>
+                        <span className="text-[11px] font-mono text-[#9ba1a6]">v{journey.version}</span>
                       </div>
                       <p className="text-[12px] text-[#9ba1a6] max-w-xl">{journey.description}</p>
                     </div>
@@ -523,15 +523,15 @@ export function WebsitesManagerView({ onStartAuditForSite }: WebsitesManagerView
 
             <div className="space-y-3 bg-[#181a1d] p-3.5 rounded-lg border border-[#23262a] text-xs font-mono">
               <div>
-                <span className="text-[10px] text-[#62676d] uppercase block">Record Type</span>
+                <span className="text-[10px] text-[#9ba1a6] uppercase block">Record Type</span>
                 <span className="text-[#f4f5f6]">TXT</span>
               </div>
               <div>
-                <span className="text-[10px] text-[#62676d] uppercase block">Host / Name</span>
+                <span className="text-[10px] text-[#9ba1a6] uppercase block">Host / Name</span>
                 <span className="text-[#f4f5f6]">@ (or _barrierlens-challenge)</span>
               </div>
               <div>
-                <span className="text-[10px] text-[#62676d] uppercase block">Value / Content</span>
+                <span className="text-[10px] text-[#9ba1a6] uppercase block">Value / Content</span>
                 <div className="flex items-center justify-between gap-2 mt-0.5 bg-[#0c0d0e] p-2 rounded border border-[#23262a]">
                   <span className="text-[#30d158] select-all break-all">
                     barrierlens-verification={activeDnsModalSite.verificationToken}
@@ -548,7 +548,7 @@ export function WebsitesManagerView({ onStartAuditForSite }: WebsitesManagerView
             </div>
 
             <div className="flex items-center justify-between pt-2">
-              <span className="text-[11px] text-[#62676d] font-mono">
+              <span className="text-[11px] text-[#9ba1a6] font-mono">
                 TTL: 300s recommended
               </span>
               <div className="flex items-center gap-2">

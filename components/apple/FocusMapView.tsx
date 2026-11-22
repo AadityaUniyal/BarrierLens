@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
@@ -720,7 +720,7 @@ export function FocusMapView({
                         {node.label}
                       </span>
                       <div className="flex items-center gap-1.5 text-[10px] text-[#9ba1a6]">
-                        <span className="uppercase text-[9px] px-1 py-0.2 rounded bg-[#0c0d0e] border border-[#23262a]">
+                        <span className="uppercase text-[9px] px-1 py-0.5 rounded bg-[#0c0d0e] border border-[#23262a]">
                           {node.role}
                         </span>
                         {node.tabIndex !== undefined && (
@@ -965,7 +965,7 @@ export function FocusMapView({
                       </span>
                       <div className="flex items-center gap-2">
                         <span>Visual #{node.readingOrderRank}</span>
-                        <ArrowRight className="w-3 h-3 text-[#5a626a]" />
+                        <ArrowRight className="w-3 h-3 text-[#8b929a]" />
                         <span className={isInverted ? 'text-[#f76808] font-bold' : 'text-[#30a46c]'}>
                           Tab #{node.tabOrderRank === -1 ? 'None' : node.tabOrderRank}
                         </span>
@@ -1013,7 +1013,7 @@ export function FocusMapView({
                         {key}
                       </kbd>
                       {kIdx < activeDataset.trapCertificate!.keySequence.length - 1 && (
-                        <span className="text-[10px] text-[#5a626a]">→</span>
+                        <span className="text-[10px] text-[#8b929a]">→</span>
                       )}
                     </React.Fragment>
                   ))}
@@ -1076,7 +1076,7 @@ export function FocusMapView({
                         {key}
                       </kbd>
                       {idx < activeDataset.trapCertificate!.keySequence.length - 1 && (
-                        <ChevronRight className="w-3.5 h-3.5 text-[#5a626a]" />
+                        <ChevronRight className="w-3.5 h-3.5 text-[#8b929a]" />
                       )}
                     </React.Fragment>
                   ))}

@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { 
   X, 
   ShieldCheck, 
@@ -215,13 +215,58 @@ ${astPatchCode}
     window.print();
   };
 
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+      onClick={onClose}
+    >
       
       {/* Modal Container */}
       <div 
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cert-drawer-title"
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-4xl bg-[#141517] border border-[#23262a] rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden text-left"
       >
@@ -233,7 +278,7 @@ ${astPatchCode}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold text-[#f4f5f6]">
+                <h2 id="cert-drawer-title" className="text-base font-semibold text-[#f4f5f6]">
                   Cryptographic Causal Certificate
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-[#30d158]/10 text-[#30d158] border border-[#30d158]/30">
@@ -258,6 +303,7 @@ ${astPatchCode}
 
             <button
               onClick={onClose}
+              aria-label="Close dialog"
               className="p-2 rounded-lg bg-[#0c0d0e] hover:bg-[#23262a] border border-[#23262a] text-[#9ba1a6] hover:text-[#f4f5f6] transition-all"
               title="Close Drawer"
             >
@@ -347,7 +393,7 @@ ${astPatchCode}
                   </div>
 
                   <div className="p-3 rounded-xl bg-[#141517] border border-[#23262a] text-right font-mono text-xs">
-                    <span className="text-[10px] text-[#62676d] uppercase block">Audit ID</span>
+                    <span className="text-[10px] text-[#9ba1a6] uppercase block">Audit ID</span>
                     <span className="text-[#f4f5f6] font-semibold">{certificateId}</span>
                   </div>
                 </div>
@@ -355,28 +401,28 @@ ${astPatchCode}
                 {/* Standards Compliance Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                   <div className="p-3.5 rounded-xl bg-[#141517] border border-[#23262a] space-y-1">
-                    <span className="text-[10px] font-mono uppercase text-[#62676d] block">WCAG 2.2</span>
+                    <span className="text-[10px] font-mono uppercase text-[#9ba1a6] block">WCAG 2.2</span>
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-[#30d158]">
                       <CheckCircle2 className="w-3.5 h-3.5" /> Level AAA Ready
                     </div>
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-[#141517] border border-[#23262a] space-y-1">
-                    <span className="text-[10px] font-mono uppercase text-[#62676d] block">EAA 2025</span>
+                    <span className="text-[10px] font-mono uppercase text-[#9ba1a6] block">EAA 2025</span>
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-[#30d158]">
                       <CheckCircle2 className="w-3.5 h-3.5" /> Directive 2019/882
                     </div>
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-[#141517] border border-[#23262a] space-y-1">
-                    <span className="text-[10px] font-mono uppercase text-[#62676d] block">Kendall&apos;s &tau;</span>
+                    <span className="text-[10px] font-mono uppercase text-[#9ba1a6] block">Kendall&apos;s &tau;</span>
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-[#30d158]">
                       <CheckCircle2 className="w-3.5 h-3.5" /> &tau; = 1.00 (Harmonious)
                     </div>
                   </div>
 
                   <div className="p-3.5 rounded-xl bg-[#141517] border border-[#23262a] space-y-1">
-                    <span className="text-[10px] font-mono uppercase text-[#62676d] block">Sandbox Replay</span>
+                    <span className="text-[10px] font-mono uppercase text-[#9ba1a6] block">Sandbox Replay</span>
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-[#30d158]">
                       <CheckCircle2 className="w-3.5 h-3.5" /> 0 Regressions
                     </div>
@@ -415,15 +461,15 @@ ${astPatchCode}
                 {/* Signature Block Footer */}
                 <div className="pt-4 border-t border-[#23262a] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
                   <div>
-                    <span className="text-[#62676d] block text-[10px]">ISSUED BY</span>
+                    <span className="text-[#9ba1a6] block text-[10px]">ISSUED BY</span>
                     <span className="text-[#f4f5f6] font-medium">BarrierLens Autonomous Causal Engine v2.0</span>
                   </div>
                   <div>
-                    <span className="text-[#62676d] block text-[10px]">TIMESTAMP</span>
+                    <span className="text-[#9ba1a6] block text-[10px]">TIMESTAMP</span>
                     <span className="text-[#f4f5f6]">{timestamp}</span>
                   </div>
                   <div className="sm:text-right">
-                    <span className="text-[#62676d] block text-[10px]">VERIFICATION STATUS</span>
+                    <span className="text-[#9ba1a6] block text-[10px]">VERIFICATION STATUS</span>
                     <span className="text-[#30d158] font-bold flex items-center sm:justify-end gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" /> PROVEN (Zero False Positives)
                     </span>

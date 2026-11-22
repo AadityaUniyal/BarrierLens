@@ -273,8 +273,8 @@ export const neonServices = {
         RETURNING id, sha256_hash, created_at;
       `;
     } catch (err: any) {
-      console.warn('[Neon DB] saveCausalCertificate fallback:', err.message);
-      return [{ id: 'mock-id', sha256_hash: cert.sha256Hash, created_at: new Date().toISOString() }];
+      console.warn('[Neon DB] saveCausalCertificate failure:', err.message);
+      return { status: 'failed', error: err.message };
     }
   },
 
@@ -307,8 +307,8 @@ export const neonServices = {
         RETURNING id, trace_id, created_at;
       `;
     } catch (err: any) {
-      console.warn('[Neon DB] recordAgentTrace fallback:', err.message);
-      return [{ id: 'mock-trace', trace_id: trace.traceId, created_at: new Date().toISOString() }];
+      console.warn('[Neon DB] recordAgentTrace failure:', err.message);
+      return { status: 'failed', error: err.message };
     }
   },
 

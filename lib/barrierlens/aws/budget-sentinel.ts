@@ -15,9 +15,11 @@ export const AWS_BEDROCK_PRICING: Record<string, ModelPricing> = {
   'amazon.nova-micro-v1:0': { inputPer1k: 0.000035, outputPer1k: 0.00014 },
   // Amazon Nova Lite ($0.06 / 1M input)
   'amazon.nova-lite-v1:0': { inputPer1k: 0.00006, outputPer1k: 0.00024 },
+  // Amazon Nova Pro ($0.80 / 1M input - reserved for complex repairs)
+  'amazon.nova-pro-v1:0': { inputPer1k: 0.0008, outputPer1k: 0.0032 },
   // Anthropic Claude 3.5 Haiku ($0.80 / 1M input)
   'anthropic.claude-3-haiku-20240307-v1:0': { inputPer1k: 0.0008, outputPer1k: 0.004 },
-  // Anthropic Claude 3.5 Sonnet ($3.00 / 1M input - reserved for complex repairs)
+  // Anthropic Claude 3.5 Sonnet (Legacy reference)
   'anthropic.claude-3-5-sonnet-20241022-v2:0': { inputPer1k: 0.003, outputPer1k: 0.015 }
 };
 
@@ -67,8 +69,8 @@ export class AWSBudgetSentinel {
         return 'amazon.nova-lite-v1:0';
 
       case 'causal_repair':
-        // Complex WAI-ARIA and SCM repair synthesis: Claude 3.5 Sonnet
-        return 'anthropic.claude-3-5-sonnet-20241022-v2:0';
+        // Complex WAI-ARIA and SCM repair synthesis: Amazon Nova Pro
+        return 'amazon.nova-pro-v1:0';
 
       case 'summarization':
       default:

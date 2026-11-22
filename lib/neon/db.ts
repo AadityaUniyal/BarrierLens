@@ -63,7 +63,7 @@ export const sql: any = new Proxy(function () {} as any, {
   apply(_target, _thisArg, args) {
     const client = getNeonClient();
     if (!client) {
-      return Promise.resolve([]);
+      return Promise.reject(new Error('Neon database client unconfigured'));
     }
     return Reflect.apply(client, _thisArg, args);
   },
@@ -71,7 +71,7 @@ export const sql: any = new Proxy(function () {} as any, {
     const client = getNeonClient();
     if (!client) {
       if (prop === 'then') return undefined;
-      return () => Promise.resolve([]);
+      return () => Promise.reject(new Error('Neon database client unconfigured'));
     }
     return Reflect.get(client, prop);
   }

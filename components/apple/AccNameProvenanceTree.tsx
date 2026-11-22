@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import {
@@ -161,7 +161,7 @@ export function AccNameProvenanceTree({
         {/* Hero Computed Name Banner */}
         <div className="p-3.5 rounded-lg bg-[#0c0d0e] border border-[#23262a] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">
-            <div className="text-[10px] font-mono uppercase text-[#62676d] tracking-wider font-semibold">
+            <div className="text-[10px] font-mono uppercase text-[#9ba1a6] tracking-wider font-semibold">
               Computed Accessible Name:
             </div>
             {computedName ? (
@@ -180,7 +180,7 @@ export function AccNameProvenanceTree({
 
           {winningSource ? (
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px] font-mono uppercase text-[#62676d]">Winning Source:</span>
+              <span className="text-[10px] font-mono uppercase text-[#9ba1a6]">Winning Source:</span>
               <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold border flex items-center gap-1 ${getSourceBadgeColor(winningSource.source)}`}>
                 <Sparkles className="w-2.5 h-2.5" />
                 {winningSource.step} ({winningSource.source})
@@ -270,7 +270,7 @@ export function AccNameProvenanceTree({
 
       {/* 3. Step-by-Step Provenance Resolution Stack */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-[11px] font-mono text-[#62676d] px-1">
+        <div className="flex items-center justify-between text-[11px] font-mono text-[#9ba1a6] px-1">
           <span className="uppercase tracking-wider font-semibold">
             W3C Step Sequence ({displaySteps.length} Steps)
           </span>
@@ -305,7 +305,7 @@ export function AccNameProvenanceTree({
                         </div>
                       ) : (
                         <div className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#62676d]" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#9ba1a6]" />
                         </div>
                       )}
                     </div>
@@ -325,7 +325,7 @@ export function AccNameProvenanceTree({
                           </span>
                         )}
                         {!step.evaluated && (
-                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#181a1d] text-[#62676d]">
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#181a1d] text-[#9ba1a6]">
                             Skipped
                           </span>
                         )}

@@ -708,7 +708,7 @@ export function CinematicLanding({
       </section>
 
       {/* 5. BENTO GRID OF CORE CAPABILITIES */}
-      <section id="features" className="py-24 px-6 sm:px-8 lg:px-12 max-w-6xl mx-auto space-y-16">
+      <section id="proofs" className="py-24 px-6 sm:px-8 lg:px-12 max-w-6xl mx-auto space-y-16">
         
         <div className="text-center space-y-3 max-w-2xl mx-auto">
           <span className="text-xs font-mono uppercase tracking-widest text-[#10b981]">

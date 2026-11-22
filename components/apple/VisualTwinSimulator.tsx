@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { 
@@ -477,7 +477,7 @@ export function VisualTwinSimulator() {
                 className={`text-[11px] font-mono px-2.5 py-0.5 rounded border transition-all ${
                   speechEnabled
                     ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                    : 'bg-[#181a1d] text-[#62676d] border-[#23262a]'
+                    : 'bg-[#181a1d] text-[#9ba1a6] border-[#23262a]'
                 }`}
               >
                 {speechEnabled ? 'Audio: Active' : 'Audio: Muted'}

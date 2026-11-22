@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { BarrierGenome } from '@/lib/barrierlens/genome/barrier-encoder';
@@ -116,28 +116,30 @@ export function BarrierGenomeViz({
 
           {/* Visual Vector Grid */}
           <div className="p-3.5 rounded-lg bg-[#0c0d0e] border border-[#23262a] space-y-2.5">
-            <div className="grid grid-cols-4 gap-2 text-[10px] font-mono text-[#62676d] border-b border-[#23262a] pb-2">
+            <div className="grid grid-cols-4 gap-2 text-[10px] font-mono text-[#9ba1a6] border-b border-[#23262a] pb-2">
               <span className="text-blue-400">0-191 Structural</span>
               <span className="text-purple-400">192-383 Semantic</span>
               <span className="text-amber-400">384-575 Behavioral</span>
               <span className="text-emerald-400">576-767 Contextual</span>
             </div>
 
-            <div className="grid grid-cols-[repeat(48,minmax(0,1fr))] gap-1 h-24 overflow-hidden rounded">
-              {activeGenome.vector.slice(0, 384).map((val, idx) => {
-                let colorClass = 'bg-blue-500';
-                if (idx >= 192) colorClass = 'bg-purple-500';
+            <div className="overflow-x-auto pb-1">
+              <div className="min-w-[480px] grid grid-cols-[repeat(48,minmax(0,1fr))] gap-1 h-24 rounded">
+                {activeGenome.vector.slice(0, 384).map((val, idx) => {
+                  let colorClass = 'bg-blue-500';
+                  if (idx >= 192) colorClass = 'bg-purple-500';
 
-                const opacity = Math.min(1.0, Math.max(0.12, Math.abs(val)));
-                return (
-                  <div
-                    key={idx}
-                    className={`h-full rounded-sm transition-all duration-200 ${colorClass}`}
-                    style={{ opacity }}
-                    title={`Dim ${idx}: ${val.toFixed(4)}`}
-                  />
-                );
-              })}
+                  const opacity = Math.min(1.0, Math.max(0.12, Math.abs(val)));
+                  return (
+                    <div
+                      key={idx}
+                      className={`h-full rounded-sm transition-all duration-200 ${colorClass}`}
+                      style={{ opacity }}
+                      title={`Dim ${idx}: ${val.toFixed(4)}`}
+                    />
+                  );
+                })}
+              </div>
             </div>
 
             <div className="flex items-center justify-between text-[10px] font-mono text-[#9ba1a6] pt-1">
@@ -151,25 +153,25 @@ export function BarrierGenomeViz({
           {/* Genome Metadata Details */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
             <div className="p-2.5 rounded-lg bg-[#181a1d] border border-[#23262a]">
-              <span className="text-[10px] font-mono text-[#62676d] uppercase block">Kind</span>
+              <span className="text-[10px] font-mono text-[#9ba1a6] uppercase block">Kind</span>
               <span className="text-xs font-semibold text-[#f4f5f6] capitalize">
                 {activeGenome.findingKind.replace(/_/g, ' ')}
               </span>
             </div>
             <div className="p-2.5 rounded-lg bg-[#181a1d] border border-[#23262a]">
-              <span className="text-[10px] font-mono text-[#62676d] uppercase block">Severity</span>
+              <span className="text-[10px] font-mono text-[#9ba1a6] uppercase block">Severity</span>
               <span className="text-xs font-mono text-rose-400 font-semibold">
                 {activeGenome.metadata.severityScore} / 10.0
               </span>
             </div>
             <div className="p-2.5 rounded-lg bg-[#181a1d] border border-[#23262a]">
-              <span className="text-[10px] font-mono text-[#62676d] uppercase block">Effort Ratio</span>
+              <span className="text-[10px] font-mono text-[#9ba1a6] uppercase block">Effort Ratio</span>
               <span className="text-xs font-mono text-amber-400 font-semibold">
                 {activeGenome.context.effortRatio}x baseline
               </span>
             </div>
             <div className="p-2.5 rounded-lg bg-[#181a1d] border border-[#23262a]">
-              <span className="text-[10px] font-mono text-[#62676d] uppercase block">Persona</span>
+              <span className="text-[10px] font-mono text-[#9ba1a6] uppercase block">Persona</span>
               <span className="text-xs font-semibold text-[#f4f5f6] capitalize">
                 {activeGenome.context.persona.replace(/_/g, ' ')}
               </span>

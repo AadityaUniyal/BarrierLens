@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { StressTestResult, LatentBarrier } from '@/lib/barrierlens/adversarial/stress-agent';
@@ -129,7 +129,7 @@ export function StressTestDashboard({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Chaos Level Selector */}
         <div className="rounded-xl p-4 bg-[#141517] border border-[#23262a] space-y-2.5">
-          <span className="text-[10px] font-mono uppercase text-[#62676d] tracking-wider block">
+          <span className="text-[10px] font-mono uppercase text-[#9ba1a6] tracking-wider block">
             Chaos Severity Level
           </span>
           <div className="grid grid-cols-3 gap-1.5">
@@ -158,7 +158,7 @@ export function StressTestDashboard({
         {/* Motor Tremor Toggle */}
         <div className="rounded-xl p-4 bg-[#141517] border border-[#23262a] space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono uppercase text-[#62676d] tracking-wider">
+            <span className="text-[10px] font-mono uppercase text-[#9ba1a6] tracking-wider">
               Motor Tremor Simulation
             </span>
             <input
@@ -179,7 +179,7 @@ export function StressTestDashboard({
         {/* Coverage Radial Metric */}
         <div className="rounded-xl p-4 bg-[#141517] border border-[#23262a] flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-[10px] font-mono uppercase text-[#62676d] tracking-wider block">
+            <span className="text-[10px] font-mono uppercase text-[#9ba1a6] tracking-wider block">
               Exploration Coverage
             </span>
             <span className="text-3xl font-semibold font-mono text-[#f4f5f6]">
@@ -241,7 +241,7 @@ export function StressTestDashboard({
               </p>
 
               <div className="p-2 rounded bg-[#0c0d0e] border border-[#23262a] text-[10px] font-mono flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <span className="text-[#62676d]">
+                <span className="text-[#9ba1a6]">
                   Trigger: <span className="text-[#f4f5f6]">{barrier.triggerCondition}</span>
                 </span>
                 <span className="text-rose-400 font-semibold">

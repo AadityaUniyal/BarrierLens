@@ -189,6 +189,12 @@ export async function initializeDatabaseSchema() {
       );
     `;
 
+    try {
+      await sql`CREATE UNIQUE INDEX IF NOT EXISTS idx_fixes_finding_id ON fixes (finding_id);`;
+    } catch (e: any) {
+      console.log('[Neon DB] fixes index notice:', e.message);
+    }
+
     await sql`
       CREATE TABLE IF NOT EXISTS jobs (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

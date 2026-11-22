@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { 
@@ -602,7 +602,7 @@ export function AuditStudioView({
                 {/* Bottom: Mechanical Physical Keystroke Visualizer */}
                 <div className="p-3.5 bg-[#181a1d] rounded-xl border border-[#23262a] space-y-2">
                   <div className="flex items-center justify-between text-[10px] font-mono text-[#9ba1a6]">
-                    <span className="font-semibold uppercase tracking-wider text-[#62676d]">
+                    <span className="font-semibold uppercase tracking-wider text-[#9ba1a6]">
                       Physical Keystroke Visualizer
                     </span>
                     <span>CDP Hardware Event Stream</span>

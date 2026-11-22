@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { 
@@ -114,7 +114,7 @@ export function TraceTheater({ steps, findings, targetUrl }: TraceTheaterProps) 
             </span>
           </div>
 
-          <div className="hidden sm:flex items-center gap-1 text-[11px] font-mono text-[#62676d]">
+          <div className="hidden sm:flex items-center gap-1 text-[11px] font-mono text-[#9ba1a6]">
             <span className="apple-keycap px-1.5 py-0.5 text-[10px]">←</span>
             <span className="apple-keycap px-1.5 py-0.5 text-[10px]">→</span>
             <span>traverse</span>
@@ -178,11 +178,11 @@ export function TraceTheater({ steps, findings, targetUrl }: TraceTheaterProps) 
 
               <div className="grid grid-cols-2 gap-2 text-[11px] font-mono text-left pt-1">
                 <div className="p-2 rounded bg-[#181a1d] border border-[#23262a]">
-                  <span className="text-[10px] text-[#62676d] uppercase block">Action Dispatched</span>
+                  <span className="text-[10px] text-[#9ba1a6] uppercase block">Action Dispatched</span>
                   <span className="text-[#f4f5f6] font-semibold">{currentStep?.actionType || 'Keypress'}</span>
                 </div>
                 <div className="p-2 rounded bg-[#181a1d] border border-[#23262a]">
-                  <span className="text-[10px] text-[#62676d] uppercase block">Decision Tier</span>
+                  <span className="text-[10px] text-[#9ba1a6] uppercase block">Decision Tier</span>
                   <span className="text-[#5e6ad2] font-semibold">{getTierBadge(currentStep?.tier ?? 0).label}</span>
                 </div>
               </div>
@@ -264,7 +264,7 @@ export function TraceTheater({ steps, findings, targetUrl }: TraceTheaterProps) 
                       : 'bg-[#141517] border-[#23262a] hover:bg-[#181a1d]'
                   }`}
                 >
-                  <span className="text-xs font-mono text-[#62676d] font-semibold mt-0.5 w-5">
+                  <span className="text-xs font-mono text-[#9ba1a6] font-semibold mt-0.5 w-5">
                     #{step.idx}
                   </span>
 

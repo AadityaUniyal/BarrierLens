@@ -21,6 +21,7 @@ export interface BedrockInferenceRequest {
   maxTokens?: number;
   temperature?: number;
   stopSequences?: string[];
+  allowOfflineStandin?: boolean;
 }
 
 export interface BedrockInferenceResponse {
@@ -34,6 +35,7 @@ export interface BedrockInferenceResponse {
   estimatedCostUSD?: number;
   budgetRemainingUSD?: number;
   provider: 'aws-bedrock' | 'groq-cascade' | 'local-synthetic';
+  error?: string;
 }
 
 export class AWSBedrockClient {
@@ -44,7 +46,7 @@ export class AWSBedrockClient {
   private sdkClient: BedrockRuntimeClient | null;
 
   constructor() {
-    this.region = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-east-1';
+    this.region = process.env.BEDROCK_REGION || 'us-east-1';
     this.accessKeyId = process.env.AWS_ACCESS_KEY_ID || '';
     this.secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || '';
     this.isConfigured = Boolean(this.accessKeyId && this.secretAccessKey);
@@ -67,7 +69,10 @@ export class AWSBedrockClient {
   async invokeModel(request: BedrockInferenceRequest): Promise<BedrockInferenceResponse> {
     const start = performance.now();
     const sentinel = AWSBudgetSentinel.getInstance();
-    const modelId = request.modelId || sentinel.recommendModel(request.taskType || 'planning');
+    let modelId = request.modelId || sentinel.recommendModel(request.taskType || 'planning');
+    if (modelId.startsWith('anthropic.claude-3-5-sonnet')) {
+      modelId = 'amazon.nova-pro-v1:0';
+    }
 
     // 1. Real AWS Bedrock invocation via @aws-sdk/client-bedrock-runtime (SigV4 signed)
     if (this.isConfigured && this.sdkClient) {
@@ -137,7 +142,7 @@ export class AWSBedrockClient {
             'Authorization': `Bearer ${groqKey}`
           },
           body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
+            model: 'openai/gpt-oss-120b',
             messages: [
               { role: 'system', content: request.systemPrompt || 'You are an accessibility agent.' },
               { role: 'user', content: request.prompt }
@@ -156,7 +161,7 @@ export class AWSBedrockClient {
 
           return {
             text: d.choices?.[0]?.message?.content || '',
-            modelId: 'llama-3.3-70b-versatile (Bedrock Proxy)',
+            modelId: 'openai/gpt-oss-120b (Bedrock Proxy)',
             latencyMs,
             tokenUsage: { inputTokens, outputTokens },
             estimatedCostUSD: usage.costUSD,
@@ -165,23 +170,35 @@ export class AWSBedrockClient {
           };
         }
       } catch {
-        // Fall through to deterministic synthesizer
+        // Fall through to deterministic synthesizer if permitted
       }
     }
 
-    // 3. High-fidelity synthetic deterministic agent response ($0.00 cost)
-    const latencyMs = Math.round(performance.now() - start) + 35;
-    const synthesized = this.synthesizeAgentResponse(request.prompt);
-    const usage = sentinel.recordUsage('amazon.nova-micro-v1:0', 180, 95);
+    // 3. Fallback only if explicitly requested or running offline tests without credentials
+    if (request.allowOfflineStandin || (!this.isConfigured && process.env.NODE_ENV !== 'production')) {
+      const latencyMs = Math.round(performance.now() - start) + 35;
+      const synthesized = this.synthesizeAgentResponse(request.prompt);
+      const usage = sentinel.recordUsage('amazon.nova-micro-v1:0', 180, 95);
 
+      return {
+        text: synthesized,
+        modelId: `${modelId} (Zero-Cost Stand-in)`,
+        latencyMs,
+        tokenUsage: { inputTokens: 180, outputTokens: 95 },
+        estimatedCostUSD: usage.costUSD,
+        budgetRemainingUSD: usage.remainingUSD,
+        provider: 'local-synthetic'
+      };
+    }
+
+    const latencyMs = Math.round(performance.now() - start);
     return {
-      text: synthesized,
-      modelId: `${modelId} (Zero-Cost Stand-in)`,
+      text: '',
+      modelId,
       latencyMs,
-      tokenUsage: { inputTokens: 180, outputTokens: 95 },
-      estimatedCostUSD: usage.costUSD,
-      budgetRemainingUSD: usage.remainingUSD,
-      provider: 'local-synthetic'
+      tokenUsage: { inputTokens: 0, outputTokens: 0 },
+      provider: 'aws-bedrock',
+      error: 'AWS Bedrock invocation failed and no valid fallback provider available'
     };
   }
 

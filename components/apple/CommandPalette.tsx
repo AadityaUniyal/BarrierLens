@@ -20,7 +20,8 @@ import {
   CheckCircle2,
   CornerDownLeft,
   LayoutDashboard,
-  Award
+  Award,
+  Globe
 } from 'lucide-react';
 import { ScreenId } from './Navbar';
 
@@ -46,11 +47,12 @@ export function CommandPalette({ isOpen, onClose, onSelectScreen, onRunAudit }: 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const actions: CommandAction[] = useMemo(() => [
-    // 4 Primary Hubs
-    { id: 'hub-studio', category: 'Hubs', label: 'Audit Studio', description: 'Real-time multi-agent execution & action trace', icon: Terminal, shortcut: '1', action: () => { onSelectScreen('studio'); onClose(); } },
+    // 5 Primary Hubs
+    { id: 'hub-studio', category: 'Hubs', label: 'Audit Studio', description: 'Real-time multi-agent execution & action trace', icon: Terminal, shortcut: '1', action: () => { onSelectScreen('audits'); onClose(); } },
     { id: 'hub-issues', category: 'Hubs', label: 'Evidence & Proofs', description: 'Deterministic Tarjan SCC cycles & WCAG violations', icon: CheckCircle2, shortcut: '2', action: () => { onSelectScreen('issues'); onClose(); } },
     { id: 'hub-remedy', category: 'Hubs', label: 'Verified Fixes', description: 'Causal AST repair engine & GitHub PR generator', icon: GitBranch, shortcut: '3', action: () => { onSelectScreen('remedy'); onClose(); } },
     { id: 'hub-reports', category: 'Hubs', label: 'Executive Scorecard & Reports', description: '5-axis radar chart, PDF export & governance', icon: Share2, shortcut: '4', action: () => { onSelectScreen('scorecard'); onClose(); } },
+    { id: 'hub-websites', category: 'Hubs', label: 'Websites Manager', description: 'Domain verification & critical user journey governance', icon: Globe, shortcut: 'W', action: () => { onSelectScreen('websites'); onClose(); } },
 
     // Primary Actions
     { id: 'act-run', category: 'Actions', label: 'Launch Autonomous Flow Audit', description: 'Dispatch Tarjan graph & screen reader probes', icon: Play, shortcut: '↵', action: () => { onRunAudit(); onClose(); } },
@@ -136,7 +138,7 @@ export function CommandPalette({ isOpen, onClose, onSelectScreen, onRunAudit }: 
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type a command or jump to tool..."
-            className="w-full bg-transparent text-sm text-[#f4f5f6] placeholder-[#5a626a] tracking-tight focus:outline-none"
+            className="w-full bg-transparent text-sm text-[#f4f5f6] placeholder-[#8b929a] tracking-tight focus:outline-none"
             autoFocus
           />
           <kbd className="px-1.5 py-0.5 rounded bg-[#1e2023] border border-[#34383f] font-mono text-[10px] text-[#9ba1a6] shadow-sm shrink-0">
@@ -174,7 +176,7 @@ export function CommandPalette({ isOpen, onClose, onSelectScreen, onRunAudit }: 
                     <div className="truncate text-left">
                       <div className="text-[13px] font-medium text-[#f4f5f6] flex items-center gap-2">
                         <span>{item.label}</span>
-                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#181a1d] border border-[#282c32] text-[#6b7280] font-normal uppercase">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#181a1d] border border-[#282c32] text-[#9ba1a6] font-normal uppercase">
                           {item.category}
                         </span>
                       </div>
@@ -203,19 +205,19 @@ export function CommandPalette({ isOpen, onClose, onSelectScreen, onRunAudit }: 
         </div>
 
         {/* Footer Navigation Hints */}
-        <div className="px-4 py-2 border-t border-[#23262a] bg-[#0f1011] flex items-center justify-between text-[11px] text-[#6b7280]">
+        <div className="px-4 py-2 border-t border-[#23262a] bg-[#0f1011] flex items-center justify-between text-[11px] text-[#9ba1a6]">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <kbd className="px-1 py-0.2 rounded bg-[#181a1d] border border-[#23262a] font-mono text-[10px]">↑</kbd>
-              <kbd className="px-1 py-0.2 rounded bg-[#181a1d] border border-[#23262a] font-mono text-[10px]">↓</kbd>
+              <kbd className="px-1 py-0.5 rounded bg-[#181a1d] border border-[#23262a] font-mono text-[10px]">↑</kbd>
+              <kbd className="px-1 py-0.5 rounded bg-[#181a1d] border border-[#23262a] font-mono text-[10px]">↓</kbd>
               <span className="ml-1">Navigate</span>
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.2 rounded bg-[#181a1d] border border-[#23262a] font-mono text-[10px]">↵</kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-[#181a1d] border border-[#23262a] font-mono text-[10px]">↵</kbd>
               <span className="ml-1">Select</span>
             </span>
           </div>
-          <span>Linear Studio v2.4</span>
+          <span>BarrierLens v2.0</span>
         </div>
       </div>
     </div>

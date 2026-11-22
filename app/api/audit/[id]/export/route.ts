@@ -295,72 +295,61 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const url = new URL(req.url);
     const format = url.searchParams.get('format') || 'html';
 
-    // Query Neon database for the run if present
-    let finalRun: AuditRun = {
-      id,
-      targetUrl: 'http://localhost:3000/benchmark',
-      goal: 'Complete primary interaction flow using only keyboard without traps',
-      persona: 'keyboard',
-      status: 'completed',
-      startedAt: new Date(Date.now() - 45000).toISOString(),
-      finishedAt: new Date().toISOString(),
-      taskSuccess: true,
-      effortRatio: 1.25,
-      tierMix: { tier0Rules: 4, tier1Ranker: 3, tier2Groq: 1, tier3Gemini: 0 },
-      findings: [],
-      steps: []
-    };
+    // Query Neon database for the run
+    let finalRun: AuditRun | null = null;
     let findings: BarrierFinding[] = [];
 
-    if (process.env.DATABASE_URL) {
-      try {
-        const rows = await sql`SELECT * FROM runs WHERE id = ${id} LIMIT 1`;
-        if (rows && rows.length > 0) {
-          const r = rows[0];
-          if (r.payload && typeof r.payload === 'object') {
-            finalRun = r.payload;
-            if (r.payload.findings && Array.isArray(r.payload.findings)) {
-              findings = r.payload.findings;
-            }
-          } else {
-            finalRun = {
-              id: r.id,
-              targetUrl: r.target_url || 'https://barrierlens.ai',
-              goal: r.goal_text || 'Complete primary interaction flow',
-              persona: r.persona || 'keyboard',
-              status: r.status,
-              startedAt: r.started_at || new Date().toISOString(),
-              finishedAt: r.finished_at || new Date().toISOString(),
-              taskSuccess: r.task_success ?? true,
-              effortRatio: r.effort_ratio ? parseFloat(r.effort_ratio) : 1.0,
-              tierMix: r.tier_mix || { tier0Rules: 5, tier1Ranker: 2, tier2Groq: 1, tier3Gemini: 0 },
-              findings: [],
-              steps: []
-            };
+    try {
+      const rows = await sql`SELECT * FROM runs WHERE id = ${id} LIMIT 1`;
+      if (rows && rows.length > 0) {
+        const r = rows[0];
+        if (r.payload && typeof r.payload === 'object') {
+          finalRun = r.payload;
+          if (r.payload.findings && Array.isArray(r.payload.findings)) {
+            findings = r.payload.findings;
           }
-
-          if (findings.length === 0) {
-            const findingRows = await sql`SELECT * FROM findings WHERE run_id = ${id}`;
-            findings = (findingRows || []).map((f: any) => ({
-              id: f.id,
-              runId: f.run_id,
-              stepIdx: f.step_idx || 0,
-              kind: f.kind,
-              trustTier: f.trust_tier,
-              wcagRules: f.wcag || [],
-              severity: f.severity > 8 ? 'critical' : f.severity > 5 ? 'high' : 'medium',
-              severityScore: f.severity || 5.0,
-              severityInterval: [f.severity_lo || 4.0, f.severity_hi || 6.0],
-              title: `${f.kind.replace(/_/g, ' ').toUpperCase()}`,
-              summary: f.certificate?.summary || `Finding detected: ${f.kind}`,
-              evidence: f.evidence || {},
-              certificate: f.certificate
-            }));
-          }
+        } else {
+          finalRun = {
+            id: r.id,
+            targetUrl: r.target_url || 'https://barrierlens.ai',
+            goal: r.goal_text || 'Complete primary interaction flow',
+            persona: r.persona || 'keyboard',
+            status: r.status,
+            startedAt: r.started_at || new Date().toISOString(),
+            finishedAt: r.finished_at || new Date().toISOString(),
+            taskSuccess: r.task_success ?? true,
+            effortRatio: r.effort_ratio ? parseFloat(r.effort_ratio) : 1.0,
+            tierMix: r.tier_mix || { tier0Rules: 5, tier1Ranker: 2, tier2Groq: 1, tier3Gemini: 0 },
+            findings: [],
+            steps: []
+          };
         }
-      } catch (dbErr) {
-        console.warn('[Export] Database lookup note:', dbErr);
+
+        if (findings.length === 0) {
+          const findingRows = await sql`SELECT * FROM findings WHERE run_id = ${id}`;
+          findings = (findingRows || []).map((f: any) => ({
+            id: f.id,
+            runId: f.run_id,
+            stepIdx: f.step_idx || 0,
+            kind: f.kind,
+            trustTier: f.trust_tier,
+            wcagRules: f.wcag || [],
+            severity: f.severity > 8 ? 'critical' : f.severity > 5 ? 'high' : 'medium',
+            severityScore: f.severity || 5.0,
+            severityInterval: [f.severity_lo || 4.0, f.severity_hi || 6.0],
+            title: `${f.kind.replace(/_/g, ' ').toUpperCase()}`,
+            summary: f.certificate?.summary || `Finding detected: ${f.kind}`,
+            evidence: f.evidence || {},
+            certificate: f.certificate
+          }));
+        }
       }
+    } catch (dbErr) {
+      console.warn('[Export] Database lookup note:', dbErr);
+    }
+
+    if (!finalRun) {
+      return NextResponse.json({ error: 'Audit run not found' }, { status: 404 });
     }
 
     const vpatGen = new VPATGenerator();

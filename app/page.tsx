@@ -178,7 +178,44 @@ export default function Home() {
       })
       .catch(() => {});
 
-    // 1. Check Service Health from live diagnostics
+    // 1. Inspect URL parameters and sessionStorage on mount
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab') || params.get('view');
+      if (tabParam) {
+        setActiveScreen(tabParam as ScreenId);
+      }
+      const urlParam = params.get('url') || params.get('targetUrl');
+      if (urlParam) {
+        setTargetUrl(urlParam);
+      }
+      // Restore active audit run from sessionStorage if available
+      const cachedRun = sessionStorage.getItem('barrierlens_active_run');
+      if (cachedRun) {
+        try {
+          const parsed = JSON.parse(cachedRun);
+          if (parsed && parsed.id) {
+            setAuditResult(parsed);
+            if (parsed.findings && parsed.findings.length > 0) {
+              setHistoricalFindings(parsed.findings);
+              const findingIdParam = params.get('finding') || params.get('findingId');
+              const matchedFinding = findingIdParam
+                ? parsed.findings.find((f: any) => f.id === findingIdParam)
+                : parsed.findings[0];
+              if (matchedFinding) {
+                setSelectedFinding(matchedFinding);
+              }
+            }
+          }
+        } catch {
+          // ignore corrupted sessionStorage
+        }
+      }
+    } catch {
+      // ignore SSR or security restrictions
+    }
+
+    // 2. Check Service Health from live diagnostics
     fetch('/api/health')
       .then(res => res.json())
       .then(data => {
@@ -193,7 +230,7 @@ export default function Home() {
         setServicesHealth({ operational: 6, total: 7 });
       });
 
-    // 2. Fetch Runs History from Neon DB
+    // 3. Fetch Runs History from Neon DB
     fetch('/api/runs/list')
       .then(res => res.json())
       .then(data => {
@@ -217,13 +254,53 @@ export default function Home() {
             certificate: f.certificate || undefined
           }));
           setHistoricalFindings(mapped);
-          setSelectedFinding(mapped[0]);
+          setSelectedFinding(prev => prev || mapped[0]);
         }
       })
       .catch(() => {});
   }, []);
 
-  // Global Keyboard Navigation Shortcuts (1-5 for Hubs, Cmd+K for Search)
+  // Bi-directional URL synchronization
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const url = new URL(window.location.href);
+      if (activeScreen) {
+        url.searchParams.set('tab', activeScreen);
+      }
+      if (auditResult?.id) {
+        url.searchParams.set('run', auditResult.id);
+      } else {
+        url.searchParams.delete('run');
+      }
+      if (selectedFinding?.id) {
+        url.searchParams.set('finding', selectedFinding.id);
+      } else {
+        url.searchParams.delete('finding');
+      }
+      if (targetUrl && targetUrl !== '/benchmark') {
+        url.searchParams.set('url', targetUrl);
+      }
+      window.history.replaceState({}, '', url.toString());
+    } catch {
+      // ignore
+    }
+  }, [activeScreen, auditResult?.id, selectedFinding?.id, targetUrl]);
+
+  // SessionStorage persistence for active audit run
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      if (auditResult) {
+        sessionStorage.setItem('barrierlens_active_run', JSON.stringify(auditResult));
+      }
+    } catch {
+      // ignore quota errors
+    }
+  }, [auditResult]);
+
+  // Global Keyboard Navigation Shortcuts (0-8 for Hubs, Cmd+K for Search)
+  // Guarded against triggering while typing or inside modal dialogs
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -232,8 +309,24 @@ export default function Home() {
         return;
       }
 
-      // If user is typing in an input, do not hijack number keys
-      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
+      // Guard: do not switch screens if user is typing or if any modal/dialog is active
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) ||
+          target.isContentEditable ||
+          target.closest('[role="dialog"]') !== null ||
+          target.closest('[aria-modal="true"]') !== null)
+      ) {
+        return;
+      }
+
+      if (
+        isPaletteOpen ||
+        isAuthModalOpen ||
+        document.querySelector('[role="dialog"]') !== null ||
+        document.querySelector('[aria-modal="true"]') !== null
+      ) {
         return;
       }
 
@@ -244,12 +337,13 @@ export default function Home() {
       if (e.key === '4') setActiveScreen('fixes');
       if (e.key === '5') setActiveScreen('arena');
       if (e.key === '6') setActiveScreen('genome');
-      if (e.key === '7') setActiveScreen('settings');
+      if (e.key === '7') setActiveScreen('websites');
+      if (e.key === '8') setActiveScreen('settings');
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [isPaletteOpen, isAuthModalOpen]);
 
   // Load Benchmark Ground Truth
   const handleLoadBenchmarkFindings = () => {
@@ -415,27 +509,34 @@ export default function Home() {
         })
       });
 
+      if (!res.ok) {
+        throw new Error(`Verification service returned HTTP ${res.status}`);
+      }
+
       const data: VerifiedFixResult = await res.json();
       setVerifiedFixes(prev => ({ ...prev, [finding.id]: data }));
 
-      // Update finding locally with Verified seal
-      setHistoricalFindings(prev => prev.map(f => f.id === finding.id ? { ...f, verifiedFix: true } : f));
-      if (auditResult) {
-        setAuditResult({
-          ...auditResult,
-          findings: auditResult.findings.map(f => f.id === finding.id ? { ...f, verifiedFix: true } : f)
-        });
+      // Update finding locally with Verified seal only if verified is genuinely true
+      if (data.verified) {
+        setHistoricalFindings(prev => prev.map(f => f.id === finding.id ? { ...f, verifiedFix: true } : f));
+        if (auditResult) {
+          setAuditResult({
+            ...auditResult,
+            findings: auditResult.findings.map(f => f.id === finding.id ? { ...f, verifiedFix: true } : f)
+          });
+        }
       }
-    } catch (err) {
-      // Offline fallback verification
+    } catch (err: any) {
+      console.warn('[AST Repair] Verification failed:', err?.message || err);
+      // Remove fabricated verified: true offline fallback. Truthful unverified failure state.
       const fallbackResult: VerifiedFixResult = {
-        verified: true,
+        verified: false,
         findingId: finding.id,
         originalFindingKind: finding.kind,
         patch: 'aria-modal="true" role="dialog" onKeyDown={handleEsc}',
-        replayTaskSuccess: true,
+        replayTaskSuccess: false,
         regressionCount: 0,
-        diffSummary: 'Surgical ARIA patch resolved focus sink without introducing regressions',
+        diffSummary: `Verification replay failed: ${err?.message || 'Verification service offline'}`,
         timestamp: new Date().toISOString()
       };
       setVerifiedFixes(prev => ({ ...prev, [finding.id]: fallbackResult }));
@@ -467,7 +568,14 @@ export default function Home() {
         servicesCount={servicesHealth}
         userSession={userSession}
         onOpenAuth={() => setIsAuthModalOpen(true)}
-        onSignOut={() => setUserSession(null)}
+        onSignOut={async () => {
+          try {
+            await authClient.signOut();
+          } catch (e) {
+            console.warn('[Page] authClient.signOut error:', e);
+          }
+          setUserSession(null);
+        }}
       />
 
       {/* 2. Apple Passkey Auth Modal */}
@@ -479,7 +587,14 @@ export default function Home() {
           setUserSession(session);
           setActiveScreen('overview');
         }}
-        onSignOut={() => setUserSession(null)}
+        onSignOut={async () => {
+          try {
+            await authClient.signOut();
+          } catch (e) {
+            console.warn('[Page] authClient.signOut error:', e);
+          }
+          setUserSession(null);
+        }}
       />
 
       {/* 3. Global Spotlight Command Palette (Cmd + K) */}

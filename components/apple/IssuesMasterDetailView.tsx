@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
@@ -180,7 +180,7 @@ export function IssuesMasterDetailView({
             </h2>
           </div>
           <p className="text-xs text-[#9ba1a6]">
-            Every barrier classified by mathematical certainty tier. Press <kbd className="px-1 py-0.2 rounded bg-[#1e2023] border border-[#34383f] font-mono text-[10px] text-[#9ba1a6]">J</kbd> / <kbd className="px-1 py-0.2 rounded bg-[#1e2023] border border-[#34383f] font-mono text-[10px] text-[#9ba1a6]">K</kbd> to navigate, <kbd className="px-1 py-0.2 rounded bg-[#1e2023] border border-[#34383f] font-mono text-[10px] text-[#9ba1a6]">X</kbd> to select.
+            Every barrier classified by mathematical certainty tier. Press <kbd className="px-1 py-0.5 rounded bg-[#1e2023] border border-[#34383f] font-mono text-[10px] text-[#9ba1a6]">J</kbd> / <kbd className="px-1 py-0.5 rounded bg-[#1e2023] border border-[#34383f] font-mono text-[10px] text-[#9ba1a6]">K</kbd> to navigate, <kbd className="px-1 py-0.5 rounded bg-[#1e2023] border border-[#34383f] font-mono text-[10px] text-[#9ba1a6]">X</kbd> to select.
           </p>
         </div>
 
@@ -280,7 +280,7 @@ export function IssuesMasterDetailView({
                           {isChecked ? (
                             <CheckSquare className="w-4 h-4 text-[#5e6ad2]" />
                           ) : (
-                            <Square className="w-4 h-4 text-[#5a626a] hover:text-[#9ba1a6]" />
+                            <Square className="w-4 h-4 text-[#8b929a] hover:text-[#9ba1a6]" />
                           )}
                         </button>
 
@@ -444,7 +444,7 @@ export function IssuesMasterDetailView({
 
       {/* Linear Sticky Batch Action HUD (Appears when items are selected) */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 bg-[#181a1d] border border-[#34383f] rounded-xl px-4 py-2.5 shadow-2xl shadow-black/80 flex items-center gap-4 text-xs animate-in slide-in-from-bottom-3 duration-150">
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 bg-[#181a1d] border border-[#34383f] rounded-xl px-4 py-2.5 shadow-2xl shadow-black/80 flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs max-w-[calc(100vw-2rem)] w-auto animate-in slide-in-from-bottom-3 duration-150">
           <div className="flex items-center gap-2 font-mono">
             <span className="w-2 h-2 rounded-full bg-[#5e6ad2] animate-ping" />
             <span className="font-semibold text-[#f4f5f6]">{selectedIds.size}</span>

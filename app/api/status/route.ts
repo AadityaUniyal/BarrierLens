@@ -7,8 +7,8 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   let database = false;
   try {
-    await sql`SELECT 1`;
-    database = true;
+    const rows = await sql`SELECT 1`;
+    database = Boolean(rows && rows.length > 0);
   } catch {
     database = false;
   }
