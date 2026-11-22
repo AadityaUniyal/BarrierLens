@@ -706,7 +706,10 @@ export default function Home() {
                     <div className="flex gap-2 mt-2">
                       <button
                         type="button"
-                        onClick={() => setActiveScreen('settings')}
+                        onClick={() => {
+                          const reportId = auditResult?.id || (runsHistory.length > 0 ? runsHistory[0].id : '5afc8530-fe6a-4042-aa7e-90ed7cd12eb0');
+                          window.open(`/api/audit/${reportId}/export?format=html`, '_blank');
+                        }}
                         className="flex-1 px-3 py-1.5 text-xs font-medium bg-white/10 hover:bg-white/15 active:scale-[0.98] text-white rounded-lg transition-all text-center"
                       >
                         Export VPAT
