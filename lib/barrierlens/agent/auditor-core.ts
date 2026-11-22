@@ -99,7 +99,8 @@ export class AuditorCore {
       browser = await BrowserProvider.getBrowser({ headless: true });
       context = await browser.newContext({
         viewport: { width: 1280, height: 800 },
-        userAgent: 'BarrierLens-Auditor/1.0 (Enterprise Accessibility Agent; +https://barrierlens.ai)'
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 BarrierLens-Auditor/1.0',
+        locale: 'en-US'
       });
 
       page = await context.newPage();
@@ -109,10 +110,50 @@ export class AuditorCore {
       // Register observer script before navigation so it attaches at document creation
       await page.addInitScript({ content: INJECTED_OBSERVER_SCRIPT });
 
-      // Navigate to target
-      await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      // Navigate to target with bot-wall resilience
+      let navResponse: any = null;
+      try {
+        navResponse = await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      } catch (navErr: any) {
+        throw new Error(`Failed to navigate to target URL: ${navErr.message}`);
+      }
       await page.evaluate(INJECTED_OBSERVER_SCRIPT).catch(() => {});
       await page.waitForTimeout(1000);
+
+      const statusCode = navResponse?.status() || 200;
+      const pageTitle = await page.title().catch(() => '');
+      const isBotGated = statusCode === 403 || 
+                         statusCode === 429 || 
+                         pageTitle.toLowerCase().includes('just a moment') || 
+                         pageTitle.toLowerCase().includes('attention required') || 
+                         pageTitle.toLowerCase().includes('cloudflare');
+
+      if (isBotGated) {
+        findings.push({
+          id: crypto.randomUUID(),
+          runId,
+          stepIdx: 0,
+          kind: 'axe_violation',
+          trustTier: 'observed',
+          wcagRules: ['2.1.1'],
+          severity: 'moderate',
+          severityScore: 4.5,
+          severityInterval: [3.5, 5.5],
+          title: 'Bot Mitigation / Anti-Bot Gate Encountered',
+          summary: `Target domain presented an anti-bot challenge (HTTP ${statusCode} - "${pageTitle || 'Challenge'}"). Traversal was restricted.`,
+          evidence: {
+            statusCode,
+            pageTitle,
+            targetUrl
+          },
+          selector: 'body',
+          description: `Target domain presented an anti-bot gate. Automated live crawl was restricted. Run audits via authenticated API tokens, CI/CD, or local DOM fixtures.`
+        });
+        onProgress?.({
+          type: 'status',
+          data: { warning: `Target domain is gated by anti-bot mitigation (HTTP ${statusCode}). Recorded diagnostic finding.` }
+        });
+      }
 
       // Autonomous Reconnaissance: If goal is empty or default generic, deduce mission dynamically from DOM landmarks
       activeGoal = (goal || '').trim();
