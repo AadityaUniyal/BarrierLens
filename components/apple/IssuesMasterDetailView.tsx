@@ -27,6 +27,7 @@ import { ScreenReaderTranscript, SpeechTranscriptItem } from './ScreenReaderTran
 import { BarrierGenomeViz } from './BarrierGenomeViz';
 import { CausalDiffView } from './CausalDiffView';
 import { GitHubPRModal } from './GitHubPRModal';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 
 interface IssuesMasterDetailViewProps {
   findings: BarrierFinding[];
@@ -156,6 +157,16 @@ export function IssuesMasterDetailView({
           e.preventDefault();
           onVerifyRepair(activeFinding);
         }
+      } else if (e.key === ' ' || e.code === 'Space') {
+        if (activeFinding) {
+          e.preventDefault();
+          setInspectionTab('causal-diff');
+        }
+      } else if (e.key === 'Enter') {
+        if (activeFinding) {
+          e.preventDefault();
+          setIsPRModalOpen(true);
+        }
       } else if (e.key === 'Escape') {
         if (selectedIds.size > 0) {
           e.preventDefault();
@@ -179,28 +190,35 @@ export function IssuesMasterDetailView({
               Evidence & Mathematical Proofs
             </h2>
           </div>
-          <p className="text-xs text-[#9ba1a6]">
-            Every barrier classified by mathematical certainty tier. Press <kbd className="px-1 py-0.5 rounded bg-[#1e2023] border border-[#34383f] font-mono text-[10px] text-[#9ba1a6]">J</kbd> / <kbd className="px-1 py-0.5 rounded bg-[#1e2023] border border-[#34383f] font-mono text-[10px] text-[#9ba1a6]">K</kbd> to navigate, <kbd className="px-1 py-0.5 rounded bg-[#1e2023] border border-[#34383f] font-mono text-[10px] text-[#9ba1a6]">X</kbd> to select.
+          <p className="text-xs text-[#9ba1a6] flex flex-wrap items-center gap-1.5 pt-1">
+            <span>Shortcuts:</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-[#1e2023] border border-[#34383f] font-mono text-[10px] text-white">J</kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-[#1e2023] border border-[#34383f] font-mono text-[10px] text-white">K</kbd>
+            <span>Navigate</span>
+            <span className="text-slate-600">•</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-[#1e2023] border border-[#34383f] font-mono text-[10px] text-white">Space</kbd>
+            <span>Preview Diff</span>
+            <span className="text-slate-600">•</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-[#1e2023] border border-[#34383f] font-mono text-[10px] text-white">Enter</kbd>
+            <span>Open PR</span>
+            <span className="text-slate-600">•</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-[#1e2023] border border-[#34383f] font-mono text-[10px] text-white">V</kbd>
+            <span>Verify</span>
           </p>
         </div>
 
         {/* Trust Tier Filter Segmented Control */}
-        <div className="flex items-center bg-[#0c0d0e] p-1 rounded-lg border border-[#23262a]">
-          {(['all', 'proven', 'observed', 'suspected'] as const).map((tier) => (
-            <button
-              key={tier}
-              type="button"
-              onClick={() => setFilterTier(tier)}
-              className={`px-3 py-1 rounded-md text-xs font-medium capitalize transition-colors ${
-                filterTier === tier
-                  ? 'bg-[#1f2226] text-[#f4f5f6] border border-[#34383f]'
-                  : 'text-[#9ba1a6] hover:text-[#f4f5f6] border border-transparent'
-              }`}
-            >
-              {tier}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl<'all' | 'proven' | 'observed' | 'suspected'>
+          options={[
+            { id: 'all', label: 'All', badge: String(findings.length) },
+            { id: 'proven', label: 'Proven' },
+            { id: 'observed', label: 'Observed' },
+            { id: 'suspected', label: 'Suspected' },
+          ]}
+          value={filterTier}
+          onChange={setFilterTier}
+          size="sm"
+        />
       </div>
 
       {/* Master-Detail Split Grid */}

@@ -25,6 +25,8 @@ import { CinematicLanding } from '@/components/cinematic/CinematicLanding';
 import { AppleAuthModal, UserSession } from '@/components/apple/AppleAuthModal';
 import { authClient } from '@/lib/auth-client';
 import { AuditRun, BarrierFinding, PersonaType, VerifiedFixResult } from '@/lib/barrierlens/types';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { SpotlightCard } from '@/components/ui/SpotlightCard';
 
 // Default Benchmark Ground Truth (Prevents blank/empty states)
 const BENCHMARK_SAMPLE_FINDINGS: BarrierFinding[] = [
@@ -641,79 +643,64 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-1.5 bg-white/[0.03] p-1 rounded-xl border border-white/10 self-start sm:self-auto">
-                <button
-                  type="button"
-                  onClick={() => setWorkspaceMode('executive')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                    workspaceMode === 'executive'
-                      ? 'bg-[#0090ff] text-white shadow-sm'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Executive Mode
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setWorkspaceMode('diagnostic')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                    workspaceMode === 'diagnostic'
-                      ? 'bg-white/10 text-white shadow-sm'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Diagnostic Lab
-                </button>
-              </div>
+              <SegmentedControl<'executive' | 'diagnostic'>
+                options={[
+                  { id: 'executive', label: 'Executive Mode' },
+                  { id: 'diagnostic', label: 'Diagnostic Lab' },
+                ]}
+                value={workspaceMode}
+                onChange={setWorkspaceMode}
+                size="sm"
+              />
             </div>
 
             {/* Executive Mode Quick Health Summary Banner */}
             {workspaceMode === 'executive' && (
               <div className="mb-8 p-5 rounded-2xl bg-gradient-to-r from-blue-950/20 via-slate-900/40 to-slate-950/20 border border-blue-500/20 shadow-lg">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                  <SpotlightCard className="p-4 rounded-xl border-white/5">
                     <span className="text-xs text-slate-400 uppercase font-mono tracking-wider">WCAG AA Health</span>
                     <div className="text-2xl font-semibold text-emerald-400 mt-1 flex items-baseline gap-1.5">
                       94.2% <span className="text-xs font-normal text-slate-400 font-sans">Grade A</span>
                     </div>
                     <span className="text-[11px] text-slate-500 mt-1 block">0 critical keyboard traps</span>
-                  </div>
+                  </SpotlightCard>
 
-                  <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                  <SpotlightCard className="p-4 rounded-xl border-white/5">
                     <span className="text-xs text-slate-400 uppercase font-mono tracking-wider">Active Target</span>
                     <div className="text-sm font-medium text-white truncate mt-1.5" title={targetUrl}>
                       {targetUrl}
                     </div>
                     <span className="text-[11px] text-slate-500 mt-1 block font-mono">Persona: {persona}</span>
-                  </div>
+                  </SpotlightCard>
 
-                  <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                  <SpotlightCard className="p-4 rounded-xl border-white/5">
                     <span className="text-xs text-slate-400 uppercase font-mono tracking-wider">Legal Exposure Risk</span>
                     <div className="text-2xl font-semibold text-emerald-400 mt-1">
                       Low
                     </div>
                     <span className="text-[11px] text-slate-500 mt-1 block">ADA Title III & EAA Compliant</span>
-                  </div>
+                  </SpotlightCard>
 
-                  <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col justify-between">
+                  <SpotlightCard className="p-4 rounded-xl border-white/5 flex flex-col justify-between">
                     <span className="text-xs text-slate-400 uppercase font-mono tracking-wider">Fast Actions</span>
                     <div className="flex gap-2 mt-2">
                       <button
                         type="button"
                         onClick={() => setActiveScreen('settings')}
-                        className="flex-1 px-3 py-1.5 text-xs font-medium bg-white/10 hover:bg-white/15 text-white rounded-lg transition-all text-center"
+                        className="flex-1 px-3 py-1.5 text-xs font-medium bg-white/10 hover:bg-white/15 active:scale-[0.98] text-white rounded-lg transition-all text-center"
                       >
                         Export VPAT
                       </button>
                       <button
                         type="button"
                         onClick={() => setActiveScreen('fixes')}
-                        className="flex-1 px-3 py-1.5 text-xs font-medium bg-[#0090ff] hover:bg-[#0090ff]/90 text-white rounded-lg transition-all text-center"
+                        className="flex-1 px-3 py-1.5 text-xs font-medium bg-[#0090ff] hover:bg-[#0090ff]/90 active:scale-[0.98] text-white rounded-lg transition-all text-center"
                       >
                         Fix PR
                       </button>
                     </div>
-                  </div>
+                  </SpotlightCard>
                 </div>
               </div>
             )}

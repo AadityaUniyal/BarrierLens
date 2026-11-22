@@ -25,7 +25,8 @@ dist/
 *.pdf
 
 # Agent workspace & scratch dumps
-.agents/
+.agents/*
+!.agents/skills/
 pdf_text.txt
 
 # Vercel
