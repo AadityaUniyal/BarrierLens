@@ -30,9 +30,10 @@ import {
 } from 'lucide-react';
 import { BrandLogo } from '@/components/brand/BrandLogo';
 import { PersonaType } from '@/lib/barrierlens/types';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 
 interface CinematicLandingProps {
-  onLaunchStudio: (targetUrl?: string, goal?: string, persona?: PersonaType) => void;
+  onLaunchStudio: (targetUrl?: string, goal?: string, persona?: PersonaType, autoStart?: boolean) => void;
   onSelectBenchmark: (url: string, goal: string) => void;
   onOpenAuth?: () => void;
 }
@@ -338,7 +339,7 @@ export function CinematicLanding({
 
           <button
             type="button"
-            onClick={() => onLaunchStudio('/benchmark', 'Test modal keyboard focus escape', 'keyboard')}
+            onClick={() => onLaunchStudio('/benchmark', 'Test modal keyboard focus escape', 'keyboard', true)}
             className="w-full sm:w-auto px-6 py-3 bg-[#121316] hover:bg-[#1a1c20] text-white text-sm font-medium rounded-lg border border-white/10 flex items-center justify-center gap-2 transition-all"
           >
             <span>Explore Live Sandbox</span>
@@ -360,39 +361,22 @@ export function CinematicLanding({
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              {/* Persona Switcher */}
-              <div className="flex items-center bg-[#07080b] p-0.5 rounded-lg border border-white/5 w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => setTrialPersona('keyboard')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 ${
-                    trialPersona === 'keyboard'
-                      ? 'bg-white text-black font-semibold shadow-sm'
-                      : 'text-white/60 hover:text-white'
-                  }`}
-                >
-                  <Keyboard className="w-3.5 h-3.5" />
-                  <span>Keyboard</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTrialPersona('screen_reader')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 ${
-                    trialPersona === 'screen_reader'
-                      ? 'bg-white text-black font-semibold shadow-sm'
-                      : 'text-white/60 hover:text-white'
-                  }`}
-                >
-                  <Volume2 className="w-3.5 h-3.5" />
-                  <span>VoiceOver</span>
-                </button>
-              </div>
+              {/* Persona Switcher with sliding pill physics */}
+              <SegmentedControl<PersonaType>
+                options={[
+                  { id: 'keyboard', label: 'Keyboard', icon: Keyboard },
+                  { id: 'screen_reader', label: 'VoiceOver', icon: Volume2 },
+                ]}
+                value={trialPersona}
+                onChange={setTrialPersona}
+                size="sm"
+              />
 
               {/* Run Audit Button */}
               <button
                 type="button"
-                onClick={() => onLaunchStudio(trialUrl, trialGoal, trialPersona)}
-                className="px-5 py-2 bg-white hover:bg-white/90 text-black text-xs font-semibold rounded-lg shrink-0 transition-all shadow-sm"
+                onClick={() => onLaunchStudio(trialUrl, trialGoal, trialPersona, true)}
+                className="px-5 py-2 bg-white hover:bg-white/90 active:scale-[0.98] text-black text-xs font-semibold rounded-lg shrink-0 transition-all shadow-sm"
               >
                 Test
               </button>

@@ -14,8 +14,8 @@ const ipBuckets = new Map<string, Bucket>();
 let inFlight = 0;
 
 const WINDOW_MS = 60 * 60 * 1000;
-const MAX_PER_WINDOW = Number(process.env.PUBLIC_AUDITS_PER_HOUR || 8);
-const MAX_IN_FLIGHT = Number(process.env.PUBLIC_MAX_CONCURRENT_AUDITS || 2);
+const MAX_PER_WINDOW = Number(process.env.PUBLIC_AUDITS_PER_HOUR || 60);
+const MAX_IN_FLIGHT = Number(process.env.PUBLIC_MAX_CONCURRENT_AUDITS || 6);
 
 export function clientIp(req: Request): string {
   const forwarded = req.headers.get('x-forwarded-for');

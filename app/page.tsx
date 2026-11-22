@@ -392,7 +392,15 @@ export default function Home() {
   };
 
   // Run Task-Conditioned Audit with Server-Sent Events (SSE)
-  const handleRunAudit = async () => {
+  const handleRunAudit = async (overrideTarget?: string, overrideGoal?: string, overridePersona?: PersonaType) => {
+    const activeTarget = overrideTarget || targetUrl;
+    const activeGoal = overrideGoal || goal;
+    const activePersona = overridePersona || persona;
+
+    if (overrideTarget) setTargetUrl(overrideTarget);
+    if (overrideGoal) setGoal(overrideGoal);
+    if (overridePersona) setPersona(overridePersona);
+
     setIsAuditing(true);
     setStreamingStatus('Initializing Chromium CDP session and Accessibility domain...');
     setStreamingStep(0);
@@ -401,7 +409,7 @@ export default function Home() {
       const response = await fetch('/api/audit/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetUrl, goal, persona, maxSteps })
+        body: JSON.stringify({ targetUrl: activeTarget, goal: activeGoal, persona: activePersona, maxSteps })
       });
 
       if (!response.ok) {
@@ -611,16 +619,27 @@ export default function Home() {
       {/* 4. Viewport: Cinematic Landing (Full-Bleed) vs Production App Workspace */}
       {activeScreen === 'story' ? (
         <CinematicLanding
-          onLaunchStudio={(url, customGoal, customPersona) => {
+          onLaunchStudio={(url, customGoal, customPersona, autoStart) => {
+            const nextUrl = url || targetUrl;
+            const nextGoal = customGoal || goal;
+            const nextPersona = customPersona || persona;
             if (url) setTargetUrl(url);
             if (customGoal) setGoal(customGoal);
             if (customPersona) setPersona(customPersona);
             setActiveScreen('audits');
+            if (autoStart) {
+              setTimeout(() => {
+                handleRunAudit(nextUrl, nextGoal, nextPersona);
+              }, 120);
+            }
           }}
           onSelectBenchmark={(url, customGoal) => {
             setTargetUrl(url);
             if (customGoal) setGoal(customGoal);
             setActiveScreen('audits');
+            setTimeout(() => {
+              handleRunAudit(url, customGoal, persona);
+            }, 120);
           }}
           onOpenAuth={() => setIsAuthModalOpen(true)}
         />
