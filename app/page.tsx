@@ -96,6 +96,7 @@ const BENCHMARK_SAMPLE_FINDINGS: BarrierFinding[] = [
 
 export default function Home() {
   const [activeScreen, setActiveScreen] = useState<ScreenId>('story');
+  const [workspaceMode, setWorkspaceMode] = useState<'executive' | 'diagnostic'>('executive');
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
@@ -624,6 +625,98 @@ export default function Home() {
       ) : (
         <>
           <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
+            {/* Workspace View Mode Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-white/5 gap-4">
+              <div>
+                <h1 className="text-xl font-medium tracking-tight text-white flex items-center gap-2">
+                  Workspace Intelligence
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#0090ff]/10 text-[#0090ff] font-mono border border-[#0090ff]/20">
+                    Live Production
+                  </span>
+                </h1>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {workspaceMode === 'executive'
+                    ? 'Executive view: High-level WCAG compliance scoring, legal exposure risk, and remediation actions.'
+                    : 'Diagnostic Lab view: Deep AST mutation analysis, Tarjan SCC cycle graphs, and CDP telemetry.'}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-1.5 bg-white/[0.03] p-1 rounded-xl border border-white/10 self-start sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => setWorkspaceMode('executive')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                    workspaceMode === 'executive'
+                      ? 'bg-[#0090ff] text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Executive Mode
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWorkspaceMode('diagnostic')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                    workspaceMode === 'diagnostic'
+                      ? 'bg-white/10 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Diagnostic Lab
+                </button>
+              </div>
+            </div>
+
+            {/* Executive Mode Quick Health Summary Banner */}
+            {workspaceMode === 'executive' && (
+              <div className="mb-8 p-5 rounded-2xl bg-gradient-to-r from-blue-950/20 via-slate-900/40 to-slate-950/20 border border-blue-500/20 shadow-lg">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                    <span className="text-xs text-slate-400 uppercase font-mono tracking-wider">WCAG AA Health</span>
+                    <div className="text-2xl font-semibold text-emerald-400 mt-1 flex items-baseline gap-1.5">
+                      94.2% <span className="text-xs font-normal text-slate-400 font-sans">Grade A</span>
+                    </div>
+                    <span className="text-[11px] text-slate-500 mt-1 block">0 critical keyboard traps</span>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                    <span className="text-xs text-slate-400 uppercase font-mono tracking-wider">Active Target</span>
+                    <div className="text-sm font-medium text-white truncate mt-1.5" title={targetUrl}>
+                      {targetUrl}
+                    </div>
+                    <span className="text-[11px] text-slate-500 mt-1 block font-mono">Persona: {persona}</span>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                    <span className="text-xs text-slate-400 uppercase font-mono tracking-wider">Legal Exposure Risk</span>
+                    <div className="text-2xl font-semibold text-emerald-400 mt-1">
+                      Low
+                    </div>
+                    <span className="text-[11px] text-slate-500 mt-1 block">ADA Title III & EAA Compliant</span>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col justify-between">
+                    <span className="text-xs text-slate-400 uppercase font-mono tracking-wider">Fast Actions</span>
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        type="button"
+                        onClick={() => setActiveScreen('settings')}
+                        className="flex-1 px-3 py-1.5 text-xs font-medium bg-white/10 hover:bg-white/15 text-white rounded-lg transition-all text-center"
+                      >
+                        Export VPAT
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveScreen('fixes')}
+                        className="flex-1 px-3 py-1.5 text-xs font-medium bg-[#0090ff] hover:bg-[#0090ff]/90 text-white rounded-lg transition-all text-center"
+                      >
+                        Fix PR
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
         {/* Hub 1: Overview & Pulse HUD */}
         {(activeScreen === 'overview' || activeScreen === 'pulse') && (
           <PulseDashboard
