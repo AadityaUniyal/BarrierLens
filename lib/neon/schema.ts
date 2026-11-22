@@ -28,7 +28,77 @@ export async function initializeDatabaseSchema() {
       console.log('[Neon DB] pgvector notice:', e.message);
     }
 
-    // 2. Core tables
+    // 2. BetterAuth standard tables
+    await sql`
+      CREATE TABLE IF NOT EXISTS "user" (
+        "id" TEXT PRIMARY KEY,
+        "name" TEXT NOT NULL,
+        "email" TEXT NOT NULL UNIQUE,
+        "emailVerified" BOOLEAN NOT NULL DEFAULT FALSE,
+        "image" TEXT,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+        "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS "session" (
+        "id" TEXT PRIMARY KEY,
+        "expiresAt" TIMESTAMP NOT NULL,
+        "token" TEXT NOT NULL UNIQUE,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+        "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+        "ipAddress" TEXT,
+        "userAgent" TEXT,
+        "userId" TEXT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS "account" (
+        "id" TEXT PRIMARY KEY,
+        "accountId" TEXT NOT NULL,
+        "providerId" TEXT NOT NULL,
+        "userId" TEXT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
+        "accessToken" TEXT,
+        "refreshToken" TEXT,
+        "idToken" TEXT,
+        "accessTokenExpiresAt" TIMESTAMP,
+        "refreshTokenExpiresAt" TIMESTAMP,
+        "scope" TEXT,
+        "password" TEXT,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+        "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS "verification" (
+        "id" TEXT PRIMARY KEY,
+        "identifier" TEXT NOT NULL,
+        "value" TEXT NOT NULL,
+        "expiresAt" TIMESTAMP NOT NULL,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+        "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS "passkey" (
+        "id" TEXT PRIMARY KEY,
+        "name" TEXT,
+        "publicKey" TEXT NOT NULL,
+        "userId" TEXT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
+        "credentialID" TEXT NOT NULL,
+        "counter" INTEGER NOT NULL DEFAULT 0,
+        "deviceType" TEXT NOT NULL,
+        "backedUp" BOOLEAN NOT NULL DEFAULT FALSE,
+        "transports" TEXT,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    // 3. Core domain tables
     await sql`
       CREATE TABLE IF NOT EXISTS users (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
