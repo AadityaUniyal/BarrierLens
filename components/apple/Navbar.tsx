@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { UserSession } from './AppleAuthModal';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 
 export type ScreenId = 
   | 'story'
@@ -143,20 +144,10 @@ export function Navbar({
           <button 
             type="button"
             onClick={() => setActiveScreen('story')}
-            className="flex items-center gap-2.5 text-left group focus-visible:outline-none p-1 transition-all"
+            className="flex items-center text-left focus-visible:outline-none p-1 transition-all"
             title="BarrierLens Public Landing"
           >
-            <div className="w-7 h-7 bg-[var(--fg)] text-[var(--bg)] font-mono font-black flex items-center justify-center text-xs tracking-tighter shadow-sm">
-              BL
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-sm tracking-tight text-[var(--fg)] uppercase font-display">
-                BarrierLens
-              </span>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 border border-[var(--line)] text-[var(--fg-muted)]">
-                v2.0
-              </span>
-            </div>
+            <BrandLogo size="md" showBadge={true} />
           </button>
 
           {/* Workspace Pill in Dashboard Mode or Cloud Status in Landing Mode */}

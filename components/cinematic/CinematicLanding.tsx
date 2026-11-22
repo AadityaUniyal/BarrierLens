@@ -28,6 +28,7 @@ import {
   XCircle,
   HelpCircle
 } from 'lucide-react';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 import { PersonaType } from '@/lib/barrierlens/types';
 
 interface CinematicLandingProps {
@@ -1083,10 +1084,7 @@ export function CinematicLanding({
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 pb-12 border-b border-white/5">
           
           <div className="md:col-span-5 space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#10b981]" />
-              <span className="font-bold text-sm text-white uppercase tracking-wider font-mono">BarrierLens</span>
-            </div>
+            <BrandLogo size="md" showBadge={true} />
             <p className="text-xs text-white/60 leading-relaxed max-w-sm">
               The automated accessibility verification platform testing web applications like real humans with assistive needs do—delivering verified code fixes with zero false alarms.
             </p>

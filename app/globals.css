@@ -157,7 +157,20 @@ body {
   letter-spacing: -0.04em;
 }
 
-/* Ambient Radial Mesh */
+/* Ambient Radial Mesh & Architectural Watermark Grid */
+.ambient-mesh {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: 
+    radial-gradient(ellipse 70% 40% at 50% -10%, rgba(0, 144, 255, 0.12), transparent 70%),
+    radial-gradient(ellipse 40% 30% at 85% 15%, rgba(16, 185, 129, 0.05), transparent 60%),
+    radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 28px 28px;
+  background-repeat: no-repeat, no-repeat, repeat;
+}
+
 .ambient-cinematic {
   position: fixed;
   top: 0;
