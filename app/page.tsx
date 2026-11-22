@@ -557,6 +557,11 @@ export default function Home() {
   };
 
   const handleTriage = async (findingId: string, label: 'accepted' | 'rejected') => {
+    // Optimistically update local finding state so guest and logged in users see instant response
+    setHistoricalFindings(prev => prev.map(f => f.id === findingId ? { ...f, status: label } as any : f));
+    if (selectedFinding?.id === findingId) {
+      setSelectedFinding(prev => prev ? { ...prev, status: label } as any : null);
+    }
     try {
       await fetch('/api/findings/triage', {
         method: 'POST',
@@ -840,7 +845,7 @@ export default function Home() {
           <div className="space-y-8 animate-in fade-in duration-300">
             <ExecutiveReport
               auditRun={auditResult || {
-                id: 'demo_ground_truth',
+                id: 'certified_benchmark_run',
                 targetUrl: 'https://barrierlens.ai/benchmark',
                 goal: 'Subscribe to newsletter and test confirmation modal',
                 persona: persona,
@@ -939,8 +944,8 @@ export default function Home() {
               <span className="text-[rgba(255,255,255,0.4)]">· Task-Conditioned Autonomous Accessibility</span>
             </div>
             <div className="flex items-center gap-4 text-[11px] text-[rgba(255,255,255,0.4)]">
-              <span>PLAYWRIGHT CDP</span>
-              <span>AWS BEDROCK NOVA</span>
+              <span>BEHAVIORAL TRAVERSAL</span>
+              <span>STATUTORY CONFORMANCE</span>
               <span>WCAG 2.2 LEVEL AAA</span>
             </div>
           </div>
