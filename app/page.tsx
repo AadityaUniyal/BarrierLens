@@ -559,6 +559,10 @@ export default function Home() {
   const handleTriage = async (findingId: string, label: 'accepted' | 'rejected') => {
     // Optimistically update local finding state so guest and logged in users see instant response
     setHistoricalFindings(prev => prev.map(f => f.id === findingId ? { ...f, status: label } as any : f));
+    setAuditResult(prev => prev && prev.findings ? {
+      ...prev,
+      findings: prev.findings.map(f => f.id === findingId ? { ...f, status: label } as any : f)
+    } : prev);
     if (selectedFinding?.id === findingId) {
       setSelectedFinding(prev => prev ? { ...prev, status: label } as any : null);
     }
@@ -712,7 +716,7 @@ export default function Home() {
                       <button
                         type="button"
                         onClick={() => {
-                          const reportId = auditResult?.id || (runsHistory.length > 0 ? runsHistory[0].id : '5afc8530-fe6a-4042-aa7e-90ed7cd12eb0');
+                          const reportId = auditResult?.id || (runsHistory.length > 0 ? runsHistory[0].id : '90c78a35-699d-460a-99cc-5f22c3d152f1');
                           window.open(`/api/audit/${reportId}/export?format=html`, '_blank');
                         }}
                         className="flex-1 px-3 py-1.5 text-xs font-medium bg-white/10 hover:bg-white/15 active:scale-[0.98] text-white rounded-lg transition-all text-center"
