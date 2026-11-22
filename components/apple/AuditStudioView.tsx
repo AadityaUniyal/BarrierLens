@@ -251,7 +251,7 @@ export function AuditStudioView({
               Task-Conditioned Audit Studio
             </h2>
             <p className="text-xs text-slate-400">
-              Autonomous Playwright CDP agent under real physical keyboard & assistive sensory constraints.
+              Autonomous behavioral agent evaluating under real physical keyboard & assistive sensory constraints.
             </p>
           </div>
 
@@ -524,7 +524,7 @@ export function AuditStudioView({
                 >
                   <span className="flex items-center gap-1.5">
                     <Monitor className="w-3.5 h-3.5" />
-                    CDP Viewport
+                    Live Viewport
                   </span>
                 </button>
                 <button
@@ -577,7 +577,7 @@ export function AuditStudioView({
               ) : (
                 <div className="flex items-center gap-2 text-[11px] text-emerald-400 font-mono bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Chromium CDP Active</span>
+                  <span>Inspector Session Active</span>
                 </div>
               )}
             </div>
@@ -605,7 +605,7 @@ export function AuditStudioView({
                     <span className="font-semibold uppercase tracking-wider text-[#9ba1a6]">
                       Physical Keystroke Visualizer
                     </span>
-                    <span>CDP Hardware Event Stream</span>
+                    <span>Hardware Interaction Stream</span>
                   </div>
 
                   <div className="flex items-center gap-2 overflow-x-auto py-0.5">

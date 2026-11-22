@@ -28,6 +28,11 @@ dist/
 .agents/*
 !.agents/skills/
 pdf_text.txt
+scratch/
+*_dump.html
+page_dump.html
+*.log
+*.tmp
 
 # Vercel
 .vercel/

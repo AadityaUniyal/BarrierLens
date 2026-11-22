@@ -56,7 +56,7 @@ const BENCHMARK_SAMPLE_FINDINGS: BarrierFinding[] = [
       cycleNodes: ['#trap-modal', '#claim-btn'],
       cycleTransitions: [{ from: '#trap-modal', key: 'Tab', to: '#claim-btn' }, { from: '#claim-btn', key: 'Tab', to: '#trap-modal' }],
       testedEscape: true,
-      proofExplanation: 'Tarjan SCC sink cycle: Tab key navigation forms a closed loop between #trap-modal and #claim-btn. Escape key does not restore focus to origin.',
+      proofExplanation: 'Focus cycle detected: Tab key navigation forms an inescapable loop between modal controls. Escape key does not restore focus to origin.',
       timestamp: new Date().toISOString()
     }
   },
@@ -658,7 +658,7 @@ export default function Home() {
                 <p className="text-xs text-slate-400 mt-0.5">
                   {workspaceMode === 'executive'
                     ? 'Executive view: High-level WCAG compliance scoring, legal exposure risk, and remediation actions.'
-                    : 'Diagnostic Lab view: Deep AST mutation analysis, Tarjan SCC cycle graphs, and CDP telemetry.'}
+                    : 'Diagnostic Lab view: Deep interaction analysis, focus loop graphs, and assistive telemetry.'}
                 </p>
               </div>
 

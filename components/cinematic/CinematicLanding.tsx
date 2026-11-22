@@ -70,9 +70,6 @@ export function CinematicLanding({
   // Hero Preview Active Tab
   const [previewTab, setPreviewTab] = useState<'keyboard' | 'diff' | 'voiceover' | 'report'>('keyboard');
 
-  // Testbeds List vs Grid View Toggle
-  const [indexView, setIndexView] = useState<'list' | 'grid'>('list');
-
   // FAQ Accordion State
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
@@ -136,45 +133,6 @@ export function CinematicLanding({
       tag: 'Executive Legal Protection',
       desc: 'Generate comprehensive, timestamped compliance audit ledgers mapped to WCAG 2.2 Level AAA, the European Accessibility Act (EAA 2025), and Section 508 for your legal and compliance teams.',
       highlight: 'Audit-ready legal documentation'
-    }
-  ];
-
-  const testbeds = [
-    {
-      id: '01',
-      title: 'Modal Dialog Keyboard Trap',
-      detail: 'Escape key ignored; Tab navigation loops inside dialog overlay indefinitely.',
-      wcag: 'WCAG 2.1.2 Level A',
-      severity: 'Critical Barrier',
-      url: '/fixtures/keyboard-trap',
-      goal: 'Test newsletter modal escape and keyboard focus return'
-    },
-    {
-      id: '02',
-      title: 'Unlabeled Action Icon Button',
-      detail: 'Interactive drawer dismiss button has empty accessible text in accessibility tree.',
-      wcag: 'WCAG 4.1.2 Level A',
-      severity: 'High Barrier',
-      url: '/fixtures/accname-wcag',
-      goal: 'Identify and test unlabeled drawer dismiss icon buttons'
-    },
-    {
-      id: '03',
-      title: 'Visual vs. Assistive Reading Inversion',
-      detail: 'CSS flex-direction reverses visual cards while DOM order remains backward.',
-      wcag: 'WCAG 1.3.2 Level A',
-      severity: 'Medium Barrier',
-      url: '/fixtures/disordered-unreachable',
-      goal: 'Evaluate reading order concordance across responsive grid'
-    },
-    {
-      id: '04',
-      title: 'Silent Form Validation Error',
-      detail: 'Server response injects dynamic error banner without live speech announcement.',
-      wcag: 'WCAG 4.1.3 Level AA',
-      severity: 'High Barrier',
-      url: '/benchmark',
-      goal: 'Submit invalid payload and verify screen reader announcement'
     }
   ];
 
@@ -783,104 +741,7 @@ export function CinematicLanding({
 
       </section>
 
-      {/* 7. INTERACTIVE COMMON TESTBEDS */}
-      <section id="benchmarks" className="py-24 px-6 sm:px-8 lg:px-12 max-w-6xl mx-auto space-y-12 border-t border-white/5">
-        
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div className="space-y-2">
-            <span className="text-xs font-mono uppercase tracking-widest text-[#10b981]">
-              Pre-Configured Testbeds
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white font-display">
-              Common accessibility barriers you can test right now
-            </h2>
-          </div>
 
-          <div className="flex items-center gap-1 p-1 bg-[#121316] rounded-lg border border-white/5 text-xs font-mono">
-            <button
-              type="button"
-              onClick={() => setIndexView('list')}
-              className={`px-3 py-1 rounded-md transition-all ${
-                indexView === 'list' ? 'bg-white text-black font-semibold' : 'text-white/60 hover:text-white'
-              }`}
-            >
-              List View
-            </button>
-            <button
-              type="button"
-              onClick={() => setIndexView('grid')}
-              className={`px-3 py-1 rounded-md transition-all ${
-                indexView === 'grid' ? 'bg-white text-black font-semibold' : 'text-white/60 hover:text-white'
-              }`}
-            >
-              Grid View
-            </button>
-          </div>
-        </div>
-
-        {indexView === 'list' ? (
-          <div className="divide-y divide-white/5 rounded-2xl bg-[#121316] border border-white/5 overflow-hidden">
-            {testbeds.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => onLaunchStudio(item.url, item.goal, 'keyboard')}
-                className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-white/5 transition-all cursor-pointer group"
-              >
-                <div className="flex items-start md:items-center gap-4">
-                  <span className="text-xs font-mono text-white/40">{item.id}</span>
-                  <div>
-                    <h3 className="text-sm font-semibold text-white group-hover:text-emerald-400 transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs text-white/60 mt-0.5">
-                      {item.detail}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 text-xs font-mono shrink-0">
-                  <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/70">
-                    {item.wcag}
-                  </span>
-                  <span className="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 font-medium">
-                    {item.severity}
-                  </span>
-                  <ArrowUpRight className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {testbeds.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => onLaunchStudio(item.url, item.goal, 'keyboard')}
-                className="p-6 rounded-2xl bg-[#121316] border border-white/5 hover:border-white/15 transition-all cursor-pointer group space-y-4 flex flex-col justify-between"
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs font-mono text-white/40">
-                    <span>{item.id}</span>
-                    <span className="text-rose-400 font-medium">{item.severity}</span>
-                  </div>
-                  <h3 className="text-sm font-semibold text-white group-hover:text-emerald-400 transition-colors">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs text-white/60 leading-relaxed">
-                    {item.detail}
-                  </p>
-                </div>
-
-                <div className="pt-4 border-t border-white/5 flex items-center justify-between text-xs font-mono text-white/50">
-                  <span>{item.wcag}</span>
-                  <ArrowUpRight className="w-4 h-4 text-white" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-      </section>
 
       {/* 8. FEATURE COMPARISON MATRIX */}
       <section id="comparison" className="py-24 px-6 sm:px-8 lg:px-12 max-w-6xl mx-auto space-y-12 border-t border-white/5">
