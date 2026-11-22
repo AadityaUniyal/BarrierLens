@@ -47,29 +47,32 @@ export async function GET() {
     result.installed = false;
   }
 
-  // 2. Probe AWS STS for Caller Identity
-  if (accessKeyId && secretAccessKey) {
-    try {
-      const sts = new STSClient({
-        region,
-        credentials: { accessKeyId, secretAccessKey }
-      });
-      const caller = await sts.send(new GetCallerIdentityCommand({}));
-      result.authenticated = true;
-      result.account = caller.Account || 'Authenticated';
-      result.arn = caller.Arn || '';
-      result.authNote = `Authenticated as ${caller.Arn}. Production Evidence Vault & Nova Bedrock Active.`;
-    } catch (stsErr: any) {
-      result.authenticated = false;
-      result.authNote = `STS Authentication Error: ${stsErr.message}`;
+  // 2. Probe AWS STS for Caller Identity (supports both static keys & IAM instance profiles)
+  try {
+    const sts = (accessKeyId && secretAccessKey)
+      ? new STSClient({ region, credentials: { accessKeyId, secretAccessKey } })
+      : new STSClient({ region });
+    const caller = await sts.send(new GetCallerIdentityCommand({}));
+    result.authenticated = true;
+    const isRoot = Boolean(caller.Arn?.includes(':root'));
+    result.account = caller.Account ? `***${caller.Account.slice(-4)}` : 'Authenticated';
+    result.arn = isRoot ? 'arn:aws:iam::***:account-admin' : (caller.Arn || 'Authenticated');
+    result.authType = isRoot ? 'Static Root Key (Security Warning)' : 'IAM Role / Instance Profile';
+    if (isRoot) {
+      result.securityWarning = 'Production server is using AWS root credentials. Recommend attaching an IAM EC2 Instance Profile Role with least privilege.';
     }
+    result.authNote = `AWS Authentication active (${result.authType}). Evidence Vault & Nova Bedrock operational.`;
+  } catch (stsErr: any) {
+    result.authenticated = false;
+    result.authNote = `AWS Credentials unconfigured or STS check failed: ${stsErr.message}`;
+  }
 
-    // 3. Probe Real S3 Artifact Store
+  // 3. Probe Real S3 Artifact Store
+  if (result.authenticated) {
     try {
-      const s3 = new S3Client({
-        region,
-        credentials: { accessKeyId, secretAccessKey }
-      });
+      const s3 = (accessKeyId && secretAccessKey)
+        ? new S3Client({ region, credentials: { accessKeyId, secretAccessKey } })
+        : new S3Client({ region });
       const s3Res = await s3.send(new ListObjectsV2Command({
         Bucket: bucket,
         MaxKeys: 10
@@ -84,10 +87,10 @@ export async function GET() {
     // 4. Bedrock Active Status (real probe via BedrockClient)
     try {
       const { BedrockClient, ListFoundationModelsCommand } = await import('@aws-sdk/client-bedrock');
-      const bedrockClient = new BedrockClient({
-        region: process.env.BEDROCK_REGION || 'us-east-1',
-        credentials: { accessKeyId, secretAccessKey }
-      });
+      const bedrockRegion = process.env.BEDROCK_REGION || 'us-east-1';
+      const bedrockClient = (accessKeyId && secretAccessKey)
+        ? new BedrockClient({ region: bedrockRegion, credentials: { accessKeyId, secretAccessKey } })
+        : new BedrockClient({ region: bedrockRegion });
       const modelsRes = await bedrockClient.send(new ListFoundationModelsCommand({
         byProvider: 'Amazon'
       }));

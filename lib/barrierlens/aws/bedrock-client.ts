@@ -49,16 +49,26 @@ export class AWSBedrockClient {
     this.region = process.env.BEDROCK_REGION || 'us-east-1';
     this.accessKeyId = process.env.AWS_ACCESS_KEY_ID || '';
     this.secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || '';
-    this.isConfigured = Boolean(this.accessKeyId && this.secretAccessKey);
+    const hasStaticKeys = Boolean(this.accessKeyId && this.secretAccessKey);
+    const hasRoleOrEnv = Boolean(
+      process.env.AWS_CONTAINER_CREDENTIALS_RELATIVE_URI ||
+      process.env.AWS_WEB_IDENTITY_TOKEN_FILE ||
+      process.env.AWS_PROFILE ||
+      process.env.AWS_ROLE_ARN
+    );
+    this.isConfigured = hasStaticKeys || hasRoleOrEnv || process.env.NODE_ENV === 'production';
+
     // Instantiate real AWS SDK client with SigV4 signing handled internally
     this.sdkClient = this.isConfigured
-      ? new BedrockRuntimeClient({
-          region: this.region,
-          credentials: {
-            accessKeyId: this.accessKeyId,
-            secretAccessKey: this.secretAccessKey,
-          },
-        })
+      ? (hasStaticKeys
+          ? new BedrockRuntimeClient({
+              region: this.region,
+              credentials: {
+                accessKeyId: this.accessKeyId,
+                secretAccessKey: this.secretAccessKey,
+              },
+            })
+          : new BedrockRuntimeClient({ region: this.region }))
       : null;
   }
 
