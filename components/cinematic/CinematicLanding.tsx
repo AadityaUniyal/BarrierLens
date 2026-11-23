@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Lenis from 'lenis';
 import { 
   ArrowRight, 
@@ -25,7 +26,12 @@ import {
   Activity,
   FileCheck2,
   GitBranch,
-  ShieldAlert
+  ShieldAlert,
+  Play,
+  RotateCcw,
+  Sparkles,
+  VolumeX,
+  Radio
 } from 'lucide-react';
 import { BrandLogo } from '@/components/brand/BrandLogo';
 import { PersonaType } from '@/lib/barrierlens/types';
@@ -66,69 +72,55 @@ export function CinematicLanding({
   const [trialGoal, setTrialGoal] = useState<string>('Test modal keyboard focus escape and trap loops');
   const [trialPersona, setTrialPersona] = useState<PersonaType>('keyboard');
 
-  // Hero Preview Active Tab
-  const [previewTab, setPreviewTab] = useState<'keyboard' | 'diff' | 'voiceover' | 'report'>('keyboard');
+  // Interactive Problem-to-Proof Stages (Visual Showcase)
+  const [activeStage, setActiveStage] = useState<0 | 1 | 2>(0);
+
+  // Live Keyboard Traversal Simulator State
+  const [simStep, setSimStep] = useState<number>(1);
+  const [simTrapped, setSimTrapped] = useState<boolean>(true);
+  const [simEscaped, setSimEscaped] = useState<boolean>(false);
+  const [simPatchApplied, setSimPatchApplied] = useState<boolean>(false);
+
+  // Interactive Audio Waveform Animation State
+  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(true);
+  const [isMutedGap, setIsMutedGap] = useState<boolean>(true);
 
   // FAQ Accordion State
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  // Six Architectural Moves (Inspired by DOE Media Editorial Case-Study Structure)
-  const architecturalMoves = [
-    {
-      moveNumber: '01',
-      tag: 'TRAVERSAL ENGINE',
-      title: 'Physical Persona Traversal',
-      subtitle: 'Real Keystroke Latency & Playwright CDP Event Dispatch',
-      description: 'Static linters only inspect dead HTML strings at page load. BarrierLens connects directly to Chrome DevTools Protocol (CDP), driving physical keystrokes with realistic latency curves to exercise dynamic JavaScript modals, drawers, and form steps.',
-      badge: 'CDP Traversal Invariant',
-      impact: 'Eliminates 100% of headless static blind spots'
-    },
-    {
-      moveNumber: '02',
-      tag: 'GRAPH THEORY',
-      title: 'Tarjan SCC Cycle Resolution',
-      subtitle: 'Mathematical Closed-Loop Keyboard Trap Elimination',
-      description: 'Modal overlays frequently trap assistive users in inescapable focus loops. BarrierLens models active DOM tab flows as a directed graph and runs Tarjan’s Strongly Connected Components algorithm to mathematically prove whether focus can escape to the root document.',
-      badge: 'Tarjan SCC Invariant',
-      impact: 'Zero false alarms on focus traps (WCAG 2.1.2)'
-    },
-    {
-      moveNumber: '03',
-      tag: 'SPATIAL CONCORDANCE',
-      title: 'Kendall’s Tau-b Spatial Correlation',
-      subtitle: 'Visual Layout vs. DOM Tab Order Inversions',
-      description: 'Modern CSS flexbox and grid layouts commonly reverse visual elements while screen readers and tab keys follow the underlying DOM sequence. BarrierLens correlates physical 2D screen coordinates with DOM focus sequences using Kendall’s Tau-b rank correlation.',
-      badge: 'Tau-b > 0.85 Invariant',
-      impact: 'Identifies cognitive dissonance before release'
-    },
-    {
-      moveNumber: '04',
-      tag: 'ACOUSTIC TELEMETRY',
-      title: 'Announcement-Gap Detection',
-      subtitle: 'Dynamic Visual Mutations vs. Screen Reader Silence',
-      description: 'When checkout totals update, form validations fail, or cart items remove without aria-live attributes, sighted users see changes while blind users hear absolute silence. BarrierLens diffs DOM visual mutations against accessibility speech events.',
-      badge: 'Speech Synthesizer Invariant',
-      impact: 'Catches silent errors (WCAG 4.1.3 Level AA)'
-    },
-    {
-      moveNumber: '05',
-      tag: 'COMPILER AUTOMATION',
-      title: 'Causal AST Git Patch Synthesis',
-      subtitle: '1-Click Pull Requests with Shadow-DOM Replay Proof',
-      description: 'Instead of dumping 200 vague warnings into an issue tracker, BarrierLens parses the component Abstract Syntax Tree, generates a surgical React or HTML patch, and re-executes the traversal inside an isolated browser to cryptographically prove zero regressions.',
-      badge: 'Babel / SWC Replay Verified',
-      impact: 'Reduces remediation MTTR from 14 days to 4 minutes'
-    },
-    {
-      moveNumber: '06',
-      tag: 'LEGAL CONFORMANCE',
-      title: 'Statutory Conformance Matrices',
-      subtitle: 'Certified VPAT® 2.5 / Section 508 / EAA 2025 Ledgers',
-      description: 'Cosmetic overlay widgets are being struck down in US Federal and European courts. BarrierLens compiles verifiable, timestamped legal compliance ledgers directly from execution traces, providing impenetrable legal defense for enterprise teams.',
-      badge: 'Statutory Conformance Matrix',
-      impact: 'Certified audit documentation for General Counsel'
+  // Keyboard simulator handler
+  const handleSimTab = () => {
+    if (simPatchApplied) {
+      // With AST patch applied, clean linear progression
+      if (simStep === 1) setSimStep(2);
+      else if (simStep === 2) setSimStep(3);
+      else if (simStep === 3) setSimStep(4);
+      else setSimStep(1);
+    } else {
+      // Unfixed: Closed loop trap in modal!
+      if (simStep === 1) setSimStep(2);
+      else if (simStep === 2) setSimStep(3);
+      else if (simStep === 3) setSimStep(2); // Loop between 2 and 3!
+      else setSimStep(1);
     }
-  ];
+  };
+
+  const handleSimEscape = () => {
+    if (simPatchApplied) {
+      setSimEscaped(true);
+      setSimStep(1);
+      setTimeout(() => setSimEscaped(false), 2500);
+    } else {
+      // Trap ignored escape
+      setSimTrapped(true);
+      setTimeout(() => setSimTrapped(false), 1200);
+    }
+  };
+
+  const handleTogglePatch = () => {
+    setSimPatchApplied(!simPatchApplied);
+    setSimStep(1);
+  };
 
   const comparisonRows = [
     {
@@ -248,115 +240,68 @@ export function CinematicLanding({
   return (
     <div className="min-h-screen bg-[#07080b] text-[#f8fafc] font-sans antialiased selection:bg-white selection:text-black">
       
-      {/* Subtle Ambient Radial Lighting */}
+      {/* Subtle Ambient Radial Lighting with dot-matrix watermark */}
       <div className="ambient-mesh pointer-events-none" />
+      <div 
+        className="fixed inset-0 pointer-events-none opacity-30 z-0"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px)',
+          backgroundSize: '32px 32px'
+        }}
+      />
 
-      {/* 1. HERO SECTION: DOE Media Editorial Case-Study Masthead */}
-      <section className="relative pt-24 pb-16 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto space-y-12">
+      {/* 1. HERO SECTION: Cinematic, High-Impact & Visually Gripping */}
+      <section className="relative z-10 pt-24 pb-16 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto space-y-12">
         
-        {/* DOE Taxonomy / Category Masthead Tag */}
+        {/* Release Pill Badge */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6 text-xs font-mono uppercase tracking-widest text-white/50">
           <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#10b981] animate-ping" />
             <span className="text-[#10b981] font-bold">( Autonomous Verification )</span>
-            <span>BarrierLens &times; Enterprise Engineering</span>
+            <span className="text-white/40">&bull;</span>
+            <span className="text-white/80">BarrierLens &times; Enterprise</span>
           </div>
           <div className="flex items-center gap-3 text-[11px] text-white/40">
-            <span>VERSION 2.0 PRODUCTION</span>
+            <span className="text-white/60">PLAYWRIGHT CDP</span>
             <span>&bull;</span>
             <span className="text-emerald-400 font-semibold flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              AWS BEDROCK ACTIVE
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              AWS BEDROCK NOVA ACTIVE
             </span>
           </div>
         </div>
 
-        {/* Monolithic Master Headline */}
+        {/* Master Headline: Large, Monolithic, Shimmering */}
         <div className="space-y-6">
-          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-[-0.035em] text-white leading-[0.96]">
+          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black uppercase tracking-[-0.04em] text-white leading-[0.94]">
             Where legacy scanners guess, <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/60">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#0090ff] to-[#10b981]">
               BarrierLens proves.
             </span>
           </h1>
 
-          {/* Architectural Capability Badges Ribbon */}
-          <div className="flex flex-wrap items-center gap-2 pt-2 text-xs font-mono">
-            {['Playwright CDP', 'Tarjan SCC Cycles', 'Kendall’s Tau-b', 'Conformal Trust Tiers', 'Causal AST Patches', 'Certified VPAT® 2.5'].map((badge, idx) => (
+          <p className="text-base sm:text-xl text-white/70 max-w-3xl leading-relaxed">
+            Over 60% of critical barriers—keyboard traps, reading-order dissonance, and silent dynamic dropouts—slip past static linters. BarrierLens navigates interactive user journeys, proving failures with deterministic recordings and verified code fixes.
+          </p>
+
+          {/* Quick Capability Tags */}
+          <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-mono">
+            {['Playwright CDP Traversal', 'Tarjan SCC Graph Cycles', 'Kendall’s Tau-b Spatial', 'Live Voice Synthesizer', 'Causal AST Patches', 'Certified VPAT® 2.5'].map((tag, i) => (
               <span 
-                key={idx}
-                className="px-3 py-1 bg-white/[0.04] border border-white/10 text-white/80 rounded-sm hover:border-white/30 transition-colors"
+                key={i} 
+                className="px-3 py-1 bg-white/[0.04] border border-white/10 text-white/80 rounded-md backdrop-blur-sm"
               >
-                [ {badge} ]
+                [ {tag} ]
               </span>
             ))}
           </div>
         </div>
 
-        {/* Editorial Executive Thesis Statement */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-4 items-start border-t border-white/10">
-          <div className="lg:col-span-8 space-y-4">
-            <p className="text-lg sm:text-2xl text-white/80 font-normal leading-snug">
-              Over 60% of critical accessibility barriers—from trapped modal focus to silent dynamic mutations—slip completely past static linters. BarrierLens was engineered on a mathematical principle: digital interfaces must be provably navigable by everyone, without false promises or cosmetic overlay widgets.
-            </p>
-          </div>
-          <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                if (onOpenAuth) onOpenAuth();
-                else onLaunchStudio(trialUrl, trialGoal, trialPersona);
-              }}
-              className="w-full px-6 py-3.5 bg-white hover:bg-white/90 text-black text-xs font-mono font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-xl"
-            >
-              <span>ACCESS AUDIT STUDIO</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onLaunchStudio('/benchmark', 'Test modal keyboard focus escape', 'keyboard', true)}
-              className="w-full px-6 py-3.5 bg-white/[0.05] hover:bg-white/[0.1] text-white text-xs font-mono font-bold tracking-wider uppercase border border-white/10 flex items-center justify-center gap-2 transition-all"
-            >
-              <span>EXPLORE BENCHMARKS</span>
-            </button>
-          </div>
-        </div>
-
-        {/* High-Impact Metric Transformation Cards (Inspired by DOE 1K -> 80K+) */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6">
-          <div className="p-6 bg-[#0c0d10] border border-white/10 rounded-lg space-y-2">
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block">Production Traps</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-black text-rose-400">98%</span>
-              <span className="text-xs font-mono text-white/40">&rarr;</span>
-              <span className="text-2xl sm:text-3xl font-black text-emerald-400">0%</span>
-            </div>
-            <p className="text-xs text-white/60">Eliminated via Tarjan SCC cycle resolution</p>
-          </div>
-
-          <div className="p-6 bg-[#0c0d10] border border-white/10 rounded-lg space-y-2">
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block">Remediation MTTR</span>
-            <div className="text-2xl sm:text-3xl font-black text-white">12x Faster</div>
-            <p className="text-xs text-white/60">Automated Causal AST pull requests</p>
-          </div>
-
-          <div className="p-6 bg-[#0c0d10] border border-white/10 rounded-lg space-y-2">
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block">Code Regressions</span>
-            <div className="text-2xl sm:text-3xl font-black text-emerald-400">0 Regressions</div>
-            <p className="text-xs text-white/60">Shadow-DOM closed-loop replay proof</p>
-          </div>
-
-          <div className="p-6 bg-[#0c0d10] border border-white/10 rounded-lg space-y-2">
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block">Statutory Conformance</span>
-            <div className="text-2xl sm:text-3xl font-black text-white">100% Proven</div>
-            <p className="text-xs text-white/60">Certified VPAT® 2.5 &amp; EAA 2025 ledgers</p>
-          </div>
-        </div>
-
-        {/* Live URL Audit Omnibar */}
-        <div className="pt-4 max-w-3xl mx-auto">
-          <div className="p-2.5 rounded-xl bg-[#121316]/95 border border-white/15 shadow-2xl backdrop-blur-md flex flex-col sm:flex-row items-center gap-2">
-            <div className="flex-1 w-full flex items-center gap-2 px-3 py-2 bg-[#07080b] rounded-lg border border-white/5">
-              <Compass className="w-4 h-4 text-white/40 shrink-0" />
+        {/* Dual CTA Actions & Live URL Audit Omnibar */}
+        <div className="space-y-4 pt-2">
+          <div className="p-3 rounded-2xl bg-[#0c0d10]/90 border border-white/15 shadow-2xl backdrop-blur-xl flex flex-col md:flex-row items-center gap-3 max-w-4xl">
+            <div className="flex-1 w-full flex items-center gap-2.5 px-4 py-2.5 bg-[#07080b] rounded-xl border border-white/10">
+              <Compass className="w-4 h-4 text-[#0090ff] shrink-0" />
               <input
                 type="text"
                 value={trialUrl}
@@ -366,7 +311,7 @@ export function CinematicLanding({
               />
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex items-center gap-3 w-full md:w-auto">
               <SegmentedControl<PersonaType>
                 options={[
                   { id: 'keyboard', label: 'Keyboard', icon: Keyboard },
@@ -380,19 +325,20 @@ export function CinematicLanding({
               <button
                 type="button"
                 onClick={() => onLaunchStudio(trialUrl, trialGoal, trialPersona, true)}
-                className="px-5 py-2 bg-white hover:bg-white/90 active:scale-[0.98] text-black text-xs font-mono font-bold tracking-wider uppercase rounded-lg shrink-0 transition-all shadow-sm"
+                className="px-6 py-2.5 bg-white hover:bg-white/90 active:scale-[0.98] text-black text-xs font-mono font-bold tracking-wider uppercase rounded-xl shrink-0 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center gap-2"
               >
-                RUN AUDIT
+                <Zap className="w-3.5 h-3.5 text-black fill-black" />
+                <span>RUN AUDIT</span>
               </button>
             </div>
           </div>
 
-          <div className="flex items-center justify-center gap-3 pt-3 text-[11px] font-mono text-white/50">
-            <span>Instant Testbeds:</span>
+          <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-white/50 pl-1">
+            <span>Instant Benchmark Testbeds:</span>
             <button 
               type="button"
               onClick={() => { setTrialUrl('/fixtures/keyboard-trap'); onLaunchStudio('/fixtures/keyboard-trap', 'Test modal keyboard focus escape', 'keyboard', true); }}
-              className="text-white hover:text-emerald-400 underline transition-colors"
+              className="text-white hover:text-[#0090ff] underline flex items-center gap-1 transition-colors"
             >
               /fixtures/keyboard-trap
             </button>
@@ -400,290 +346,520 @@ export function CinematicLanding({
             <button 
               type="button"
               onClick={() => { setTrialUrl('/fixtures/accname-wcag'); onLaunchStudio('/fixtures/accname-wcag', 'Test accessible name calculation', 'screen_reader', true); }}
-              className="text-white hover:text-emerald-400 underline transition-colors"
+              className="text-white hover:text-[#10b981] underline flex items-center gap-1 transition-colors"
             >
               /fixtures/accname-wcag
             </button>
           </div>
         </div>
 
+        {/* High-Impact Metric Transformation Ribbons */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6">
+          <div className="p-6 bg-[#0c0d10] border border-white/10 rounded-2xl relative overflow-hidden group hover:border-white/20 transition-all">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl group-hover:bg-rose-500/20 transition-all" />
+            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block">Production Traps</span>
+            <div className="flex items-baseline gap-2 pt-1">
+              <span className="text-3xl font-black text-rose-400 line-through">98%</span>
+              <span className="text-xs font-mono text-white/40">&rarr;</span>
+              <span className="text-3xl font-black text-emerald-400">0%</span>
+            </div>
+            <p className="text-xs text-white/60 pt-2">Tarjan SCC graph cycle elimination</p>
+          </div>
+
+          <div className="p-6 bg-[#0c0d10] border border-white/10 rounded-2xl relative overflow-hidden group hover:border-white/20 transition-all">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-[#0090ff]/10 rounded-full blur-2xl group-hover:bg-[#0090ff]/20 transition-all" />
+            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block">Remediation MTTR</span>
+            <div className="text-3xl font-black text-white pt-1">12x Faster</div>
+            <p className="text-xs text-white/60 pt-2">Automated AST Git pull requests</p>
+          </div>
+
+          <div className="p-6 bg-[#0c0d10] border border-white/10 rounded-2xl relative overflow-hidden group hover:border-white/20 transition-all">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all" />
+            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block">Code Regressions</span>
+            <div className="text-3xl font-black text-emerald-400 pt-1">0 Regressions</div>
+            <p className="text-xs text-white/60 pt-2">Shadow-DOM replay verification</p>
+          </div>
+
+          <div className="p-6 bg-[#0c0d10] border border-white/10 rounded-2xl relative overflow-hidden group hover:border-white/20 transition-all">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all" />
+            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block">Statutory Conformance</span>
+            <div className="text-3xl font-black text-white pt-1">100% Proven</div>
+            <p className="text-xs text-white/60 pt-2">Certified VPAT® 2.5 &amp; EAA 2025 ledgers</p>
+          </div>
+        </div>
+
       </section>
 
-      {/* 2. THE SIX ARCHITECTURAL MOVES (DOE Media Narrative Core) */}
-      <section className="py-24 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto border-t border-white/10 space-y-16">
+      {/* 2. THE VISUAL PROBLEM VS. SOLUTION SHOWCASE (Interactive Scroll Gallery) */}
+      <section className="relative z-10 py-24 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto border-t border-white/10 space-y-12">
         
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#10b981]">
-            <span>( ARCHITECTURAL METHODOLOGY )</span>
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#0090ff]">
+              <Radio className="w-3.5 h-3.5 animate-pulse" />
+              <span>( VISUAL VERIFICATION LAB )</span>
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-tight">
+              See what static linters miss. <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-amber-400 to-emerald-400">
+                Experience the difference live.
+              </span>
+            </h2>
           </div>
-          <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-[1.05]">
-            Six architectural moves that engineered <br className="hidden sm:inline" />
-            the proof engine.
-          </h2>
-          <p className="text-sm sm:text-base text-white/60 max-w-2xl leading-relaxed">
-            How BarrierLens dismantled the superficial testing paradigm of legacy linters and built the industry’s first deterministic accessibility proof pipeline.
-          </p>
-        </div>
 
-        {/* Moves Stack */}
-        <div className="space-y-8">
-          {architecturalMoves.map((move, index) => (
-            <div 
-              key={index}
-              className="p-8 sm:p-10 rounded-2xl bg-[#0c0d10] border border-white/10 hover:border-white/20 transition-all space-y-6"
+          {/* Stage Switcher Tabs */}
+          <div className="flex items-center p-1 bg-[#121316] border border-white/10 rounded-xl text-xs font-mono">
+            <button
+              type="button"
+              onClick={() => setActiveStage(0)}
+              className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
+                activeStage === 0 
+                  ? 'bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold shadow-lg' 
+                  : 'text-white/60 hover:text-white'
+              }`}
             >
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/5 pb-4">
-                <div className="flex items-center gap-3">
-                  <span className="px-2.5 py-1 bg-white/10 text-white font-mono text-xs font-bold rounded-sm">
-                    MOVE {move.moveNumber}
-                  </span>
-                  <span className="text-xs font-mono text-[#10b981] uppercase tracking-wider">
-                    {move.tag}
-                  </span>
-                </div>
-                <div className="text-xs font-mono text-white/40">
-                  {move.badge}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                <div className="lg:col-span-5 space-y-2">
-                  <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                    {move.title}
-                  </h3>
-                  <p className="text-xs font-mono text-white/50 uppercase tracking-wide">
-                    {move.subtitle}
-                  </p>
-                </div>
-
-                <div className="lg:col-span-7 space-y-4">
-                  <p className="text-sm sm:text-base text-white/70 leading-relaxed">
-                    {move.description}
-                  </p>
-                  <div className="pt-2 flex items-center gap-2 text-xs font-mono text-emerald-400">
-                    <CheckCircle2 className="w-4 h-4 shrink-0" />
-                    <span>{move.impact}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+              <Keyboard className="w-3.5 h-3.5 text-rose-400" />
+              <span>01. The Trap</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveStage(1)}
+              className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
+                activeStage === 1 
+                  ? 'bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold shadow-lg' 
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              <VolumeX className="w-3.5 h-3.5 text-amber-400" />
+              <span>02. Speech Silence</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveStage(2)}
+              className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
+                activeStage === 2 
+                  ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold shadow-lg' 
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              <GitPullRequest className="w-3.5 h-3.5 text-emerald-400" />
+              <span>03. The AST Fix</span>
+            </button>
+          </div>
         </div>
 
-      </section>
+        {/* STAGE 01: THE INVISIBLE KEYBOARD TRAP (Interactive Simulator) */}
+        {activeStage === 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-[#0c0d10] border border-white/10 p-8 sm:p-12 rounded-3xl relative overflow-hidden">
+            <div className="lg:col-span-6 space-y-6">
+              <div className="space-y-2">
+                <span className="px-2.5 py-1 bg-rose-500/10 border border-rose-500/30 text-rose-400 font-mono text-xs font-bold rounded">
+                  PROBLEM 01 &bull; WCAG 2.1.2 LEVEL A
+                </span>
+                <h3 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+                  The Closed-Loop Keyboard Trap
+                </h3>
+                <p className="text-sm sm:text-base text-white/70 leading-relaxed">
+                  Static linters inspect HTML tags and give it 100% green. But when a real keyboard user opens a modal, focus gets trapped in a cycle and the Escape key is silently ignored.
+                </p>
+              </div>
 
-      {/* 3. PRODUCT PREVIEW WINDOW: Interactive Verification Cockpit */}
-      <section className="px-6 sm:px-8 lg:px-12 max-w-5xl mx-auto pb-24">
-        <div className="rounded-2xl border border-white/10 bg-[#0c0d10] shadow-2xl overflow-hidden">
-          
-          {/* Window Chrome Header */}
-          <div className="px-4 py-3 bg-[#121316] border-b border-white/10 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-white/20" />
-              <span className="w-3 h-3 rounded-full bg-white/20" />
-              <span className="w-3 h-3 rounded-full bg-white/20" />
-              <span className="text-xs font-mono text-white/50 ml-2">Interactive Verification Cockpit</span>
-            </div>
-
-            {/* Window Tabs */}
-            <div className="flex items-center gap-1 bg-[#07080b] p-1 rounded-lg border border-white/5 text-xs font-mono">
-              <button
-                type="button"
-                onClick={() => setPreviewTab('keyboard')}
-                className={`px-3 py-1 rounded-md transition-all ${
-                  previewTab === 'keyboard'
-                    ? 'bg-white text-black font-semibold'
-                    : 'text-white/60 hover:text-white'
-                }`}
-              >
-                Keyboard Path
-              </button>
-              <button
-                type="button"
-                onClick={() => setPreviewTab('diff')}
-                className={`px-3 py-1 rounded-md transition-all ${
-                  previewTab === 'diff'
-                    ? 'bg-white text-black font-semibold'
-                    : 'text-white/60 hover:text-white'
-                }`}
-              >
-                Code Fix PR
-              </button>
-              <button
-                type="button"
-                onClick={() => setPreviewTab('voiceover')}
-                className={`px-3 py-1 rounded-md transition-all ${
-                  previewTab === 'voiceover'
-                    ? 'bg-white text-black font-semibold'
-                    : 'text-white/60 hover:text-white'
-                }`}
-              >
-                Voice Transcript
-              </button>
-              <button
-                type="button"
-                onClick={() => setPreviewTab('report')}
-                className={`px-3 py-1 rounded-md transition-all ${
-                  previewTab === 'report'
-                    ? 'bg-white text-black font-semibold'
-                    : 'text-white/60 hover:text-white'
-                }`}
-              >
-                Compliance Score
-              </button>
-            </div>
-          </div>
-
-          {/* Window Canvas Body */}
-          <div className="p-6 sm:p-8 space-y-6">
-            
-            {/* Tab 1: Keyboard Path */}
-            {previewTab === 'keyboard' && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between text-xs font-mono text-white/60 border-b border-white/5 pb-3">
-                  <span>LIVE TRAVERSAL: MODAL DIALOG FOCUS</span>
-                  <span className="text-rose-400 font-semibold flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                    KEYBOARD TRAP DETECTED
+              {/* Hands-On Interactive Stepper */}
+              <div className="p-5 bg-[#121316] border border-white/10 rounded-2xl space-y-4">
+                <div className="flex items-center justify-between text-xs font-mono">
+                  <span className="text-white/60">HANDS-ON SIMULATOR</span>
+                  <span className={simPatchApplied ? "text-emerald-400 font-bold" : "text-rose-400 font-bold"}>
+                    {simPatchApplied ? "STATUS: AST PATCH ACTIVE" : "STATUS: TRAPPED FOCUS LOOP"}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                  <div className="p-4 rounded-xl bg-[#121316] border border-white/5 space-y-1 text-center">
-                    <span className="text-[10px] font-mono text-white/40">STEP 1</span>
-                    <p className="text-sm font-semibold text-white">#nav-link</p>
-                    <span className="text-xs text-emerald-400 font-mono">Tab &rarr; Next</span>
+                {/* Simulated Focus Ring Nodes */}
+                <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
+                  <div className={`p-3 rounded-lg border transition-all ${
+                    simStep === 1 
+                      ? 'bg-[#0090ff]/20 border-[#0090ff] text-white shadow-[0_0_15px_rgba(0,144,255,0.4)]' 
+                      : 'bg-[#07080b] border-white/5 text-white/40'
+                  }`}>
+                    1. #nav-bar
                   </div>
-                  <div className="p-4 rounded-xl bg-[#121316] border border-white/5 space-y-1 text-center">
-                    <span className="text-[10px] font-mono text-white/40">STEP 2</span>
-                    <p className="text-sm font-semibold text-white">#open-modal-btn</p>
-                    <span className="text-xs text-emerald-400 font-mono">Enter &rarr; Open</span>
+                  <div className={`p-3 rounded-lg border transition-all ${
+                    simStep === 2 
+                      ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.4)]' 
+                      : 'bg-[#07080b] border-white/5 text-white/40'
+                  }`}>
+                    2. #modal-input
                   </div>
-                  <div className="p-4 rounded-xl bg-rose-950/20 border border-rose-500/30 space-y-1 text-center">
-                    <span className="text-[10px] font-mono text-rose-400 font-semibold">STEP 3 (TRAPPED)</span>
-                    <p className="text-sm font-semibold text-white">#newsletter-modal</p>
-                    <span className="text-xs text-rose-400 font-mono">Tab &rarr; #claim-btn</span>
-                  </div>
-                  <div className="p-4 rounded-xl bg-rose-950/20 border border-rose-500/30 space-y-1 text-center">
-                    <span className="text-[10px] font-mono text-rose-400 font-semibold">STEP 4 (LOOP)</span>
-                    <p className="text-sm font-semibold text-white">#claim-btn</p>
-                    <span className="text-xs text-rose-400 font-mono">Escape key ignored!</span>
+                  <div className={`p-3 rounded-lg border transition-all ${
+                    simStep === 3 
+                      ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.4)]' 
+                      : 'bg-[#07080b] border-white/5 text-white/40'
+                  }`}>
+                    3. #submit-btn
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-[#121316] border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-white/70">
-                  <span className="font-mono">Tested Keystroke Path: [Tab &rarr; Tab &rarr; Enter &rarr; Tab &rarr; Escape]</span>
+                {/* Trapped Alert Banner */}
+                {simTrapped && !simPatchApplied && (
+                  <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg text-xs font-mono text-rose-300 flex items-center gap-2 animate-bounce">
+                    <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>Escape key ignored! User cannot leave the modal dialog.</span>
+                  </div>
+                )}
+
+                {simEscaped && (
+                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-xs font-mono text-emerald-300 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>Focus cleanly escaped back to document root!</span>
+                  </div>
+                )}
+
+                {/* Interactive Controls */}
+                <div className="flex flex-wrap items-center gap-2 pt-1">
                   <button
                     type="button"
-                    onClick={() => onLaunchStudio('/fixtures/keyboard-trap', 'Test modal keyboard focus escape', 'keyboard')}
-                    className="text-white hover:underline font-semibold flex items-center gap-1.5"
+                    onClick={handleSimTab}
+                    className="px-4 py-2 bg-white text-black text-xs font-mono font-bold rounded-lg hover:bg-white/90 transition-all flex items-center gap-1.5"
                   >
-                    <span>Run in Audit Studio</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
+                    <Keyboard className="w-3.5 h-3.5" />
+                    <span>PRESS TAB KEY</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSimEscape}
+                    className="px-4 py-2 bg-[#17181c] text-white border border-white/10 text-xs font-mono font-bold rounded-lg hover:bg-white/10 transition-all"
+                  >
+                    PRESS ESCAPE
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleTogglePatch}
+                    className="px-4 py-2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-mono font-bold rounded-lg hover:bg-emerald-500/30 transition-all ml-auto"
+                  >
+                    {simPatchApplied ? "REVERT TO BUGGY" : "APPLY AST PATCH"}
                   </button>
                 </div>
               </div>
-            )}
+            </div>
 
-            {/* Tab 2: Code Diff PR */}
-            {previewTab === 'diff' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between text-xs font-mono text-white/60 border-b border-white/5 pb-3">
-                  <span>AUTOMATED CODE FIX &middot; ZERO REGRESSION</span>
-                  <span className="text-emerald-400 font-semibold">READY TO MERGE</span>
+            {/* Generated Cinematic Image with Glowing HUD */}
+            <div className="lg:col-span-6 relative rounded-2xl overflow-hidden border border-white/15 shadow-2xl group">
+              <div className="relative aspect-[16/10] w-full">
+                <Image
+                  src="/images/keyboard-trap-problem.jpg"
+                  alt="Keyboard trap circular focus lockout visualization"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                />
+              </div>
+              <div className="absolute bottom-4 left-4 right-4 p-3 bg-black/80 backdrop-blur-md border border-white/10 rounded-xl text-xs font-mono text-white/80 flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                  Tarjan Cycle Detected in #newsletter-modal
+                </span>
+                <span className="text-white/40">Step 3 &rarr; Step 2</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STAGE 02: SCREEN READER SILENCE (Audio Equalizer Visualizer) */}
+        {activeStage === 1 && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-[#0c0d10] border border-white/10 p-8 sm:p-12 rounded-3xl relative overflow-hidden">
+            <div className="lg:col-span-6 space-y-6">
+              <div className="space-y-2">
+                <span className="px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 font-mono text-xs font-bold rounded">
+                  PROBLEM 02 &bull; WCAG 4.1.3 LEVEL AA
+                </span>
+                <h3 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+                  Assistive Silence &amp; Dynamic Mutations
+                </h3>
+                <p className="text-sm sm:text-base text-white/70 leading-relaxed">
+                  When discounts apply, items delete, or form validation fails, sighted users instantly see UI text change. Blind users receive zero feedback unless aria-live is dynamically triggered.
+                </p>
+              </div>
+
+              {/* Dynamic Soundwave Equalizer */}
+              <div className="p-5 bg-[#121316] border border-white/10 rounded-2xl space-y-4">
+                <div className="flex items-center justify-between text-xs font-mono">
+                  <span className="text-white/60">LIVE SPEECH SYNTHESIZER TELEMETRY</span>
+                  <span className={isMutedGap ? "text-amber-400 font-bold" : "text-emerald-400 font-bold"}>
+                    {isMutedGap ? "SPEECH GAP: 0 EVENTS" : "SPEECH ANNOUNCED"}
+                  </span>
                 </div>
 
-                <div className="p-4 rounded-xl bg-[#07080b] border border-white/5 font-mono text-xs leading-relaxed overflow-x-auto space-y-1">
-                  <div className="text-rose-400">- &lt;div id=&quot;newsletter-modal&quot; className=&quot;modal-overlay&quot;&gt;</div>
-                  <div className="text-emerald-400">+ &lt;div id=&quot;newsletter-modal&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot; onKeyDown=&#123;handleEscape&#125; className=&quot;modal-overlay&quot;&gt;</div>
-                  <div className="text-white/40">    &lt;h2&gt;Subscribe for News&lt;/h2&gt;</div>
-                  <div className="text-rose-400">-   &lt;button id=&quot;close-btn&quot;&gt;&lt;CloseIcon /&gt;&lt;/button&gt;</div>
-                  <div className="text-emerald-400">+   &lt;button id=&quot;close-btn&quot; aria-label=&quot;Close dialog and restore focus&quot;&gt;&lt;CloseIcon /&gt;&lt;/button&gt;</div>
+                {/* Animated Audio Equalizer Bars */}
+                <div className="h-16 bg-[#07080b] border border-white/5 rounded-xl flex items-center justify-center gap-1.5 px-4 overflow-hidden">
+                  {[24, 45, 12, 60, 32, 18, 55, 40, 28, 50, 15, 38, 48, 20, 58, 30, 44, 22].map((height, i) => (
+                    <div
+                      key={i}
+                      className={`w-2 rounded-full transition-all duration-300 ${
+                        isMutedGap 
+                          ? i > 7 ? 'h-1 bg-rose-500/40' : 'h-3 bg-white/20' 
+                          : 'bg-emerald-400 animate-pulse'
+                      }`}
+                      style={{ height: isMutedGap && i > 7 ? '2px' : `${height}px` }}
+                    />
+                  ))}
+                </div>
+
+                <div className="p-3 bg-black/60 rounded-xl border border-white/5 text-xs font-mono space-y-1">
+                  <div className="flex justify-between text-white/50">
+                    <span>DOM Visual Mutation:</span>
+                    <span className="text-emerald-400 font-bold">Total: $120.00 &rarr; $96.00 (-20%)</span>
+                  </div>
+                  <div className="flex justify-between text-white/50">
+                    <span>Synthesizer Audio Event:</span>
+                    <span className={isMutedGap ? "text-rose-400 font-bold" : "text-emerald-400 font-bold"}>
+                      {isMutedGap ? "[SILENCE] (aria-live missing)" : "\"Discount applied. Total is now $96.00\""}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setIsMutedGap(!isMutedGap)}
+                    className="px-4 py-2 bg-white text-black text-xs font-mono font-bold rounded-lg hover:bg-white/90 transition-all flex items-center gap-2"
+                  >
+                    <Volume2 className="w-3.5 h-3.5" />
+                    <span>{isMutedGap ? "ADD ARIA-LIVE (HEAR SPEECH)" : "REMOVE ARIA-LIVE (TEST GAP)"}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Generated Cinematic Image */}
+            <div className="lg:col-span-6 relative rounded-2xl overflow-hidden border border-white/15 shadow-2xl group">
+              <div className="relative aspect-[16/10] w-full">
+                <Image
+                  src="/images/screen-reader-silence.jpg"
+                  alt="Speech synthesizer gap and screen reader flatline silence"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              </div>
+              <div className="absolute bottom-4 left-4 right-4 p-3 bg-black/80 backdrop-blur-md border border-white/10 rounded-xl text-xs font-mono text-white/80 flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  Dynamic Mutation without aria-live announcement
+                </span>
+                <span className="text-amber-400">WCAG 4.1.3</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STAGE 03: THE AST PROOF ENGINE & AUTOMATED REPAIR */}
+        {activeStage === 2 && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-[#0c0d10] border border-white/10 p-8 sm:p-12 rounded-3xl relative overflow-hidden">
+            <div className="lg:col-span-6 space-y-6">
+              <div className="space-y-2">
+                <span className="px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-xs font-bold rounded">
+                  SOLUTION 03 &bull; CAUSAL AST PATCH SYNTHESIS
+                </span>
+                <h3 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+                  1-Click Verified Code Fixes
+                </h3>
+                <p className="text-sm sm:text-base text-white/70 leading-relaxed">
+                  BarrierLens doesn’t just output a PDF of complaints. It parses your source-code Abstract Syntax Tree, generates the exact React/HTML diff, re-runs the traversal in a shadow browser to prove zero regressions, and opens a GitHub PR.
+                </p>
+              </div>
+
+              {/* Code Diff Box */}
+              <div className="p-5 bg-[#121316] border border-white/10 rounded-2xl space-y-3 font-mono text-xs">
+                <div className="flex items-center justify-between text-white/50 border-b border-white/5 pb-2">
+                  <span>components/NewsletterModal.tsx</span>
+                  <span className="text-emerald-400 font-bold">REPLAY PROOF: PASSED</span>
+                </div>
+
+                <div className="p-3 bg-[#07080b] rounded-lg border border-white/5 space-y-1 overflow-x-auto text-[11px] leading-relaxed">
+                  <div className="text-rose-400">- &lt;div id=&quot;newsletter-modal&quot; className=&quot;modal&quot;&gt;</div>
+                  <div className="text-emerald-400">+ &lt;div id=&quot;newsletter-modal&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot; onKeyDown=&#123;handleEscape&#125;&gt;</div>
+                  <div className="text-white/40">    &lt;h2&gt;Sign up for updates&lt;/h2&gt;</div>
+                  <div className="text-rose-400">-   &lt;button id=&quot;close-btn&quot;&gt;&lt;X /&gt;&lt;/button&gt;</div>
+                  <div className="text-emerald-400">+   &lt;button id=&quot;close-btn&quot; aria-label=&quot;Close dialog&quot;&gt;&lt;X /&gt;&lt;/button&gt;</div>
                   <div className="text-white/40">  &lt;/div&gt;</div>
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-white/60 pt-1">
-                  <span>Fixes WCAG 2.1.2 (Keyboard Trap) and WCAG 4.1.2 (Name/Role/Value)</span>
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-white/40 text-[11px]">Fixes WCAG 2.1.2 &amp; 4.1.2</span>
                   <button
                     type="button"
-                    onClick={() => onLaunchStudio('/fixtures/accname-wcag', 'Review verified code diff', 'screen_reader')}
-                    className="text-white hover:underline font-semibold flex items-center gap-1"
+                    onClick={() => onLaunchStudio('/fixtures/accname-wcag', 'Review verified AST diff', 'keyboard', true)}
+                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-mono font-bold rounded-lg transition-all flex items-center gap-1.5"
                   >
-                    <span>Export to GitHub PR</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
+                    <GitBranch className="w-3.5 h-3.5" />
+                    <span>EXPORT GITHUB PR</span>
                   </button>
                 </div>
               </div>
-            )}
+            </div>
 
-            {/* Tab 3: Voice Transcript */}
-            {previewTab === 'voiceover' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between text-xs font-mono text-white/60 border-b border-white/5 pb-3">
-                  <span>SCREEN READER SIMULATION TRANSCRIPT</span>
-                  <span className="text-amber-400 font-semibold">SPEECH GAP DETECTED</span>
+            {/* Generated Cinematic Image */}
+            <div className="lg:col-span-6 relative rounded-2xl overflow-hidden border border-white/15 shadow-2xl group">
+              <div className="relative aspect-[16/10] w-full">
+                <Image
+                  src="/images/proof-engine-remediation.jpg"
+                  alt="3D node graph and AST code remediation diff"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              </div>
+              <div className="absolute bottom-4 left-4 right-4 p-3 bg-black/80 backdrop-blur-md border border-white/10 rounded-xl text-xs font-mono text-white/80 flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  AST Node Mutation Replay: 0 Regressions
+                </span>
+                <span className="text-emerald-400 font-bold">100% PASS</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </section>
+
+      {/* 3. ASYMMETRICAL ARCHITECTURAL BENTO GRID (Visual Tech Depth) */}
+      <section className="py-24 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto border-t border-white/10 space-y-12">
+        <div className="space-y-3">
+          <span className="text-xs font-mono uppercase tracking-widest text-[#10b981]">
+            ( DEEP ARCHITECTURE )
+          </span>
+          <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-tight">
+            Engineered for high-consequence interfaces.
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          
+          {/* Card 1 (Large - Col 8): Tarjan SCC Graph Cycle Visualizer */}
+          <div className="md:col-span-8 p-8 rounded-3xl bg-[#0c0d10] border border-white/10 space-y-6 relative overflow-hidden group hover:border-white/20 transition-all">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#0090ff]/10 border border-[#0090ff]/30 flex items-center justify-center text-[#0090ff]">
+                  <Binary className="w-5 h-5" />
                 </div>
-
-                <div className="p-4 rounded-xl bg-[#07080b] border border-white/5 space-y-3 text-xs leading-relaxed">
-                  <div className="flex items-start gap-3">
-                    <Volume2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="text-white">&quot;Special Promotion, dialog opened.&quot;</strong> &mdash; User activated button.
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3 rounded-lg bg-rose-950/20 border border-rose-500/20 text-rose-300">
-                    <Volume2 className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                    <div>
-                      <strong>[Assistive Silence]:</strong> Dynamic discount applied, total changed from $100 to $80. Because aria-live is absent, screen reader users receive zero speech announcement.
-                    </div>
-                  </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Tarjan SCC Directed Graph Engine</h3>
+                  <p className="text-xs font-mono text-white/50">WCAG 2.1.2 Closed-Loop Cycle Invariant</p>
                 </div>
               </div>
-            )}
+              <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-md text-xs font-mono text-emerald-400">
+                O(V + E) Line Time
+              </span>
+            </div>
 
-            {/* Tab 4: Compliance Report */}
-            {previewTab === 'report' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between text-xs font-mono text-white/60 border-b border-white/5 pb-3">
-                  <span>AUDIT SUMMARY &middot; EXECUTIVE REPORT</span>
-                  <span className="text-emerald-400 font-semibold">14/14 INVARIANTS CHECKED</span>
-                </div>
+            <p className="text-sm text-white/70 leading-relaxed max-w-xl">
+              Focus is modeled as a directed graph $G = (V, E)$. When a user tabs into a modal, the engine detects Strongly Connected Components ($SCC$) containing multiple focus nodes without an exit path back to root $v_0$.
+            </p>
 
-                <div className="p-4 rounded-xl bg-[#07080b] border border-white/5 space-y-3 text-xs">
-                  <div className="flex justify-between border-b border-white/5 pb-2">
-                    <span className="text-white/60">Target Journey</span>
-                    <span className="text-white font-medium">Checkout &amp; Onboarding Flow</span>
-                  </div>
-                  <div className="flex justify-between border-b border-white/5 pb-2">
-                    <span className="text-white/60">Compliance Rating</span>
-                    <span className="text-emerald-400 font-semibold">WCAG 2.2 Level AAA Ready</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/60">Legal Jurisdiction</span>
-                    <span className="text-white">European Accessibility Act (EAA 2025) &amp; ADA §508</span>
-                  </div>
+            {/* Visual SVG Directed Graph Node Animation */}
+            <div className="h-44 bg-[#07080b] border border-white/5 rounded-2xl flex items-center justify-around px-8 relative overflow-hidden">
+              <div className="text-center space-y-1 z-10">
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center text-xs font-mono text-emerald-400 font-bold shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                  v0: root
                 </div>
+                <span className="text-[10px] font-mono text-white/40">Document</span>
               </div>
-            )}
 
+              <div className="w-12 h-0.5 bg-emerald-500/40 relative">
+                <div className="absolute -top-1 right-0 w-2 h-2 border-t-2 border-r-2 border-emerald-400 rotate-45" />
+              </div>
+
+              <div className="text-center space-y-1 z-10">
+                <div className="w-12 h-12 rounded-xl bg-rose-500/20 border border-rose-500 flex items-center justify-center text-xs font-mono text-rose-300 font-bold shadow-[0_0_20px_rgba(244,63,94,0.4)] animate-pulse">
+                  v1: modal
+                </div>
+                <span className="text-[10px] font-mono text-rose-400 font-bold">TRAP CYCLE</span>
+              </div>
+
+              <div className="w-12 h-0.5 bg-rose-500/60 relative">
+                <div className="absolute -top-1 right-0 w-2 h-2 border-t-2 border-r-2 border-rose-400 rotate-45" />
+              </div>
+
+              <div className="text-center space-y-1 z-10">
+                <div className="w-12 h-12 rounded-xl bg-rose-500/20 border border-rose-500 flex items-center justify-center text-xs font-mono text-rose-300 font-bold">
+                  v2: input
+                </div>
+                <span className="text-[10px] font-mono text-white/40">Inescapable</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2 (Col 4): Kendall’s Tau-b Spatial Concordance */}
+          <div className="md:col-span-4 p-8 rounded-3xl bg-[#0c0d10] border border-white/10 space-y-6 flex flex-col justify-between hover:border-white/20 transition-all">
+            <div className="space-y-4">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                <Eye className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-lg font-bold text-white">Kendall’s Tau-b Correlation</h3>
+                <p className="text-xs font-mono text-purple-400">Visual vs. Tab Order $\tau_b &gt; 0.85$</p>
+              </div>
+              <p className="text-xs sm:text-sm text-white/70 leading-relaxed">
+                Detects CSS flex-direction reversals and grid re-orderings where reading order inverts the visible UI layout.
+              </p>
+            </div>
+
+            <div className="p-3 bg-[#07080b] rounded-xl border border-white/5 font-mono text-xs text-white/60 flex justify-between items-center">
+              <span>Concordance Score:</span>
+              <span className="text-emerald-400 font-bold">0.96 / 1.00 (CONGRUENT)</span>
+            </div>
+          </div>
+
+          {/* Card 3 (Col 5): Shadow DOM Replay Verification */}
+          <div className="md:col-span-5 p-8 rounded-3xl bg-[#0c0d10] border border-white/10 space-y-6 hover:border-white/20 transition-all">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+              <Cpu className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-lg font-bold text-white">Zero Regression Replay</h3>
+              <p className="text-xs font-mono text-emerald-400">Isolated Headless CDP Verification</p>
+            </div>
+            <p className="text-xs sm:text-sm text-white/70 leading-relaxed">
+              Every synthesized AST code patch is spun up in an isolated shadow container. The exact traversal path is re-executed to guarantee no other element broke.
+            </p>
+          </div>
+
+          {/* Card 4 (Col 7): Statutory VPAT® 2.5 Conformance */}
+          <div className="md:col-span-7 p-8 rounded-3xl bg-[#0c0d10] border border-white/10 space-y-6 hover:border-white/20 transition-all">
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <Scale className="w-5 h-5" />
+              </div>
+              <span className="px-3 py-1 bg-white/5 border border-white/10 text-xs font-mono text-amber-300 rounded">
+                Executive Legal Defense
+              </span>
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-lg font-bold text-white">Statutory Conformance Ledgers</h3>
+              <p className="text-xs font-mono text-white/50">VPAT® 2.5 &bull; EAA 2025 &bull; Section 508</p>
+            </div>
+            <p className="text-xs sm:text-sm text-white/70 leading-relaxed">
+              Generate court-admissible audit ledgers mapped line-by-line to statutory requirements. Every finding links to cryptographic Playwright video captures and DOM trace logs.
+            </p>
           </div>
 
         </div>
       </section>
 
-      {/* 4. THE UNCOMPROMISING CONTRAST MATRIX (DOE Style) */}
+      {/* 4. THE UNCOMPROMISING CONTRAST MATRIX */}
       <section id="comparison" className="py-24 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto space-y-12 border-t border-white/10">
         
-        <div className="space-y-4">
+        <div className="space-y-3">
           <span className="text-xs font-mono uppercase tracking-widest text-[#10b981]">
             ( COMPETITIVE ARCHITECTURE )
           </span>
-          <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-[1.05]">
+          <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-tight">
             How BarrierLens compares to alternatives.
           </h2>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#0c0d10]">
+        <div className="overflow-x-auto rounded-3xl border border-white/10 bg-[#0c0d10]">
           <table className="w-full text-left font-sans text-xs sm:text-sm divide-y divide-white/10">
             <thead>
               <tr className="bg-[#121316] text-white/70 text-xs uppercase tracking-wider font-mono">
@@ -711,23 +887,20 @@ export function CinematicLanding({
       {/* 5. TRANSPARENT PRICING & TIERS */}
       <section id="pricing" className="py-24 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto space-y-16 border-t border-white/10">
         
-        <div className="space-y-4">
+        <div className="space-y-3">
           <span className="text-xs font-mono uppercase tracking-widest text-[#10b981]">
             ( COMMERCIAL TIERS )
           </span>
-          <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-[1.05]">
+          <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-tight">
             Predictable plans for teams of any size.
           </h2>
-          <p className="text-sm text-white/60 leading-relaxed max-w-2xl">
-            Start free, verify your first user journey, and upgrade when your team needs automated GitHub pull requests.
-          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {pricingTiers.map((tier, idx) => (
             <div 
               key={idx}
-              className={`p-8 rounded-2xl border flex flex-col justify-between space-y-8 ${
+              className={`p-8 rounded-3xl border flex flex-col justify-between space-y-8 ${
                 tier.highlight 
                   ? 'bg-[#14161b] border-white/30 shadow-2xl relative' 
                   : 'bg-[#0c0d10] border-white/10'
@@ -765,7 +938,7 @@ export function CinematicLanding({
                   if (onOpenAuth) onOpenAuth();
                   else onLaunchStudio('/benchmark', 'Run default benchmark audit', 'keyboard');
                 }}
-                className={`w-full py-3 rounded-lg text-xs font-mono font-bold tracking-wider uppercase transition-all ${
+                className={`w-full py-3 rounded-xl text-xs font-mono font-bold tracking-wider uppercase transition-all ${
                   tier.highlight
                     ? 'bg-white text-black hover:bg-white/90 shadow-lg'
                     : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'
@@ -782,11 +955,11 @@ export function CinematicLanding({
       {/* 6. FREQUENTLY ASKED QUESTIONS */}
       <section id="faq" className="py-24 px-6 sm:px-8 lg:px-12 max-w-5xl mx-auto space-y-12 border-t border-white/10">
         
-        <div className="space-y-4">
+        <div className="space-y-3">
           <span className="text-xs font-mono uppercase tracking-widest text-[#10b981]">
             ( COMMON INQUIRIES )
           </span>
-          <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-[1.05]">
+          <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-tight">
             Frequently Asked Questions
           </h2>
         </div>
@@ -795,7 +968,7 @@ export function CinematicLanding({
           {faqs.map((faq, idx) => (
             <div 
               key={idx}
-              className="rounded-xl border border-white/10 bg-[#0c0d10] overflow-hidden transition-colors"
+              className="rounded-2xl border border-white/10 bg-[#0c0d10] overflow-hidden transition-colors"
             >
               <button
                 type="button"
@@ -824,7 +997,7 @@ export function CinematicLanding({
             <span className="text-xs font-mono uppercase tracking-widest text-[#10b981]">
               ( PRODUCTION READINESS )
             </span>
-            <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-[1.05]">
+            <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-tight">
               Make your web application provably accessible to every human.
             </h2>
             <p className="text-sm text-white/60 leading-relaxed">
@@ -839,7 +1012,7 @@ export function CinematicLanding({
                 if (onOpenAuth) onOpenAuth();
                 else onLaunchStudio(trialUrl, trialGoal, trialPersona);
               }}
-              className="px-8 py-3.5 bg-white hover:bg-white/90 text-black text-xs font-mono font-bold tracking-wider uppercase rounded-lg flex items-center justify-center gap-2 transition-all shadow-xl"
+              className="px-8 py-3.5 bg-white hover:bg-white/90 text-black text-xs font-mono font-bold tracking-wider uppercase rounded-xl flex items-center justify-center gap-2 transition-all shadow-xl"
             >
               <span>ACCESS AUDIT COCKPIT</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -847,7 +1020,7 @@ export function CinematicLanding({
             <button
               type="button"
               onClick={() => onLaunchStudio('/benchmark', 'Test modal keyboard focus escape', 'keyboard')}
-              className="px-6 py-3.5 bg-white/5 hover:bg-white/10 text-white text-xs font-mono font-bold tracking-wider uppercase rounded-lg border border-white/10 transition-all"
+              className="px-6 py-3.5 bg-white/5 hover:bg-white/10 text-white text-xs font-mono font-bold tracking-wider uppercase rounded-xl border border-white/10 transition-all"
             >
               EXPLORE BENCHMARKS
             </button>
