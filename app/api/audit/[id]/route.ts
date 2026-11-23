@@ -14,9 +14,11 @@ export async function GET(
     return NextResponse.json({ error: 'Audit run ID is required' }, { status: 400 });
   }
 
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
   try {
-    // 1. Query runs table in Neon Postgres
-    const runRows = await sql`
+    // 1. Query runs table in Neon Postgres if ID is valid UUID
+    const runRows = isUuid ? await sql`
       SELECT 
         id, 
         persona, 
@@ -33,7 +35,7 @@ export async function GET(
       FROM runs
       WHERE id = ${id}
       LIMIT 1;
-    `;
+    ` : [];
 
     if (runRows.length > 0) {
       const r = runRows[0];

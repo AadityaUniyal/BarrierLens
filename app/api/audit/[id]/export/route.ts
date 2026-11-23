@@ -299,8 +299,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     let finalRun: AuditRun | null = null;
     let findings: BarrierFinding[] = [];
 
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
     try {
-      const rows = await sql`SELECT * FROM runs WHERE id = ${id} LIMIT 1`;
+      const rows = isUuid ? await sql`SELECT * FROM runs WHERE id = ${id} LIMIT 1` : [];
       if (rows && rows.length > 0) {
         const r = rows[0];
         if (r.payload && typeof r.payload === 'object') {
