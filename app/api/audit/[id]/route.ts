@@ -123,12 +123,12 @@ export async function GET(
     }
 
     // 2. Check if ID belongs to a Job in the jobs queue
-    const jobRows = await sql`
+    const jobRows = isUuid ? await sql`
       SELECT id, type, payload, status, locked_at, attempts
       FROM jobs
       WHERE id = ${id}
       LIMIT 1;
-    `;
+    ` : [];
 
     if (jobRows.length > 0) {
       const job = jobRows[0];

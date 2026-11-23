@@ -12,23 +12,25 @@ export async function GET(
     return NextResponse.json({ error: 'Job ID required' }, { status: 400 });
   }
 
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
   try {
-    // 1. Check Job Status
-    const jobs = await sql`
+    // 1. Check Job Status if valid UUID
+    const jobs = isUuid ? await sql`
       SELECT id, type, payload, status, locked_at, attempts
       FROM jobs
       WHERE id = ${id}
       LIMIT 1;
-    `;
+    ` : [];
 
     if (jobs.length === 0) {
       // Check if `id` was a run ID instead
-      const runs = await sql`
+      const runs = isUuid ? await sql`
         SELECT id, persona, status, task_success, effort_ratio, started_at, finished_at, tier_mix, payload
         FROM runs
         WHERE id = ${id}
         LIMIT 1;
-      `;
+      ` : [];
       if (runs.length > 0) {
         return NextResponse.json({
           status: 'completed',
