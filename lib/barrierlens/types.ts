@@ -318,6 +318,8 @@ export interface BarrierFinding {
   confidence?: number;
   certificate?: TrapCertificate;
   gapCertificate?: AnnouncementGapCertificate;
+  samcProof?: any;
+  cmsdCertificate?: CrossModalDivergenceCertificate;
   patchProposal?: string;
   verifiedFix?: boolean;
 }
@@ -491,6 +493,57 @@ export interface TargetSizeResult {
   isInlineException: boolean;
   compliant: boolean;
   closestNeighborDistancePx?: number;
+}
+
+// ---------------------------------------------------------------------------
+// Invention 2: Cross-Modal Semantic Divergence (CMSD) Interfaces
+// ---------------------------------------------------------------------------
+
+export interface CMSDTimeSeriesSample {
+  timestampMs: number;
+  timeOffsetMs: number;
+  visualEnergy: number;      // \mathcal{V}(t) \in [0, 1]
+  acousticEnergy: number;    // \mathcal{A}(t) \in [0, 1]
+  instantaneousDivergence: number; // D_{KL}(V || A) local
+  activeMutationSelector?: string;
+  speechUtterance?: string;
+}
+
+export interface CrossModalDivergenceCertificate {
+  id: string;
+  timestamp: number;
+  timeWindowMs: number;
+  divergenceScore: number;       // D_{CMSD}(\mathcal{V} \parallel \mathcal{A}) \in [0, \infty)
+  normalizedDivergence: number; // \in [0.0, 1.0]
+  visualEntropyBits: number;    // H(V)
+  acousticEntropyBits: number;  // H(A)
+  severity: 'critical' | 'serious' | 'moderate' | 'nominal';
+  cognitiveExclusionDetected: boolean; // True if D_CMSD > threshold & acoustic emissions == 0
+  wcagCriterion: '4.1.3 AA (Status Messages)' | '1.3.1 A (Info and Relationships)' | '3.3.1 A (Error Identification)';
+  triggerAction: {
+    type: string;
+    targetSelector: string;
+    key?: string;
+  };
+  visualMutation: {
+    selector: string;
+    tagName: string;
+    textDelta: string;
+    boundingBox: BoundingBox;
+    saliencyScore: number;
+    mutationCategory: 'error_banner' | 'price_update' | 'toast_notification' | 'modal_dialog' | 'form_validation' | 'generic_dom';
+  };
+  acousticEmission: {
+    spokenText: string;
+    speechDurationMs: number;
+    speechRateWpm: number;
+    ariaLivePoliteness: 'off' | 'polite' | 'assertive';
+    emissionsCount: number;
+  };
+  timeSeries: CMSDTimeSeriesSample[];
+  proofHash: string; // SHA-256 HMAC of canonical divergence vector
+  courtAdmissible: boolean;
+  mathematicalTheorem: string;
 }
 
 // ---------------------------------------------------------------------------

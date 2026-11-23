@@ -5,6 +5,7 @@ import { AnnouncementGapDetector } from '../engines/announcement-gap';
 import { AccNameProvenanceEngine } from '../engines/accname-provenance';
 import { TemporalModelChecker } from '../engines/temporal-model-checker';
 import { SymbolicModelChecker } from '../engines/symbolic-model-checker';
+import { crossModalDivergenceEngine } from '../engines/cross-modal-divergence';
 import { ConformalImpactModel } from '../ml/conformal-impact';
 import { LabelQualityClassifier } from '../ml/label-quality';
 import { CognitiveEntropyModel } from '../ml/cognitive-entropy';
@@ -598,7 +599,34 @@ export class AuditorCore {
           announcedChange as any
         );
 
-        if (silentGap.detected && !findings.some(f => f.kind === 'silent_state_change')) {
+        // Invention 2: Cross-Modal Semantic Divergence (CMSD) Entropy Evaluation
+        const primaryMutation = (domMutations && domMutations.length > 0) ? domMutations[0] : null;
+        let cmsdCert = null;
+        if (primaryMutation) {
+          cmsdCert = crossModalDivergenceEngine.evaluateDivergence({
+            triggerAction: {
+              type: actionType,
+              targetSelector: (decision as any).targetSelector || previousActiveSelector || 'unknown',
+              key: (decision as any).key
+            },
+            visualMutation: {
+              selector: (primaryMutation as any).selector || 'div',
+              tagName: (primaryMutation as any).tag || (primaryMutation as any).tagName || 'div',
+              textDelta: (primaryMutation as any).text || '',
+              box: (primaryMutation as any).rect || { x: 0, y: 0, width: 320, height: 60 },
+              className: (primaryMutation as any).className || '',
+              role: (primaryMutation as any).role || null,
+              isError: /error|invalid|fail|required|danger/i.test((primaryMutation as any).text || '')
+            },
+            acousticEmission: {
+              spokenText: observerData.announcements.map((a: any) => a.text).join(' '),
+              ariaLive: (observerData.announcements.length > 0 ? (observerData.announcements[0].politeness || 'polite') : 'off') as any,
+              emissionsCount: observerData.announcements.length
+            }
+          });
+        }
+
+        if ((silentGap.detected || (cmsdCert && cmsdCert.cognitiveExclusionDetected)) && !findings.some(f => f.kind === 'silent_state_change')) {
           const impact = this.impactModel.scoreFinding('silent_state_change', persona, true, stepIdx);
           const gapCertificate = (silentGap as any).certificate;
 
@@ -612,15 +640,20 @@ export class AuditorCore {
             severity: impact.severity,
             severityScore: impact.score,
             severityInterval: impact.interval,
-            title: 'Silent State Change / Unannounced Error',
-            summary: silentGap.evidence,
+            title: cmsdCert?.cognitiveExclusionDetected ? 'Cross-Modal Divergence (CMSD) Exclusion' : 'Silent State Change / Unannounced Error',
+            summary: cmsdCert?.cognitiveExclusionDetected
+              ? `Mathematical cognitive exclusion verified: Visual Saliency H(V)=${cmsdCert.visualEntropyBits} bits while acoustic emissions flatlined at 0 (D_CMSD=${cmsdCert.normalizedDivergence}).`
+              : silentGap.evidence,
             gapCertificate: gapCertificate,
+            cmsdCertificate: cmsdCert || undefined,
             evidence: {
               visualDeltaText: silentGap.visualDeltaText,
               announcementsReceivedCount: observerData.announcements.length,
               focusMoved,
               activeNameChanged,
-              certificate: gapCertificate || null
+              certificate: gapCertificate || null,
+              cmsdDivergence: cmsdCert?.normalizedDivergence ?? 0,
+              cmsdProofHash: cmsdCert?.proofHash ?? null
             }
           };
           findings.push(silentFinding);

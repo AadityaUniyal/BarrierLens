@@ -571,7 +571,7 @@ export function CinematicLanding({
             <div className="lg:col-span-6 space-y-6">
               <div className="space-y-2">
                 <span className="px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 font-mono text-xs font-bold rounded">
-                  PROBLEM 02 &bull; WCAG 4.1.3 LEVEL AA
+                  INVENTION 02 &bull; WCAG 4.1.3 &bull; CROSS-MODAL DIVERGENCE (CMSD)
                 </span>
                 <h3 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
                   Assistive Silence &amp; Dynamic Mutations

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/neon/db';
 import { BarrierFinding, AuditRun } from '@/lib/barrierlens/types';
 import { VPATGenerator } from '@/lib/barrierlens/compliance/vpat-generator';
+import { poaDAGLedger } from '@/lib/barrierlens/engines/merkle-poa-ledger';
 
 export const runtime = 'nodejs';
 
@@ -402,13 +403,34 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const vpatGen = new VPATGenerator();
     const vpatBundle = vpatGen.generateVPATBundle(finalRun, findings);
 
+    // Invention 4: Mint Cryptographic Proof-of-Accessibility (PoA) Merkle Block
+    const poaBlock = poaDAGLedger.mintBlock(
+      finalRun.id,
+      finalRun.targetUrl,
+      finalRun.persona,
+      findings
+    );
+    vpatBundle.poaMerkleRoot = poaBlock.merkleRoot;
+    vpatBundle.poaBlockHash = poaBlock.blockHash;
+
     if (format === 'json' || format === 'vpat') {
-      return NextResponse.json(vpatBundle);
+      return NextResponse.json({
+        ...vpatBundle,
+        poaBlock: {
+          epochId: poaBlock.epochId,
+          blockHash: poaBlock.blockHash,
+          merkleRoot: poaBlock.merkleRoot,
+          complianceState: poaBlock.complianceState,
+          leafCount: poaBlock.leafCount,
+          statutorySignatures: poaBlock.statutoryLedgerSignatures
+        }
+      });
     }
 
     if (format === 'markdown') {
       let md = `# BarrierLens Accessibility Conformance Report (VPAT® 2.5)\n\n`;
-      md += `**Target:** ${finalRun.targetUrl}\n**Status:** ${vpatBundle.conformanceSummary.overallStatus}\n**Effort Ratio:** ${finalRun.effortRatio}x\n**Audit Signature:** \`${vpatBundle.cryptographicSignature}\`\n\n`;
+      md += `**Target:** ${finalRun.targetUrl}\n**Status:** ${vpatBundle.conformanceSummary.overallStatus}\n**Effort Ratio:** ${finalRun.effortRatio}x\n`;
+      md += `**Merkle Root (PoA-DAG):** \`${poaBlock.merkleRoot}\`\n**Block Hash:** \`${poaBlock.blockHash}\`\n**Audit Signature:** \`${vpatBundle.cryptographicSignature}\`\n\n`;
       md += `## VPAT Conformance Matrix\n\n`;
       md += `| Standard | Clause | Name | Conformance | Remarks |\n|---|---|---|---|---|\n`;
       for (const v of vpatBundle.tableEntries) {

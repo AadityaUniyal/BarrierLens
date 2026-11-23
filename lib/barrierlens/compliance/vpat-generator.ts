@@ -36,6 +36,8 @@ export interface VPATReportBundle {
   vpatVersion: 'VPAT 2.5 (Revised Section 508 / EN 301 549 / WCAG 2.2 AA)';
   engineVersion: 'BarrierLens Enterprise Autonomous Auditor v2.6.0';
   cryptographicSignature: string;
+  poaMerkleRoot?: string;
+  poaBlockHash?: string;
   conformanceSummary: {
     totalCriteria: number;
     supportsCount: number;

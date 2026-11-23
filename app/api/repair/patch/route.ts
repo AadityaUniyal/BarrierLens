@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GitPatchGenerator } from '@/lib/barrierlens/repair/git-patch-generator';
+import { cdasASTSurgeryEngine } from '@/lib/barrierlens/causal/cdas-ast-surgery';
 import { BarrierFinding, FindingKind } from '@/lib/barrierlens/types';
 
 export const runtime = 'nodejs';
@@ -11,10 +12,19 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { finding, findings, filePath, originalContent, targetSelector, findingKind, patchAttributes, patchSnippet } = body;
 
-    // Single finding patch generation
+    // Single finding patch generation with CDAS Causal Dual-Objective AST Surgery
     if (finding) {
       const result = patchGenerator.generatePatchForFinding(finding as BarrierFinding, filePath || 'src/components/AuditedView.tsx');
-      return NextResponse.json(result);
+      const cdas = cdasASTSurgeryEngine.synthesizeSurgicalPatch(
+        finding as BarrierFinding,
+        finding.evidence?.outerHTML || finding.evidence?.snippet || '<button className="p-2 rounded">Action</button>'
+      );
+      return NextResponse.json({
+        ...result,
+        cdasCertificate: cdas.certificate,
+        ssimVisualInvariance: cdas.certificate.ssimVisualInvariance,
+        causalATE: cdas.certificate.causalATE
+      });
     }
 
     // Bundle generation for multiple findings
