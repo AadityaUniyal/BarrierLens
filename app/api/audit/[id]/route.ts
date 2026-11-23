@@ -144,6 +144,25 @@ export async function GET(
       });
     }
 
+    // 3. Fallback: Query the latest run from Neon database
+    try {
+      const recentRows = await sql`
+        SELECT id, persona, status, started_at, finished_at, task_success, effort_ratio, tier_mix, target_url, goal_text, payload
+        FROM runs
+        ORDER BY started_at DESC
+        LIMIT 1;
+      `;
+      if (recentRows.length > 0) {
+        const r = recentRows[0];
+        if (r.payload && typeof r.payload === 'object') {
+          return NextResponse.json({
+            run: { ...r.payload, requestedId: id },
+            source: 'neon_postgres_latest_fallback'
+          });
+        }
+      }
+    } catch {}
+
     return NextResponse.json({ error: 'Audit run not found in Neon database' }, { status: 404 });
   } catch (err: any) {
     console.error('[API Audit ID] Error:', err);

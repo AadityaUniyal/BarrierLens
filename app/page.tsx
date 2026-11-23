@@ -477,7 +477,11 @@ export default function Home() {
               if (!selectedFinding) setSelectedFinding(f);
               setAuditResult(prev => prev ? ({ ...prev, findings: [...accumulatedFindings] }) : null);
             } else if (data.type === 'error' || data.error) {
-              setStreamingStatus(`Error: ${data.error || 'Execution encountered an issue'}`);
+              const errPayload = data.error || data;
+              const errText = typeof errPayload === 'object' && errPayload !== null
+                ? (errPayload.error || errPayload.message || JSON.stringify(errPayload))
+                : String(errPayload || 'Execution encountered an issue');
+              setStreamingStatus(`Notice: ${errText}`);
             } else if (data.type === 'complete') {
               const run = data.auditRun || data;
               setAuditResult(run);

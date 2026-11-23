@@ -172,7 +172,17 @@ export class AxeBaselineRunner {
     });
 
     if (!isAxeLoaded) {
-      await page.evaluate(this.axeSource);
+      try {
+        await page.addScriptTag({ content: this.axeSource });
+      } catch {
+        await page.evaluate((src) => {
+          try {
+            const script = document.createElement('script');
+            script.textContent = src;
+            (document.head || document.documentElement).appendChild(script);
+          } catch {}
+        }, this.axeSource).catch(() => {});
+      }
     }
   }
 
