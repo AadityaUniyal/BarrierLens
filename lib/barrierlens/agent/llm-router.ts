@@ -143,7 +143,7 @@ Output format:
             temperature: 0.1,
             max_tokens: 400
           }),
-          signal: AbortSignal.timeout(2500)
+          signal: AbortSignal.timeout(6000)
         });
 
         if (response.ok) {
@@ -199,9 +199,32 @@ Output format:
       }
     }
 
-    // Deterministic Rule Fallback (Tier 0)
+    // Context-Aware Deterministic Rule Fallback (Tier 0)
+    const recentHistory = (history || []).slice(-3);
+    const consecutiveTabs = recentHistory.filter(h => h === 'Tab').length;
+
+    if (consecutiveTabs >= 3) {
+      return {
+        thought: 'Autonomous rule fallback: Consecutive tabs detected, probing Escape to test modal/drawer escape',
+        action: 'press_key',
+        key: 'Escape',
+        isGoalReached: false,
+        tierUsed: 0
+      };
+    }
+
+    if (currentFocusSelector && (currentFocusSelector.includes('button') || currentFocusSelector.includes('submit') || currentFocusSelector.includes('confirm'))) {
+      return {
+        thought: 'Autonomous rule fallback: Action button focused, activating with Enter',
+        action: 'press_key',
+        key: 'Enter',
+        isGoalReached: false,
+        tierUsed: 0
+      };
+    }
+
     return {
-      thought: 'Autonomous rule fallback: Advance Tab focus',
+      thought: 'Autonomous rule fallback: Advance focus traversal with Tab',
       action: 'press_key',
       key: 'Tab',
       isGoalReached: false,

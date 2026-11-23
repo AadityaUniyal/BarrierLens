@@ -86,10 +86,16 @@ export async function resolvePublicTargetUrl(
   rawInput: unknown,
   requestOrigin: string
 ): Promise<string> {
-  const raw = typeof rawInput === 'string' ? rawInput.trim() : '';
+  let raw = typeof rawInput === 'string' ? rawInput.trim() : '';
   if (!raw) {
-    return `${requestOrigin.replace(/\/$/, '')}/benchmark`;
+    throw new TargetPolicyError('Target URL is required. Please specify a website URL or /benchmark.', 'invalid_url');
   }
+
+  // Auto-prepend https:// if user entered domain without scheme (e.g. "example.com" or "github.com")
+  if (!raw.startsWith('http://') && !raw.startsWith('https://') && !raw.startsWith('/')) {
+    raw = `https://${raw}`;
+  }
+
   if (raw.length > PUBLIC_MAX_URL_CHARS) {
     throw new TargetPolicyError('URL is too long.', 'invalid_url');
   }

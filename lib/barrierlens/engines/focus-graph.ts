@@ -930,11 +930,11 @@ export class FocusGraphEngine {
 
     const visualOrder = visualOrderNodes.map(n => n.id);
 
-    // Map each node to its rank
-    const visualRankMap = new Map<string, number>();
-    visualOrder.forEach((id, rank) => visualRankMap.set(id, rank));
+    // Map each node object directly to its rank to prevent string ID collisions
+    const visualRankMap = new Map<FocusNode, number>();
+    visualOrderNodes.forEach((node, rank) => visualRankMap.set(node, rank));
 
-    const visualRanks = focusOrder.map(id => visualRankMap.get(id) ?? 0);
+    const visualRanks = list.map(node => visualRankMap.get(node) ?? 0);
     const n = visualRanks.length;
     let concordant = 0;
     let discordant = 0;

@@ -119,6 +119,11 @@ export class AuditorCore {
       }
       await page.evaluate(INJECTED_OBSERVER_SCRIPT).catch(() => {});
       await page.waitForTimeout(1000);
+      // Flush initial page load & hydration mutations so they are not falsely attributed to Step 1
+      await page.evaluate(() => {
+        const obs = (window as any).__barrierLensObserver;
+        if (obs && typeof obs.clear === 'function') obs.clear();
+      }).catch(() => {});
 
       const statusCode = navResponse?.status() || 200;
       const pageTitle = await page.title().catch(() => '');
@@ -213,8 +218,10 @@ export class AuditorCore {
         initialNodes = (await page.evaluate(EXTRACT_AX_NODES_SCRIPT)) as SerializedAXNode[];
       }
       
-      const focusNodes: FocusNode[] = initialNodes.map(n => ({
-        id: n.selector,
+      const focusNodes: FocusNode[] = initialNodes.map((n, idx) => ({
+        id: (n.selector && !['button', 'a', 'input', 'select', 'textarea'].includes(n.selector))
+          ? n.selector 
+          : `${n.selector || n.role}:nth(${idx + 1})`,
         selector: n.selector,
         tagName: n.role,
         role: n.role,
@@ -431,6 +438,12 @@ export class AuditorCore {
           break;
         }
 
+        // Flush observer events immediately prior to action dispatch so mutations correspond strictly to this action
+        await page.evaluate(() => {
+          const obs = (window as any).__barrierLensObserver;
+          if (obs && typeof obs.clear === 'function') obs.clear();
+        }).catch(() => {});
+
         if (decision.action === 'type_text') {
           actionType = 'type_text';
           let textToType = decision.text;
@@ -464,7 +477,22 @@ export class AuditorCore {
         const currentActive = await page.evaluate(() => {
           const el = document.activeElement;
           if (!el || el === document.body) return 'body';
-          return el.tagName.toLowerCase() + (el.id ? '#' + el.id : '');
+          if (el.id) return el.tagName.toLowerCase() + '#' + el.id;
+          const ariaLabel = el.getAttribute('aria-label');
+          if (ariaLabel) {
+            const clean = ariaLabel.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 24);
+            return `${el.tagName.toLowerCase()}[aria-label="${clean}"]`;
+          }
+          const parent = el.parentElement;
+          if (parent) {
+            const siblings = Array.from(parent.children).filter(c => c.tagName === el.tagName);
+            if (siblings.length > 1) {
+              const idx = siblings.indexOf(el) + 1;
+              const pTag = parent.tagName.toLowerCase() + (parent.id ? '#' + parent.id : '');
+              return `${pTag} > ${el.tagName.toLowerCase()}:nth-of-type(${idx})`;
+            }
+          }
+          return el.tagName.toLowerCase();
         });
 
         if (previousActiveSelector && currentActive && previousActiveSelector !== currentActive) {
@@ -500,6 +528,14 @@ export class AuditorCore {
         // 7. Announcement-Gap Detector (Silent State Changes)
         const domMutations = (observerData.events as any[])
           .filter((e: any) => {
+            const p = e.payload || e.details || {};
+            const tag = (p.tag || p.tagName || e.targetTag || '').toLowerCase();
+            const selector = (p.selector || p.parentSelector || e.targetSelector || '').toLowerCase();
+            // Discard non-visual metadata tags
+            if (['head', 'title', 'meta', 'script', 'style', 'link', 'html'].includes(tag)) return false;
+            if (selector.startsWith('head') || selector === 'html') return false;
+            if (p.rect && p.rect.width === 0 && p.rect.height === 0) return false;
+
             if (e.type === 'dom_added') return true;
             if (e.type === 'mutation') {
               const subType = e.details?.subType || e.payload?.subType;
