@@ -266,6 +266,7 @@ export default function Home() {
       .then(data => {
         if (data.runs && data.runs.length > 0) {
           setRunsHistory(data.runs);
+          setAuditResult(prev => prev || data.runs[0]);
         }
         if (data.findings && data.findings.length > 0) {
           const mapped: BarrierFinding[] = data.findings.map((f: any) => ({
