@@ -4,15 +4,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Key, 
   ShieldCheck, 
-  Sparkles, 
-  CheckCircle2, 
   ArrowRight, 
   X, 
   Fingerprint, 
-  User,
-  Zap,
-  AlertTriangle,
-  RotateCcw
+  User, 
+  Zap, 
+  AlertTriangle, 
+  RotateCcw 
 } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 
@@ -183,7 +181,7 @@ export function AppleAuthModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-[#0c0d0e]/85 backdrop-blur-sm"
+        className="absolute inset-0 bg-[#07080b]/90 backdrop-blur-md"
         onClick={onClose}
       />
 
@@ -193,7 +191,7 @@ export function AppleAuthModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="auth-modal-title"
-        className="relative w-full max-w-md bg-[#121316] border-hairline p-6 shadow-2xl z-10 space-y-6"
+        className="relative w-full max-w-lg bg-[#0c0d10] border border-white/10 p-8 shadow-2xl z-10 space-y-6 rounded-2xl"
       >
         
         {/* Close Button */}
@@ -201,53 +199,62 @@ export function AppleAuthModal({
           type="button"
           onClick={onClose}
           aria-label="Close dialog"
-          className="absolute top-4 right-4 w-7 h-7 bg-[#0a0a0a] hover:bg-[#1a1c20] border-hairline flex items-center justify-center text-[rgba(255,255,255,0.6)] hover:text-white transition-all"
+          className="absolute top-6 right-6 w-8 h-8 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg flex items-center justify-center text-white/60 hover:text-white transition-all"
         >
-          <X className="w-3.5 h-3.5" />
+          <X className="w-4 h-4" />
         </button>
 
         {/* Current Active Session View */}
         {currentSession ? (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white text-black font-bold flex items-center justify-center text-sm font-mono shadow-sm">
+          <div className="space-y-6">
+            <div className="space-y-1">
+              <span className="text-xs font-mono uppercase tracking-widest text-[#10b981]">
+                ( ACTIVE SESSION )
+              </span>
+              <h2 id="auth-modal-title" className="text-xl font-black uppercase tracking-tight text-white font-mono">
+                Verified Credentials
+              </h2>
+            </div>
+
+            <div className="flex items-center gap-4 p-4 bg-[#121316] border border-white/10 rounded-xl">
+              <div className="w-12 h-12 bg-white text-black font-black flex items-center justify-center text-lg font-mono rounded-lg shadow-sm">
                 {currentSession.name.charAt(0)}
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 id="auth-modal-title" className="text-sm font-bold text-white font-mono">{currentSession.name}</h3>
-                  <span className="px-1.5 py-0.5 text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                  <h3 className="text-sm font-bold text-white font-mono">{currentSession.name}</h3>
+                  <span className="px-2 py-0.5 text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded flex items-center gap-1 font-bold">
                     <ShieldCheck className="w-3 h-3" />
-                    Verified
+                    VERIFIED
                   </span>
                 </div>
-                <p className="text-xs font-mono text-[rgba(255,255,255,0.5)]">{currentSession.email}</p>
+                <p className="text-xs font-mono text-white/50">{currentSession.email}</p>
                 <p className="text-xs text-[#10b981] font-mono mt-0.5">{currentSession.organization}</p>
               </div>
             </div>
 
-            <div className="p-3.5 bg-[#0a0a0a] border-hairline space-y-2 text-xs font-mono">
+            <div className="p-4 bg-[#121316] border border-white/10 rounded-xl space-y-2.5 text-xs font-mono">
               <div className="flex justify-between items-center">
-                <span className="text-[rgba(255,255,255,0.5)]">Role &amp; Clearance</span>
+                <span className="text-white/50">Role &amp; Clearance</span>
                 <span className="text-white font-bold">{currentSession.role}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-[rgba(255,255,255,0.5)]">AWS Region</span>
+                <span className="text-white/50">AWS Telemetry Region</span>
                 <span className="text-[#10b981]">ap-south-1 (Mumbai)</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-[rgba(255,255,255,0.5)]">AI Telemetry</span>
-                <span className="text-[#10b981]">Amazon Bedrock Nova</span>
+                <span className="text-white/50">AI Engine</span>
+                <span className="text-[#10b981]">Amazon Bedrock Nova Active</span>
               </div>
             </div>
 
-            <div className="flex gap-2 pt-2">
+            <div className="flex gap-3 pt-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-2 bg-white text-black text-xs font-mono font-bold uppercase tracking-wider hover:bg-[rgba(255,255,255,0.85)] transition-all"
+                className="flex-1 py-3 bg-white text-black text-xs font-mono font-bold uppercase tracking-wider hover:bg-white/90 rounded-lg transition-all"
               >
-                Go to Dashboard
+                ENTER MISSION CONTROL
               </button>
               <button
                 type="button"
@@ -258,39 +265,36 @@ export function AppleAuthModal({
                   onSignOut();
                   onClose();
                 }}
-                className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-xs font-mono text-red-400 transition-all"
+                className="px-5 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-xs font-mono font-bold text-red-400 rounded-lg transition-all"
               >
-                Sign Out
+                SIGN OUT
               </button>
             </div>
           </div>
         ) : (
           /* Sign In Options */
-          <div className="space-y-5">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-[#10b981]" />
-                <span className="text-xs font-mono uppercase tracking-widest text-[rgba(255,255,255,0.5)]">
-                  BarrierLens Authentication
-                </span>
-              </div>
-              <h2 id="auth-modal-title" className="text-lg font-bold text-white font-mono uppercase tracking-tight">
-                Sign In to Console
+          <div className="space-y-6">
+            <div className="space-y-1.5">
+              <span className="text-xs font-mono uppercase tracking-widest text-[#10b981]">
+                ( IDENTITY &amp; TRUST )
+              </span>
+              <h2 id="auth-modal-title" className="text-2xl font-black uppercase tracking-tight text-white leading-tight">
+                Access Audit Cockpit
               </h2>
-              <p className="text-xs text-[rgba(255,255,255,0.65)] leading-relaxed">
+              <p className="text-xs text-white/60 leading-relaxed">
                 Hardware-backed cryptographic sessions for mathematical accessibility audits.
               </p>
             </div>
 
             {/* Segmented Auth Tab Selector */}
-            <div className="p-1 bg-[#0a0a0a] border-hairline grid grid-cols-3 gap-1 text-xs font-mono">
+            <div className="p-1 bg-[#121316] border border-white/10 rounded-lg grid grid-cols-3 gap-1 text-xs font-mono">
               <button
                 type="button"
                 onClick={() => { setActiveTab('instant'); setErrorMessage(null); }}
-                className={`py-1.5 transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider ${
+                className={`py-2 transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider rounded ${
                   activeTab === 'instant'
-                    ? 'bg-white text-black font-bold'
-                    : 'text-[rgba(255,255,255,0.6)] hover:text-white'
+                    ? 'bg-white text-black font-bold shadow-sm'
+                    : 'text-white/60 hover:text-white'
                 }`}
               >
                 <Zap className="w-3.5 h-3.5 text-amber-500" />
@@ -299,10 +303,10 @@ export function AppleAuthModal({
               <button
                 type="button"
                 onClick={() => { setActiveTab('passkey'); setErrorMessage(null); }}
-                className={`py-1.5 transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider ${
+                className={`py-2 transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider rounded ${
                   activeTab === 'passkey'
-                    ? 'bg-white text-black font-bold'
-                    : 'text-[rgba(255,255,255,0.6)] hover:text-white'
+                    ? 'bg-white text-black font-bold shadow-sm'
+                    : 'text-white/60 hover:text-white'
                 }`}
               >
                 <Fingerprint className="w-3.5 h-3.5" />
@@ -311,10 +315,10 @@ export function AppleAuthModal({
               <button
                 type="button"
                 onClick={() => { setActiveTab('github'); setErrorMessage(null); }}
-                className={`py-1.5 transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider ${
+                className={`py-2 transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider rounded ${
                   activeTab === 'github'
-                    ? 'bg-white text-black font-bold'
-                    : 'text-[rgba(255,255,255,0.6)] hover:text-white'
+                    ? 'bg-white text-black font-bold shadow-sm'
+                    : 'text-white/60 hover:text-white'
                 }`}
               >
                 <GithubIcon className="w-3.5 h-3.5" />
@@ -327,13 +331,13 @@ export function AppleAuthModal({
               <div 
                 role="alert"
                 aria-live="assertive"
-                className="p-3 bg-red-500/10 border border-red-500/20 text-xs font-mono text-red-400 space-y-2"
+                className="p-3.5 bg-red-500/10 border border-red-500/20 rounded-lg text-xs font-mono text-red-400 space-y-2"
               >
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
                   <div className="space-y-1">
                     <p className="font-bold text-red-300">Authentication Failed</p>
-                    <p className="text-[rgba(255,255,255,0.75)] text-[11px] leading-relaxed">{errorMessage}</p>
+                    <p className="text-white/70 text-[11px] leading-relaxed">{errorMessage}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 pt-1">
@@ -344,15 +348,15 @@ export function AppleAuthModal({
                       if (activeTab === 'passkey') handlePasskeyAuth();
                       else if (activeTab === 'github') handleGitHubAuth();
                     }}
-                    className="px-2.5 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-300 text-[10px] uppercase tracking-wider font-bold flex items-center gap-1 transition-colors"
+                    className="px-2.5 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-300 text-[10px] uppercase tracking-wider font-bold rounded flex items-center gap-1 transition-colors"
                   >
                     <RotateCcw className="w-3 h-3" />
-                    <span>Retry Authentication</span>
+                    <span>Retry</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setErrorMessage(null)}
-                    className="px-2.5 py-1 text-[rgba(255,255,255,0.5)] hover:text-white text-[10px] uppercase tracking-wider transition-colors"
+                    className="px-2.5 py-1 text-white/50 hover:text-white text-[10px] uppercase tracking-wider transition-colors"
                   >
                     Dismiss
                   </button>
@@ -365,7 +369,7 @@ export function AppleAuthModal({
               <div 
                 role="status"
                 aria-live="polite"
-                className="p-2.5 bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-blue-300 flex items-center gap-2"
+                className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-xs font-mono text-blue-300 flex items-center gap-2"
               >
                 <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
                 <span>{statusMessage}</span>
@@ -375,12 +379,12 @@ export function AppleAuthModal({
             {/* Tab 1: Instant Demo Access */}
             {activeTab === 'instant' && (
               <div className="space-y-4">
-                <div className="p-3.5 bg-[#0a0a0a] border-hairline space-y-2 text-xs">
+                <div className="p-4 bg-[#121316] border border-white/10 rounded-xl space-y-2 text-xs">
                   <div className="flex items-center gap-2 text-white font-mono font-bold">
                     <User className="w-4 h-4 text-[#10b981]" />
-                    <span>Instant Reviewer Access</span>
+                    <span>Instant Reviewer Clearance</span>
                   </div>
-                  <p className="text-[rgba(255,255,255,0.6)] leading-relaxed">
+                  <p className="text-white/60 leading-relaxed">
                     Instantly enter the production Mission Control workspace pre-configured with active AWS Bedrock Nova telemetry and ground-truth accessibility benchmarks.
                   </p>
                 </div>
@@ -389,7 +393,7 @@ export function AppleAuthModal({
                   type="button"
                   onClick={handleInstantDemoLogin}
                   disabled={isAuthenticating}
-                  className="w-full py-2.5 bg-white hover:bg-[rgba(255,255,255,0.85)] text-black text-xs font-mono font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-sm"
+                  className="w-full py-3 bg-white hover:bg-white/90 text-black text-xs font-mono font-bold tracking-wider uppercase flex items-center justify-center gap-2 rounded-lg transition-all shadow-md"
                 >
                   <Zap className="w-3.5 h-3.5" />
                   <span>CONTINUE AS LEAD AUDITOR</span>
@@ -401,13 +405,13 @@ export function AppleAuthModal({
             {/* Tab 2: Apple Passkey / WebAuthn */}
             {activeTab === 'passkey' && (
               <div className="space-y-4">
-                <div className="p-3.5 bg-[#0a0a0a] border-hairline flex items-center gap-3">
-                  <div className="w-9 h-9 bg-[#121316] flex items-center justify-center border-hairline text-white">
+                <div className="p-4 bg-[#121316] border border-white/10 rounded-xl flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#17181c] flex items-center justify-center border border-white/10 rounded-lg text-white">
                     <Key className="w-4 h-4" />
                   </div>
                   <div className="text-xs">
                     <p className="font-bold text-white font-mono">Biometric Passkey</p>
-                    <p className="text-[rgba(255,255,255,0.5)]">Hardware-backed FIDO2 WebAuthn token.</p>
+                    <p className="text-white/50">Hardware-backed FIDO2 WebAuthn token.</p>
                   </div>
                 </div>
 
@@ -415,7 +419,7 @@ export function AppleAuthModal({
                   type="button"
                   onClick={handlePasskeyAuth}
                   disabled={isAuthenticating}
-                  className="w-full py-2.5 bg-[#17181c] hover:bg-[#202228] border-hairline text-white text-xs font-mono font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all"
+                  className="w-full py-3 bg-[#17181c] hover:bg-[#202228] border border-white/10 rounded-lg text-white text-xs font-mono font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all"
                 >
                   <Fingerprint className="w-4 h-4 text-[#10b981]" />
                   <span>Authenticate with Touch ID / Face ID</span>
@@ -426,13 +430,13 @@ export function AppleAuthModal({
             {/* Tab 3: GitHub OAuth */}
             {activeTab === 'github' && (
               <div className="space-y-4">
-                <div className="p-3.5 bg-[#0a0a0a] border-hairline flex items-center gap-3">
-                  <div className="w-9 h-9 bg-[#121316] flex items-center justify-center border-hairline text-white">
+                <div className="p-4 bg-[#121316] border border-white/10 rounded-xl flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#17181c] flex items-center justify-center border border-white/10 rounded-lg text-white">
                     <GithubIcon className="w-4 h-4" />
                   </div>
                   <div className="text-xs">
                     <p className="font-bold text-white font-mono">GitHub CI/CD Integration</p>
-                    <p className="text-[rgba(255,255,255,0.5)]">Sync repository webhooks and pull request export.</p>
+                    <p className="text-white/50">Sync repository webhooks and pull request export.</p>
                   </div>
                 </div>
 
@@ -440,7 +444,7 @@ export function AppleAuthModal({
                   type="button"
                   onClick={handleGitHubAuth}
                   disabled={isAuthenticating}
-                  className="w-full py-2.5 bg-[#17181c] hover:bg-[#202228] border-hairline text-white text-xs font-mono font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all"
+                  className="w-full py-3 bg-[#17181c] hover:bg-[#202228] border border-white/10 rounded-lg text-white text-xs font-mono font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all"
                 >
                   <GithubIcon className="w-4 h-4" />
                   <span>Continue with GitHub</span>
