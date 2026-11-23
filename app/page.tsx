@@ -1,6 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { 
+  Compass, 
+  ShieldCheck, 
+  FileText, 
+  Sparkles, 
+  Activity, 
+  Layers, 
+  Terminal, 
+  Globe, 
+  Settings 
+} from 'lucide-react';
 import { Navbar, ScreenId } from '@/components/apple/Navbar';
 import { CommandPalette } from '@/components/apple/CommandPalette';
 import { PulseDashboard } from '@/components/apple/PulseDashboard';
@@ -101,6 +112,22 @@ export default function Home() {
   const [workspaceMode, setWorkspaceMode] = useState<'executive' | 'diagnostic'>('executive');
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Contextual Sub-Tab States for the 5 Master Command Centers
+  const [studioSubTab, setStudioSubTab] = useState<'cockpit' | 'theater' | 'twin'>('cockpit');
+  const [issuesSubTab, setIssuesSubTab] = useState<'master' | 'focus-map' | 'screen-reader'>('master');
+  const [monitoringSubTab, setMonitoringSubTab] = useState<'pulse' | 'websites' | 'genome' | 'arena' | 'vault'>('pulse');
+
+  useEffect(() => {
+    if (activeScreen === 'studio') setStudioSubTab('theater');
+    else if (activeScreen === 'visual-twin') setStudioSubTab('twin');
+    else if (activeScreen === 'focus-map') setIssuesSubTab('focus-map');
+    else if (activeScreen === 'screen-reader') setIssuesSubTab('screen-reader');
+    else if (activeScreen === 'websites') setMonitoringSubTab('websites');
+    else if (activeScreen === 'genome') setMonitoringSubTab('genome');
+    else if (activeScreen === 'arena') setMonitoringSubTab('arena');
+    else if (activeScreen === 'settings' || activeScreen === 'vault' || activeScreen === 'aws-bridge') setMonitoringSubTab('vault');
+  }, [activeScreen]);
 
   // Authenticated User Session (Defaults to guest in public mode)
   const [userSession, setUserSession] = useState<UserSession | null>(null);
@@ -739,105 +766,148 @@ export default function Home() {
                 </div>
               </div>
             )}
-        {/* Hub 1: Overview & Pulse HUD */}
-        {(activeScreen === 'overview' || activeScreen === 'pulse') && (
-          <PulseDashboard
-            runsHistory={runsHistory}
-            latestRun={auditResult}
-            onOpenInspector={() => setActiveScreen('audits')}
-            onOpenRemedy={() => setActiveScreen('fixes')}
-            onOpenGenome={() => setActiveScreen('genome')}
-            onOpenVault={() => setActiveScreen('settings')}
-            onRunQuickAudit={handleRunAudit}
-            onSelectRun={(run) => {
-              if (run.findings) {
-                setAuditResult(run);
-                setSelectedFinding(run.findings[0] || null);
-              }
-              setActiveScreen('audits');
-            }}
-            isAuditing={isAuditing}
-          />
-        )}
-
-        {/* Hub 2: Sites & Target Journeys */}
-        {activeScreen === 'websites' && (
-          <WebsitesManagerView
-            onStartAuditForSite={(url, siteGoal) => {
-              setTargetUrl(url);
-              if (siteGoal) setGoal(siteGoal);
-              setActiveScreen('audits');
-            }}
-          />
-        )}
-
-        {/* Hub 3: Audit Studio (Dual-Mode Live Cockpit) */}
-        {(activeScreen === 'audits' || activeScreen === 'inspector') && (
-          <AuditStudioView
-            targetUrl={targetUrl}
-            setTargetUrl={setTargetUrl}
-            goal={goal}
-            setGoal={setGoal}
-            persona={persona}
-            setPersona={setPersona}
-            maxSteps={maxSteps}
-            setMaxSteps={setMaxSteps}
-            isAuditing={isAuditing}
-            onRunAudit={handleRunAudit}
-            streamingStatus={streamingStatus}
-            streamingStep={streamingStep}
-            auditResult={auditResult}
-            onSelectFinding={(f) => {
-              setSelectedFinding(f);
-              setActiveScreen('issues');
-            }}
-            onLoadBenchmarkFindings={handleLoadBenchmarkFindings}
-          />
-        )}
-
-        {/* Dedicated Flow Composition & Keystroke Theater View */}
-        {activeScreen === 'studio' && (
-          <div className="space-y-8 animate-in fade-in duration-300">
-            <ComposeView
-              targetUrl={targetUrl}
-              setTargetUrl={setTargetUrl}
-              goal={goal}
-              setGoal={setGoal}
-              persona={persona}
-              setPersona={setPersona}
-              maxSteps={maxSteps}
-              setMaxSteps={setMaxSteps}
-              isAuditing={isAuditing}
-              onRunAudit={handleRunAudit}
-              streamingStatus={streamingStatus}
-              streamingStep={streamingStep}
-            />
-            {auditResult?.steps && auditResult.steps.length > 0 && (
-              <TraceTheater
-                steps={auditResult.steps}
-                findings={currentFindings}
-                targetUrl={targetUrl}
+        {/* ======================================================== */}
+        {/* MASTER HUB 1: TRAVERSAL STUDIO (Live Mission Control)    */}
+        {/* ======================================================== */}
+        {(activeScreen === 'audits' || activeScreen === 'inspector' || activeScreen === 'studio' || activeScreen === 'visual-twin') && (
+          <div className="space-y-6">
+            {/* Studio Lens Switcher */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-white/5 gap-3">
+              <div className="flex items-center gap-2">
+                <Compass className="w-4 h-4 text-[#0090ff]" />
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-white">
+                  Traversal Studio
+                </span>
+                <span className="text-xs text-white/40 font-mono hidden sm:inline">
+                  &bull; Autonomous CDP Playwright Engine
+                </span>
+              </div>
+              <SegmentedControl<'cockpit' | 'theater' | 'twin'>
+                options={[
+                  { id: 'cockpit', label: 'Live Cockpit' },
+                  { id: 'theater', label: 'Keystroke Theater' },
+                  { id: 'twin', label: 'Visual Twin' }
+                ]}
+                value={studioSubTab}
+                onChange={setStudioSubTab}
+                size="sm"
               />
+            </div>
+
+            {studioSubTab === 'cockpit' && (
+              <AuditStudioView
+                targetUrl={targetUrl}
+                setTargetUrl={setTargetUrl}
+                goal={goal}
+                setGoal={setGoal}
+                persona={persona}
+                setPersona={setPersona}
+                maxSteps={maxSteps}
+                setMaxSteps={setMaxSteps}
+                isAuditing={isAuditing}
+                onRunAudit={handleRunAudit}
+                streamingStatus={streamingStatus}
+                streamingStep={streamingStep}
+                auditResult={auditResult}
+                onSelectFinding={(f) => {
+                  setSelectedFinding(f);
+                  setActiveScreen('issues');
+                }}
+                onLoadBenchmarkFindings={handleLoadBenchmarkFindings}
+              />
+            )}
+
+            {studioSubTab === 'theater' && (
+              <div className="space-y-8 animate-in fade-in duration-300">
+                <ComposeView
+                  targetUrl={targetUrl}
+                  setTargetUrl={setTargetUrl}
+                  goal={goal}
+                  setGoal={setGoal}
+                  persona={persona}
+                  setPersona={setPersona}
+                  maxSteps={maxSteps}
+                  setMaxSteps={setMaxSteps}
+                  isAuditing={isAuditing}
+                  onRunAudit={handleRunAudit}
+                  streamingStatus={streamingStatus}
+                  streamingStep={streamingStep}
+                />
+                {auditResult?.steps && auditResult.steps.length > 0 && (
+                  <TraceTheater
+                    steps={auditResult.steps}
+                    findings={currentFindings}
+                    targetUrl={targetUrl}
+                  />
+                )}
+              </div>
+            )}
+
+            {studioSubTab === 'twin' && (
+              <VisualTwinSimulator />
             )}
           </div>
         )}
 
-        {/* Hub 4: Issues Intelligence & Deep-Inspection Split-Sheet */}
-        {(activeScreen === 'issues' || activeScreen === 'triage') && (
-          <IssuesMasterDetailView
-            findings={currentFindings}
-            selectedFinding={selectedFinding}
-            onSelectFinding={(f) => setSelectedFinding(f)}
-            auditResult={auditResult}
-            onTriage={handleTriage}
-            onVerifyRepair={handleVerifyRepair}
-            verifyingFindingId={verifyingFindingId}
-            verifiedFixes={verifiedFixes}
-            onLoadBenchmarkFindings={handleLoadBenchmarkFindings}
-          />
+        {/* ======================================================== */}
+        {/* MASTER HUB 2: PROOFS & ISSUES (Diagnostic Lab)           */}
+        {/* ======================================================== */}
+        {(activeScreen === 'issues' || activeScreen === 'triage' || activeScreen === 'focus-map' || activeScreen === 'screen-reader') && (
+          <div className="space-y-6">
+            {/* Proof Lens Switcher */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-white/5 gap-3">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-white">
+                  Proofs &amp; Findings Lab
+                </span>
+                <span className="text-xs text-white/40 font-mono hidden sm:inline">
+                  &bull; Mathematical Diagnostics
+                </span>
+              </div>
+              <SegmentedControl<'master' | 'focus-map' | 'screen-reader'>
+                options={[
+                  { id: 'master', label: 'Issues Master' },
+                  { id: 'focus-map', label: 'Tarjan Focus Map' },
+                  { id: 'screen-reader', label: 'Voice Log' }
+                ]}
+                value={issuesSubTab}
+                onChange={setIssuesSubTab}
+                size="sm"
+              />
+            </div>
+
+            {issuesSubTab === 'master' && (
+              <IssuesMasterDetailView
+                findings={currentFindings}
+                selectedFinding={selectedFinding}
+                onSelectFinding={(f) => setSelectedFinding(f)}
+                auditResult={auditResult}
+                onTriage={handleTriage}
+                onVerifyRepair={handleVerifyRepair}
+                verifyingFindingId={verifyingFindingId}
+                verifiedFixes={verifiedFixes}
+                onLoadBenchmarkFindings={handleLoadBenchmarkFindings}
+              />
+            )}
+
+            {issuesSubTab === 'focus-map' && (
+              <FocusMapView
+                kendallTau={auditResult?.kendallTau}
+                trapCertificate={selectedFinding?.certificate}
+                trapCertificates={selectedFinding?.certificate ? [selectedFinding.certificate] : []}
+              />
+            )}
+
+            {issuesSubTab === 'screen-reader' && (
+              <ScreenReaderTranscript />
+            )}
+          </div>
         )}
 
-        {/* Hub 5: Fixes & PRs (Verified AST Repair Hub) */}
+        {/* ======================================================== */}
+        {/* MASTER HUB 3: CAUSAL AST REMEDY (Verified Code Surgery)  */}
+        {/* ======================================================== */}
         {(activeScreen === 'fixes' || activeScreen === 'remedy') && (
           <RemedyFixesView
             findings={currentFindings}
@@ -848,8 +918,10 @@ export default function Home() {
           />
         )}
 
-        {/* Reports Hub */}
-        {activeScreen === 'reports' && (
+        {/* ======================================================== */}
+        {/* MASTER HUB 4: CONFORMANCE LEDGERS (Statutory VPAT 2.5)   */}
+        {/* ======================================================== */}
+        {(activeScreen === 'reports' || activeScreen === 'scorecard') && (
           <div className="space-y-8 animate-in fade-in duration-300">
             <ExecutiveReport
               auditRun={auditResult || {
@@ -890,55 +962,98 @@ export default function Home() {
           </div>
         )}
 
-        {activeScreen === 'focus-map' && (
-          <FocusMapView
-            kendallTau={auditResult?.kendallTau}
-            trapCertificate={selectedFinding?.certificate}
-            trapCertificates={selectedFinding?.certificate ? [selectedFinding.certificate] : []}
-          />
-        )}
+        {/* ======================================================== */}
+        {/* MASTER HUB 5: FLEET MONITORING (Genome, CI/CD & Cloud)   */}
+        {/* ======================================================== */}
+        {(activeScreen === 'overview' || activeScreen === 'pulse' || activeScreen === 'websites' || activeScreen === 'genome' || activeScreen === 'arena' || activeScreen === 'settings' || activeScreen === 'vault' || activeScreen === 'aws-bridge' || activeScreen === 'multi-agent' || activeScreen === 'trends') && (
+          <div className="space-y-6">
+            {/* Monitoring Lens Switcher */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-white/5 gap-3">
+              <div className="flex items-center gap-2">
+                <Activity className="w-4 h-4 text-[#0090ff]" />
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-white">
+                  Fleet Monitoring &amp; Infrastructure
+                </span>
+                <span className="text-xs text-white/40 font-mono hidden sm:inline">
+                  &bull; Monorepo Health &amp; CI/CD
+                </span>
+              </div>
+              <SegmentedControl<'pulse' | 'websites' | 'genome' | 'arena' | 'vault'>
+                options={[
+                  { id: 'pulse', label: 'Pulse & Trends' },
+                  { id: 'websites', label: 'Sites' },
+                  { id: 'genome', label: 'Genome' },
+                  { id: 'arena', label: 'Arena' },
+                  { id: 'vault', label: 'Vault' }
+                ]}
+                value={monitoringSubTab}
+                onChange={setMonitoringSubTab}
+                size="sm"
+              />
+            </div>
 
-        {activeScreen === 'screen-reader' && (
-          <ScreenReaderTranscript />
-        )}
+            {monitoringSubTab === 'pulse' && (
+              <div className="space-y-8 animate-in fade-in duration-300">
+                <PulseDashboard
+                  runsHistory={runsHistory}
+                  latestRun={auditResult}
+                  onOpenInspector={() => { setActiveScreen('audits'); setStudioSubTab('cockpit'); }}
+                  onOpenRemedy={() => setActiveScreen('fixes')}
+                  onOpenGenome={() => { setActiveScreen('overview'); setMonitoringSubTab('genome'); }}
+                  onOpenVault={() => { setActiveScreen('overview'); setMonitoringSubTab('vault'); }}
+                  onRunQuickAudit={handleRunAudit}
+                  onSelectRun={(run) => {
+                    if (run.findings) {
+                      setAuditResult(run);
+                      setSelectedFinding(run.findings[0] || null);
+                    }
+                    setActiveScreen('audits');
+                  }}
+                  isAuditing={isAuditing}
+                />
+                <TrendsView runs={runsHistory} />
+              </div>
+            )}
 
-        {activeScreen === 'genome' && (
-          <BarrierGenomeViz />
-        )}
+            {monitoringSubTab === 'websites' && (
+              <div className="animate-in fade-in duration-300">
+                <WebsitesManagerView
+                  onStartAuditForSite={(url, siteGoal) => {
+                    setTargetUrl(url);
+                    if (siteGoal) setGoal(siteGoal);
+                    setActiveScreen('audits');
+                  }}
+                />
+              </div>
+            )}
 
-        {activeScreen === 'arena' && (
-          <StressTestDashboard
-            onRunStressTest={handleRunStressTest}
-            isTesting={isStressTesting}
-            result={stressResult}
-          />
-        )}
+            {monitoringSubTab === 'genome' && (
+              <div className="animate-in fade-in duration-300">
+                <BarrierGenomeViz />
+              </div>
+            )}
 
-        {activeScreen === 'visual-twin' && (
-          <VisualTwinSimulator />
-        )}
+            {monitoringSubTab === 'arena' && (
+              <div className="animate-in fade-in duration-300">
+                <StressTestDashboard
+                  onRunStressTest={handleRunStressTest}
+                  isTesting={isStressTesting}
+                  result={stressResult}
+                />
+              </div>
+            )}
 
-        {activeScreen === 'aws-bridge' && (
-          <AWSBridgeConsole />
-        )}
-
-        {(activeScreen === 'settings' || activeScreen === 'vault') && (
-          <VaultAdminView
-            userSession={userSession}
-            onOpenAuth={() => setIsAuthModalOpen(true)}
-          />
-        )}
-
-        {activeScreen === 'multi-agent' && (
-          <MultiAgentMeshView />
-        )}
-
-        {activeScreen === 'trends' && (
-          <TrendsView runs={runsHistory} />
-        )}
-
-        {activeScreen === 'scorecard' && (
-          <PublicScorecardView auditRun={auditResult} />
+            {monitoringSubTab === 'vault' && (
+              <div className="space-y-8 animate-in fade-in duration-300">
+                <VaultAdminView
+                  userSession={userSession}
+                  onOpenAuth={() => setIsAuthModalOpen(true)}
+                />
+                <AWSBridgeConsole />
+                <MultiAgentMeshView />
+              </div>
+            )}
+          </div>
         )}
 
         </main>

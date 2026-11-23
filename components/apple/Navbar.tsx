@@ -99,26 +99,22 @@ export function Navbar({
     }
   };
 
-  // Dashboard Primary Tabs (The 8 cohesive command centers)
+  // Consolidated 5 Master Command Tabs
   const dashboardTabs = [
-    { id: 'overview' as ScreenId, label: 'Overview', icon: Activity, keyNumber: '1' },
-    { id: 'audits' as ScreenId, label: 'Audit Studio', icon: Compass, keyNumber: '2' },
-    { id: 'issues' as ScreenId, label: 'Issues & Proofs', icon: ShieldCheck, keyNumber: '3' },
-    { id: 'fixes' as ScreenId, label: 'Causal Fixes', icon: Sparkles, keyNumber: '4' },
-    { id: 'arena' as ScreenId, label: 'Adversarial Lab', icon: Flame, keyNumber: '5' },
-    { id: 'genome' as ScreenId, label: 'Barrier Genome', icon: Layers, keyNumber: '6' },
-    { id: 'websites' as ScreenId, label: 'Sites', icon: Globe, keyNumber: '7' },
-    { id: 'settings' as ScreenId, label: 'Settings & Cloud', icon: Settings, keyNumber: '8' },
+    { id: 'audits' as ScreenId, label: 'Studio', icon: Compass, keyNumber: '1' },
+    { id: 'issues' as ScreenId, label: 'Proofs & Issues', icon: ShieldCheck, keyNumber: '2' },
+    { id: 'fixes' as ScreenId, label: 'AST Remedy', icon: Sparkles, keyNumber: '3' },
+    { id: 'reports' as ScreenId, label: 'Conformance', icon: FileText, keyNumber: '4' },
+    { id: 'overview' as ScreenId, label: 'Monitoring', icon: Activity, keyNumber: '5' },
   ];
 
   const isTabActive = (id: ScreenId) => {
     if (activeScreen === id) return true;
-    if (id === 'overview' && (activeScreen === 'pulse' || activeScreen === 'trends')) return true;
-    if (id === 'audits' && (activeScreen === 'inspector' || activeScreen === 'studio')) return true;
+    if (id === 'audits' && (activeScreen === 'studio' || activeScreen === 'inspector' || activeScreen === 'visual-twin')) return true;
     if (id === 'issues' && (activeScreen === 'triage' || activeScreen === 'focus-map' || activeScreen === 'screen-reader')) return true;
     if (id === 'fixes' && activeScreen === 'remedy') return true;
-    if (id === 'websites' && activeScreen === 'websites') return true;
-    if (id === 'settings' && (activeScreen === 'vault' || activeScreen === 'aws-bridge' || activeScreen === 'reports' || activeScreen === 'scorecard')) return true;
+    if (id === 'reports' && activeScreen === 'scorecard') return true;
+    if (id === 'overview' && (activeScreen === 'pulse' || activeScreen === 'trends' || activeScreen === 'websites' || activeScreen === 'genome' || activeScreen === 'arena' || activeScreen === 'settings' || activeScreen === 'vault' || activeScreen === 'aws-bridge' || activeScreen === 'multi-agent')) return true;
     return false;
   };
 
