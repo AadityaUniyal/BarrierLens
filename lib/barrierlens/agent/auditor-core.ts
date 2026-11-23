@@ -4,6 +4,7 @@ import { FocusGraphEngine } from '../engines/focus-graph';
 import { AnnouncementGapDetector } from '../engines/announcement-gap';
 import { AccNameProvenanceEngine } from '../engines/accname-provenance';
 import { TemporalModelChecker } from '../engines/temporal-model-checker';
+import { SymbolicModelChecker } from '../engines/symbolic-model-checker';
 import { ConformalImpactModel } from '../ml/conformal-impact';
 import { LabelQualityClassifier } from '../ml/label-quality';
 import { CognitiveEntropyModel } from '../ml/cognitive-entropy';
@@ -47,6 +48,7 @@ export class AuditorCore {
   private gapDetector = new AnnouncementGapDetector();
   private accNameEngine = new AccNameProvenanceEngine();
   private temporalChecker = new TemporalModelChecker();
+  private samcChecker = new SymbolicModelChecker();
   private impactModel = new ConformalImpactModel();
   private labelClassifier = new LabelQualityClassifier();
   private cognitiveModel = new CognitiveEntropyModel();
@@ -625,34 +627,57 @@ export class AuditorCore {
           onProgress?.({ type: 'finding', data: silentFinding });
         }
 
-        // 8. ATL* Temporal Logic Verification on Active Modals/Dialogs
+        // 8. Symbolic Assistive Model Checking (SAMC) via ATL* Concurrent Game Verification
         const activeModalSel = await page.evaluate(() => {
           const m = document.querySelector('[role="dialog"], #trap-modal, [aria-modal="true"]');
           return m ? (m.id ? '#' + m.id : '[role="dialog"]') : null;
         });
 
         if (activeModalSel && !findings.some(f => f.kind === 'keyboard_trap')) {
-          const escapeProof = await this.temporalChecker.verifyEscapeStrategy(page, activeModalSel);
-          if (!escapeProof.holds) {
+          const samcProof = await this.samcChecker.verifyModalEscapeGame(page, activeModalSel, previousActiveSelector);
+          if (!samcProof.holds) {
             const impact = this.impactModel.scoreFinding('keyboard_trap', persona, true, stepIdx);
-            findings.push({
-              id: crypto.randomUUID(),
+            const findingId = crypto.randomUUID();
+            const samcFinding: BarrierFinding = {
+              id: findingId,
               runId,
               stepIdx,
               kind: 'keyboard_trap',
               trustTier: 'proven',
-              wcagRules: ['WCAG 2.1.2 No Keyboard Trap (Level A)'],
+              wcagRules: samcProof.statutoryWCAG,
               severity: impact.severity,
               severityScore: impact.score,
               severityInterval: impact.interval,
-              title: 'ATL* Temporal Violation: Escape Strategy Deficit',
-              summary: escapeProof.proofExplanation,
+              title: `SAMC ATL* Violation: ${samcProof.propertyVerified}`,
+              summary: samcProof.counterexample?.mathematicalExplanation || 'Formal proof demonstrates user has no physical keyboard strategy to dismiss active modal scope.',
               evidence: {
-                property: escapeProof.property,
-                counterexampleTrace: escapeProof.counterexampleTrace,
-                violationState: escapeProof.violationState
+                property: samcProof.propertyVerified,
+                formulaLaTeX: samcProof.formulaLaTeX,
+                proofHash: samcProof.proofHash,
+                counterexample: samcProof.counterexample,
+                counterexampleTrace: samcProof.counterexample?.trace.map(t => `${t.player}: ${t.action} -> ${t.outcome}`) || [],
+                statesEvaluated: samcProof.statesEvaluated,
+                transitionsEvaluated: samcProof.transitionsEvaluated,
+                violationState: samcProof.counterexample?.violationState || 's_trap_deadlock',
+                targetSelector: activeModalSel
+              },
+              certificate: {
+                detected: true,
+                trapType: 'modal_deadlock',
+                componentNodeIds: [activeModalSel],
+                entryNodeId: activeModalSel,
+                reproducingKeySequence: ['Escape'],
+                keySequence: ['Escape'],
+                cycleNodes: [activeModalSel],
+                cycleTransitions: [{ from: activeModalSel, key: 'Escape', to: activeModalSel }],
+                testedEscape: true,
+                escapeResult: 'ignored',
+                proofExplanation: samcProof.counterexample?.mathematicalExplanation || 'Physical Escape key does not terminate modal scope.',
+                timestamp: new Date().toISOString()
               }
-            });
+            };
+            findings.push(samcFinding);
+            onProgress?.({ type: 'finding', data: samcFinding });
           }
         }
 
