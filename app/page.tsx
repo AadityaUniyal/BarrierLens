@@ -924,39 +924,12 @@ export default function Home() {
         {(activeScreen === 'reports' || activeScreen === 'scorecard') && (
           <div className="space-y-8 animate-in fade-in duration-300">
             <ExecutiveReport
-              auditRun={auditResult || {
-                id: 'certified_benchmark_run',
-                targetUrl: 'https://barrierlens.ai/benchmark',
-                goal: 'Subscribe to newsletter and test confirmation modal',
-                persona: persona,
-                status: 'completed',
-                taskSuccess: false,
-                effortRatio: 4.2,
-                kendallTau: {
-                  tau: 0.52,
-                  focusOrder: ['#nav', '#dialog-box', '#confirm-btn'],
-                  visualOrder: ['#nav', '#confirm-btn', '#dialog-box'],
-                  inversionCount: 4,
-                  totalPairs: 10,
-                  concordantCount: 6,
-                  discordantCount: 4,
-                  isAcceptable: false,
-                  explanation: 'Visual reading flow sequence diverges from DOM traversal order.'
-                },
-                startedAt: new Date(Date.now() - 3600000).toISOString(),
-                finishedAt: new Date().toISOString(),
-                tierMix: { tier0Rules: 3, tier1Ranker: 4, tier2Groq: 2, tier3Gemini: 1 },
-                findings: currentFindings,
-                steps: [
-                  { idx: 1, actionType: 'press_key', key: 'Tab', persona: persona, activeElementAfter: '#nav-home', tier: 0, timestamp: Date.now() - 3000 },
-                  { idx: 2, actionType: 'press_key', key: 'Tab', persona: persona, activeElementAfter: '#trap-modal', tier: 1, timestamp: Date.now() - 2000 },
-                  { idx: 3, actionType: 'press_key', key: 'Tab', persona: persona, activeElementAfter: '#claim-btn', tier: 2, timestamp: Date.now() - 1000 },
-                  { idx: 4, actionType: 'press_key', key: 'Escape', persona: persona, activeElementAfter: '#claim-btn', tier: 0, timestamp: Date.now() - 500 }
-                ]
-              }}
+              auditRun={auditResult || (runsHistory.length > 0 ? runsHistory[0] : null)}
               onVerifyRepair={handleVerifyRepair}
               verifyingFindingId={verifyingFindingId}
               verifiedFixes={verifiedFixes}
+              onNavigateToStudio={() => { setActiveScreen('audits'); setStudioSubTab('cockpit'); }}
+              onLoadBenchmarkFindings={handleLoadBenchmarkFindings}
             />
             <PublicScorecardView auditRun={auditResult} />
           </div>

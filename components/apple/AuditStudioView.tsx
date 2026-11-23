@@ -237,8 +237,8 @@ export function AuditStudioView({
 
   return (
     <div className="space-y-6 text-[#f4f5f6]">
-      {/* 1. Header & Configuration Station (Linear Slate) */}
-      <div className="p-6 rounded-2xl glass-panel shadow-2xl space-y-5 border border-white/[0.08]">
+      {/* 1. Header & Configuration Station (Apple Liquid Glass) */}
+      <div className="p-6 sm:p-8 rounded-3xl apple-liquid-glass shadow-2xl space-y-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">

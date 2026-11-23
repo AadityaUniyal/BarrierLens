@@ -5,18 +5,18 @@
 @tailwind utilities;
 
 :root {
-  /* Cinematic Editorial Tokens (design.md) */
-  --bg: #0a0a0a;
-  --bg-secondary: #121316;
-  --bg-surface: #17181c;
+  /* Apple Liquid Glass Canvas Tokens */
+  --bg: #050608;
+  --bg-secondary: #0a0b10;
+  --bg-surface: #10121a;
   --bg-alt: #f4f2ee;
-  --fg: #ffffff;
-  --fg-dark: #0a0a0a;
+  --fg: #f5f5f7;
+  --fg-dark: #050608;
   --fg-muted: rgba(255, 255, 255, 0.65);
-  --fg-subtle: rgba(255, 255, 255, 0.4);
-  --line: rgba(255, 255, 255, 0.14);
-  --line-strong: rgba(255, 255, 255, 0.28);
-  --scrim: rgba(0, 0, 0, 0.45);
+  --fg-subtle: rgba(255, 255, 255, 0.40);
+  --line: rgba(255, 255, 255, 0.06);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --scrim: rgba(0, 0, 0, 0.65);
   --accent: #0090ff;
   --accent-cyan: #06b6d4;
   --accent-emerald: #10b981;
@@ -24,15 +24,21 @@
   --accent-amber: #f59e0b;
   --accent-purple: #8b5cf6;
 
+  /* Specular Edge & Refraction Highlights */
+  --specular-lip: rgba(255, 255, 255, 0.32);
+  --specular-side: rgba(255, 255, 255, 0.08);
+  --specular-bottom: rgba(255, 255, 255, 0.03);
+
   /* Typography */
   --font-display: "Inter Tight", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
   --font-italic: "Instrument Serif", "Playfair Display", Georgia, serif;
   --font-mono: "JetBrains Mono", monospace;
 
-  /* Motion */
+  /* Apple Hardware Physics */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-io: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-apple-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-liquid: cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 [data-theme="oled"] {
@@ -98,22 +104,55 @@ body {
 }
 
 .glass-panel {
-  background: rgba(18, 19, 23, 0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--line);
+  background: rgba(18, 20, 28, 0.70);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-top: 1px solid var(--specular-lip);
+  border-left: 1px solid var(--specular-side);
+  border-right: 1px solid var(--specular-side);
+  border-bottom: 1px solid var(--specular-bottom);
+}
+
+.apple-liquid-glass {
+  background: rgba(16, 18, 26, 0.68);
+  backdrop-filter: blur(28px) saturate(190%) contrast(105%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(105%);
+  border-top: 1px solid var(--specular-lip);
+  border-left: 1px solid var(--specular-side);
+  border-right: 1px solid var(--specular-side);
+  border-bottom: 1px solid var(--specular-bottom);
+  box-shadow: 
+    0 24px 48px -12px rgba(0, 0, 0, 0.70),
+    0 1px 0 0 rgba(255, 255, 255, 0.12) inset;
+}
+
+.apple-pill {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.apple-spring {
+  transition: all 260ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-card {
-  background: rgba(24, 25, 30, 0.65);
-  backdrop-filter: blur(14px);
-  border: 1px solid var(--line);
+  background: rgba(20, 22, 30, 0.60);
+  backdrop-filter: blur(16px) saturate(160%);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  border-left: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
   transition: all 0.25s var(--ease-out);
 }
 
 .glass-card:hover {
-  background: rgba(30, 32, 38, 0.85);
-  border-color: var(--line-strong);
+  background: rgba(26, 29, 40, 0.80);
+  border-top-color: var(--specular-lip);
   transform: translateY(-2px);
 }
 

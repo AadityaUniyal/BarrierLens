@@ -259,16 +259,25 @@ export function IssuesMasterDetailView({
 
           <div className="space-y-2 max-h-[720px] overflow-y-auto pr-1">
             {filteredFindings.length === 0 ? (
-              <div className="p-8 rounded-xl bg-[#141517] border border-[#23262a] text-center space-y-3">
-                <ShieldCheck className="w-8 h-8 text-[#30a46c] mx-auto opacity-70" />
-                <p className="text-xs text-[#9ba1a6]">No findings matching current filter tier.</p>
-                <button
-                  type="button"
-                  onClick={onLoadBenchmarkFindings}
-                  className="px-4 py-2 rounded-lg bg-[#f4f5f6] text-[#0c0d0e] text-xs font-semibold hover:bg-white transition-all"
-                >
-                  Load Benchmark Sample Proofs
-                </button>
+              <div className="p-10 rounded-3xl apple-liquid-glass text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-400 mx-auto flex items-center justify-center">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold text-white">No Active Barriers</h3>
+                  <p className="text-xs text-white/50 leading-relaxed max-w-xs mx-auto">
+                    Your journeys are compliant or an audit has not yet been dispatched for this target.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={onLoadBenchmarkFindings}
+                    className="px-4 py-2 rounded-full bg-white text-black text-xs font-semibold hover:bg-slate-200 transition-all shadow-sm"
+                  >
+                    Inspect Trap Fixtures
+                  </button>
+                </div>
               </div>
             ) : (
               filteredFindings.map((finding) => {
@@ -280,12 +289,12 @@ export function IssuesMasterDetailView({
                   <div
                     key={finding.id}
                     onClick={() => onSelectFinding(finding)}
-                    className={`w-full text-left p-4 rounded-xl border transition-all space-y-2 relative cursor-pointer ${
+                    className={`w-full text-left p-4 rounded-2xl transition-all space-y-2 relative cursor-pointer ${
                       isActive
-                        ? 'bg-[#1a1c22] border-[#5e6ad2] shadow-md ring-1 ring-[#5e6ad2]/30'
+                        ? 'apple-liquid-glass ring-1 ring-[#0090ff]/50 shadow-lg'
                         : isChecked
-                        ? 'bg-[#181a1f] border-[#3d4250]'
-                        : 'bg-[#141517] border-[#23262a] hover:bg-[#181a1d] hover:border-[#34383e]'
+                        ? 'bg-white/[0.06] border border-white/[0.12]'
+                        : 'bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.05]'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
@@ -351,21 +360,21 @@ export function IssuesMasterDetailView({
         {/* Right 7 Cols: Deep-Inspection Split-Sheet */}
         <div className="lg:col-span-7 space-y-4">
           {activeFinding ? (
-            <div className="rounded-xl bg-[#141517] border border-[#23262a] p-6 shadow-xl space-y-6">
+            <div className="rounded-3xl apple-liquid-glass p-6 sm:p-8 shadow-2xl space-y-6">
               
               {/* Active Finding Banner */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#23262a]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/[0.08]">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#6b7280]">
+                    <span className="text-[11px] text-white/50">
                       Deep Proof Inspector
                     </span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#5e6ad2]" />
-                    <span className="text-[11px] font-mono text-[#5e6ad2]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#0090ff]" />
+                    <span className="text-[11px] font-mono text-[#0090ff]">
                       {activeFinding.kind}
                     </span>
                   </div>
-                  <h3 className="text-base font-bold text-[#f4f5f6]">
+                  <h3 className="text-base font-semibold text-white tracking-tight">
                     {activeFinding.title || activeFinding.kind}
                   </h3>
                 </div>
@@ -376,26 +385,26 @@ export function IssuesMasterDetailView({
                     type="button"
                     disabled={verifyingFindingId === activeFinding.id}
                     onClick={() => onVerifyRepair(activeFinding)}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#30a46c] hover:bg-[#2b9a66] text-[#0c0d0e] text-xs font-bold transition-all shadow-sm"
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black text-xs font-semibold transition-all shadow-sm"
                   >
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>{verifyingFindingId === activeFinding.id ? 'Replaying...' : 'Verify Fix (V)'}</span>
+                    <span>{verifyingFindingId === activeFinding.id ? 'Replaying...' : 'Verify Fix'}</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setIsPRModalOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#181a1d] hover:bg-[#23262a] border border-[#282c32] text-xs font-medium text-[#f4f5f6] transition-colors"
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.10] text-xs font-medium text-white transition-colors"
                     title="Dispatch 1-Click Remediation Pull Request"
                   >
-                    <GitPullRequest className="w-3.5 h-3.5 text-[#5e6ad2]" />
+                    <GitPullRequest className="w-3.5 h-3.5 text-[#0090ff]" />
                     <span>Dispatch PR</span>
                   </button>
                 </div>
               </div>
 
               {/* Segmented Diagnostic Tabs */}
-              <div className="flex items-center bg-[#0c0d0e] p-1 rounded-lg border border-[#23262a] overflow-x-auto gap-1">
+              <div className="flex items-center bg-black/40 p-1 rounded-full border border-white/[0.08] overflow-x-auto gap-1">
                 {[
                   { id: 'focus-map', label: 'Tarjan Proof', icon: Terminal },
                   { id: 'samc', label: 'ATL* Game Proof', icon: Binary },
@@ -411,10 +420,10 @@ export function IssuesMasterDetailView({
                       key={tab.id}
                       type="button"
                       onClick={() => setInspectionTab(tab.id as any)}
-                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                         isActive
-                          ? 'bg-[#1f2226] text-[#f4f5f6] border border-[#34383e]'
-                          : 'text-[#9ba1a6] hover:text-[#f4f5f6] border border-transparent'
+                          ? 'bg-white text-black font-semibold shadow-sm'
+                          : 'text-white/60 hover:text-white border border-transparent'
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5" />

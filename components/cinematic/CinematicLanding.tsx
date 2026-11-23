@@ -273,10 +273,10 @@ export function CinematicLanding({
 
         {/* Master Headline: Large, Monolithic, Shimmering */}
         <div className="space-y-6">
-          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black uppercase tracking-[-0.04em] text-white leading-[0.94]">
-            Where legacy scanners guess, <br className="hidden sm:inline" />
+          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-bold tracking-[-0.04em] text-white leading-[0.94]">
+            Prove what locks them out. <br className="hidden sm:inline" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#0090ff] to-[#10b981]">
-              BarrierLens proves.
+              Fix it before you ship.
             </span>
           </h1>
 
@@ -285,13 +285,13 @@ export function CinematicLanding({
           </p>
 
           {/* Quick Capability Tags */}
-          <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-mono">
-            {['Playwright CDP Traversal', 'Tarjan SCC Graph Cycles', 'Kendall’s Tau-b Spatial', 'Live Voice Synthesizer', 'Causal AST Patches', 'Certified VPAT® 2.5'].map((tag, i) => (
+          <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+            {['Playwright CDP Traversal', 'ATL* Game Model Checking', 'CMSD Entropy Field', 'SSIM >= 0.999 AST Surgery', 'PoA-DAG Merkle Ledger', 'Certified VPAT® 2.5'].map((tag, i) => (
               <span 
                 key={i} 
-                className="px-3 py-1 bg-white/[0.04] border border-white/10 text-white/80 rounded-md backdrop-blur-sm"
+                className="px-3 py-1 bg-white/[0.04] border border-white/10 text-white/80 rounded-full backdrop-blur-sm"
               >
-                [ {tag} ]
+                {tag}
               </span>
             ))}
           </div>
@@ -299,8 +299,8 @@ export function CinematicLanding({
 
         {/* Dual CTA Actions & Live URL Audit Omnibar */}
         <div className="space-y-4 pt-2">
-          <div className="p-3 rounded-2xl bg-[#0c0d10]/90 border border-white/15 shadow-2xl backdrop-blur-xl flex flex-col md:flex-row items-center gap-3 max-w-4xl">
-            <div className="flex-1 w-full flex items-center gap-2.5 px-4 py-2.5 bg-[#07080b] rounded-xl border border-white/10">
+          <div className="p-2.5 rounded-full apple-liquid-glass shadow-2xl flex flex-col md:flex-row items-center gap-2 max-w-4xl">
+            <div className="flex-1 w-full flex items-center gap-2.5 px-4 py-2 bg-black/40 rounded-full border border-white/10">
               <Compass className="w-4 h-4 text-[#0090ff] shrink-0" />
               <input
                 type="text"
@@ -311,7 +311,7 @@ export function CinematicLanding({
               />
             </div>
 
-            <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="flex items-center gap-2 w-full md:w-auto">
               <SegmentedControl<PersonaType>
                 options={[
                   { id: 'keyboard', label: 'Keyboard', icon: Keyboard },
@@ -325,15 +325,15 @@ export function CinematicLanding({
               <button
                 type="button"
                 onClick={() => onLaunchStudio(trialUrl, trialGoal, trialPersona, true)}
-                className="px-6 py-2.5 bg-white hover:bg-white/90 active:scale-[0.98] text-black text-xs font-mono font-bold tracking-wider uppercase rounded-xl shrink-0 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center gap-2"
+                className="px-6 py-2.5 bg-white hover:bg-slate-200 active:scale-[0.98] text-black text-xs font-semibold rounded-full shrink-0 transition-all shadow-md flex items-center gap-2"
               >
                 <Zap className="w-3.5 h-3.5 text-black fill-black" />
-                <span>RUN AUDIT</span>
+                <span>Run Audit</span>
               </button>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-white/50 pl-1">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-white/50 pl-3">
             <span>Instant Benchmark Testbeds:</span>
             <button 
               type="button"
@@ -409,41 +409,41 @@ export function CinematicLanding({
           </div>
 
           {/* Stage Switcher Tabs */}
-          <div className="flex items-center p-1 bg-[#121316] border border-white/10 rounded-xl text-xs font-mono">
+          <div className="flex items-center p-1 apple-liquid-glass rounded-full text-xs">
             <button
               type="button"
               onClick={() => setActiveStage(0)}
-              className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
+              className={`px-4 py-1.5 rounded-full transition-all flex items-center gap-2 ${
                 activeStage === 0 
-                  ? 'bg-rose-500/20 border border-rose-500/40 text-rose-300 font-bold shadow-lg' 
+                  ? 'bg-white text-black font-semibold shadow-md' 
                   : 'text-white/60 hover:text-white'
               }`}
             >
-              <Keyboard className="w-3.5 h-3.5 text-rose-400" />
+              <Keyboard className="w-3.5 h-3.5" />
               <span>01. The Trap</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveStage(1)}
-              className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
+              className={`px-4 py-1.5 rounded-full transition-all flex items-center gap-2 ${
                 activeStage === 1 
-                  ? 'bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold shadow-lg' 
+                  ? 'bg-white text-black font-semibold shadow-md' 
                   : 'text-white/60 hover:text-white'
               }`}
             >
-              <VolumeX className="w-3.5 h-3.5 text-amber-400" />
+              <VolumeX className="w-3.5 h-3.5" />
               <span>02. Speech Silence</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveStage(2)}
-              className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
+              className={`px-4 py-1.5 rounded-full transition-all flex items-center gap-2 ${
                 activeStage === 2 
-                  ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold shadow-lg' 
+                  ? 'bg-white text-black font-semibold shadow-md' 
                   : 'text-white/60 hover:text-white'
               }`}
             >
-              <GitPullRequest className="w-3.5 h-3.5 text-emerald-400" />
+              <GitPullRequest className="w-3.5 h-3.5" />
               <span>03. The AST Fix</span>
             </button>
           </div>
@@ -451,7 +451,7 @@ export function CinematicLanding({
 
         {/* STAGE 01: THE INVISIBLE KEYBOARD TRAP (Interactive Simulator) */}
         {activeStage === 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-[#0c0d10] border border-white/10 p-8 sm:p-12 rounded-3xl relative overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center apple-liquid-glass p-8 sm:p-12 rounded-3xl relative overflow-hidden">
             <div className="lg:col-span-6 space-y-6">
               <div className="space-y-2">
                 <span className="px-2.5 py-1 bg-rose-500/10 border border-rose-500/30 text-rose-400 font-mono text-xs font-bold rounded">
@@ -567,7 +567,7 @@ export function CinematicLanding({
 
         {/* STAGE 02: SCREEN READER SILENCE (Audio Equalizer Visualizer) */}
         {activeStage === 1 && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-[#0c0d10] border border-white/10 p-8 sm:p-12 rounded-3xl relative overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center apple-liquid-glass p-8 sm:p-12 rounded-3xl relative overflow-hidden">
             <div className="lg:col-span-6 space-y-6">
               <div className="space-y-2">
                 <span className="px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 font-mono text-xs font-bold rounded">
@@ -655,7 +655,7 @@ export function CinematicLanding({
 
         {/* STAGE 03: THE AST PROOF ENGINE & AUTOMATED REPAIR */}
         {activeStage === 2 && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-[#0c0d10] border border-white/10 p-8 sm:p-12 rounded-3xl relative overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center apple-liquid-glass p-8 sm:p-12 rounded-3xl relative overflow-hidden">
             <div className="lg:col-span-6 space-y-6">
               <div className="space-y-2">
                 <span className="px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-xs font-bold rounded">
@@ -736,34 +736,34 @@ export function CinematicLanding({
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           
-          {/* Card 1 (Large - Col 8): Tarjan SCC Graph Cycle Visualizer */}
-          <div className="md:col-span-8 p-8 rounded-3xl bg-[#0c0d10] border border-white/10 space-y-6 relative overflow-hidden group hover:border-white/20 transition-all">
+          {/* Card 1 (Large - Col 8): Invention 1 - SAMC ATL* Concurrent Game Automaton */}
+          <div className="md:col-span-8 p-8 rounded-3xl apple-liquid-glass space-y-6 relative overflow-hidden group hover:border-white/30 transition-all">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#0090ff]/10 border border-[#0090ff]/30 flex items-center justify-center text-[#0090ff]">
+                <div className="w-10 h-10 rounded-2xl bg-[#0090ff]/15 border border-[#0090ff]/30 flex items-center justify-center text-[#0090ff]">
                   <Binary className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">Tarjan SCC Directed Graph Engine</h3>
-                  <p className="text-xs font-mono text-white/50">WCAG 2.1.2 Closed-Loop Cycle Invariant</p>
+                  <h3 className="text-xl font-bold text-white">Symbolic Assistive Model Checking (SAMC)</h3>
+                  <p className="text-xs text-white/50">ATL* 2-Player Game &bull; WCAG 2.1.2 Verification</p>
                 </div>
               </div>
-              <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-md text-xs font-mono text-emerald-400">
-                O(V + E) Line Time
+              <span className="px-3 py-1 bg-white/[0.06] border border-white/10 rounded-full text-xs text-emerald-400 font-mono">
+                ATL* Liveness Proven
               </span>
             </div>
 
             <p className="text-sm text-white/70 leading-relaxed max-w-xl">
-              Focus is modeled as a directed graph $G = (V, E)$. When a user tabs into a modal, the engine detects Strongly Connected Components ($SCC$) containing multiple focus nodes without an exit path back to root $v_0$.
+              Models navigation as a 2-Player Game: User Agent vs. Reactive Web Environment. Formally proves whether an escape strategy exists under temporal formula &lang;&lang;User&rang;&rang; &square; (ModalActive &rArr; &lang;&lang;User&rang;&rang; &loz;<sub>&le;1</sub> ModalDismissed).
             </p>
 
             {/* Visual SVG Directed Graph Node Animation */}
-            <div className="h-44 bg-[#07080b] border border-white/5 rounded-2xl flex items-center justify-around px-8 relative overflow-hidden">
+            <div className="h-44 bg-black/40 border border-white/5 rounded-2xl flex items-center justify-around px-8 relative overflow-hidden">
               <div className="text-center space-y-1 z-10">
                 <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center text-xs font-mono text-emerald-400 font-bold shadow-[0_0_15px_rgba(16,185,129,0.3)]">
                   v0: root
                 </div>
-                <span className="text-[10px] font-mono text-white/40">Document</span>
+                <span className="text-[10px] text-white/40">Document</span>
               </div>
 
               <div className="w-12 h-0.5 bg-emerald-500/40 relative">
@@ -774,7 +774,7 @@ export function CinematicLanding({
                 <div className="w-12 h-12 rounded-xl bg-rose-500/20 border border-rose-500 flex items-center justify-center text-xs font-mono text-rose-300 font-bold shadow-[0_0_20px_rgba(244,63,94,0.4)] animate-pulse">
                   v1: modal
                 </div>
-                <span className="text-[10px] font-mono text-rose-400 font-bold">TRAP CYCLE</span>
+                <span className="text-[10px] text-rose-400 font-bold">TRAP CYCLE</span>
               </div>
 
               <div className="w-12 h-0.5 bg-rose-500/60 relative">
@@ -785,62 +785,62 @@ export function CinematicLanding({
                 <div className="w-12 h-12 rounded-xl bg-rose-500/20 border border-rose-500 flex items-center justify-center text-xs font-mono text-rose-300 font-bold">
                   v2: input
                 </div>
-                <span className="text-[10px] font-mono text-white/40">Inescapable</span>
+                <span className="text-[10px] text-white/40">Inescapable</span>
               </div>
             </div>
           </div>
 
-          {/* Card 2 (Col 4): Kendall’s Tau-b Spatial Concordance */}
-          <div className="md:col-span-4 p-8 rounded-3xl bg-[#0c0d10] border border-white/10 space-y-6 flex flex-col justify-between hover:border-white/20 transition-all">
+          {/* Card 2 (Col 4): Invention 2 - CMSD Cross-Modal Entropy Fields */}
+          <div className="md:col-span-4 p-8 rounded-3xl apple-liquid-glass space-y-6 flex flex-col justify-between hover:border-white/30 transition-all">
             <div className="space-y-4">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
-                <Eye className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <Radio className="w-5 h-5" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-lg font-bold text-white">Kendall’s Tau-b Correlation</h3>
-                <p className="text-xs font-mono text-purple-400">Visual vs. Tab Order $\tau_b &gt; 0.85$</p>
+                <h3 className="text-lg font-bold text-white">Cross-Modal Divergence (CMSD)</h3>
+                <p className="text-xs text-amber-400 font-mono">D_CMSD(V &parallel; A) &ge; 0.65</p>
               </div>
               <p className="text-xs sm:text-sm text-white/70 leading-relaxed">
-                Detects CSS flex-direction reversals and grid re-orderings where reading order inverts the visible UI layout.
+                Computes Kullback-Leibler distance between visual mutation saliency V(t) and screen reader acoustic emission A(t). Certifies cognitive exclusion when speech flatlines.
               </p>
             </div>
 
-            <div className="p-3 bg-[#07080b] rounded-xl border border-white/5 font-mono text-xs text-white/60 flex justify-between items-center">
-              <span>Concordance Score:</span>
-              <span className="text-emerald-400 font-bold">0.96 / 1.00 (CONGRUENT)</span>
+            <div className="p-3 bg-black/40 rounded-xl border border-white/5 font-mono text-xs text-white/60 flex justify-between items-center">
+              <span>Entropy Gap:</span>
+              <span className="text-amber-400 font-bold">3.12 bits (SILENCE)</span>
             </div>
           </div>
 
-          {/* Card 3 (Col 5): Shadow DOM Replay Verification */}
-          <div className="md:col-span-5 p-8 rounded-3xl bg-[#0c0d10] border border-white/10 space-y-6 hover:border-white/20 transition-all">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+          {/* Card 3 (Col 5): Invention 3 - CDAS Causal Dual-Objective AST Surgery */}
+          <div className="md:col-span-5 p-8 rounded-3xl apple-liquid-glass space-y-6 hover:border-white/30 transition-all">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
               <Cpu className="w-5 h-5" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-lg font-bold text-white">Zero Regression Replay</h3>
-              <p className="text-xs font-mono text-emerald-400">Isolated Headless CDP Verification</p>
+              <h3 className="text-lg font-bold text-white">Causal AST Surgery (CDAS)</h3>
+              <p className="text-xs text-emerald-400 font-mono">SSIM &ge; 0.999 &bull; Zero Pixel Jitter</p>
             </div>
             <p className="text-xs sm:text-sm text-white/70 leading-relaxed">
-              Every synthesized AST code patch is spun up in an isolated shadow container. The exact traversal path is re-executed to guarantee no other element broke.
+              Synthesizes minimal AST code interventions under strict visual invariance. Verifies 0.0px layout shift and runs counterfactual do-calculus replay in a headless sandbox.
             </p>
           </div>
 
-          {/* Card 4 (Col 7): Statutory VPAT® 2.5 Conformance */}
-          <div className="md:col-span-7 p-8 rounded-3xl bg-[#0c0d10] border border-white/10 space-y-6 hover:border-white/20 transition-all">
+          {/* Card 4 (Col 7): Invention 4 - Cryptographic PoA-DAG Merkle Ledger */}
+          <div className="md:col-span-7 p-8 rounded-3xl apple-liquid-glass space-y-6 hover:border-white/30 transition-all">
             <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <div className="w-10 h-10 rounded-2xl bg-[#0090ff]/15 border border-[#0090ff]/30 flex items-center justify-center text-[#0090ff]">
                 <Scale className="w-5 h-5" />
               </div>
-              <span className="px-3 py-1 bg-white/5 border border-white/10 text-xs font-mono text-amber-300 rounded">
-                Executive Legal Defense
+              <span className="px-3 py-1 bg-white/[0.06] border border-white/10 text-xs text-emerald-300 rounded-full font-mono">
+                O(log N) Verifiable
               </span>
             </div>
             <div className="space-y-1">
-              <h3 className="text-lg font-bold text-white">Statutory Conformance Ledgers</h3>
-              <p className="text-xs font-mono text-white/50">VPAT® 2.5 &bull; EAA 2025 &bull; Section 508</p>
+              <h3 className="text-lg font-bold text-white">Proof-of-Accessibility (PoA-DAG)</h3>
+              <p className="text-xs text-white/50">Immutable Merkle DAG &bull; ADA Title III &bull; EAA 2025</p>
             </div>
             <p className="text-xs sm:text-sm text-white/70 leading-relaxed">
-              Generate court-admissible audit ledgers mapped line-by-line to statutory requirements. Every finding links to cryptographic Playwright video captures and DOM trace logs.
+              Every audit mints an immutable Merkle block with SHA-256 state commitments. Legal and regulatory auditors can verify non-repudiation inclusion proofs without exposing proprietary source code.
             </p>
           </div>
 
