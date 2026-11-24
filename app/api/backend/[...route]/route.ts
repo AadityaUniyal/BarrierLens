@@ -4,7 +4,8 @@ const PYTHON_BACKEND = process.env.PYTHON_BACKEND_URL ?? 'http://127.0.0.1:8000'
 
 async function proxy(request: NextRequest, segments: string[]) {
   const path = '/' + (segments || []).join('/');
-  const targetUrl = `${PYTHON_BACKEND}${path}`;
+  const search = request.nextUrl.search || '';
+  const targetUrl = `${PYTHON_BACKEND}${path}${search}`;
 
   let body: string | undefined;
   if (request.method !== 'GET' && request.method !== 'HEAD') {
@@ -26,8 +27,16 @@ async function proxy(request: NextRequest, segments: string[]) {
       signal: AbortSignal.timeout(60_000),
     });
 
-    const data = await upstream.json();
-    return NextResponse.json(data, { status: upstream.status });
+    const contentType = upstream.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const data = await upstream.json();
+      return NextResponse.json(data, { status: upstream.status });
+    }
+    const textData = await upstream.text();
+    return new NextResponse(textData, {
+      status: upstream.status,
+      headers: { 'Content-Type': contentType || 'text/plain' }
+    });
   } catch (err: any) {
     if (err.name === 'TimeoutError') {
       return NextResponse.json(

@@ -98,6 +98,40 @@ export async function initializeDatabaseSchema() {
       );
     `;
 
+    // BetterAuth Organization Plugin Tables
+    await sql`
+      CREATE TABLE IF NOT EXISTS "organization" (
+        "id" TEXT PRIMARY KEY,
+        "name" TEXT NOT NULL,
+        "slug" TEXT UNIQUE NOT NULL,
+        "logo" TEXT,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+        "metadata" TEXT
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS "member" (
+        "id" TEXT PRIMARY KEY,
+        "organizationId" TEXT NOT NULL REFERENCES "organization"("id") ON DELETE CASCADE,
+        "userId" TEXT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
+        "role" TEXT NOT NULL,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS "invitation" (
+        "id" TEXT PRIMARY KEY,
+        "organizationId" TEXT NOT NULL REFERENCES "organization"("id") ON DELETE CASCADE,
+        "email" TEXT NOT NULL,
+        "role" TEXT,
+        "status" TEXT NOT NULL,
+        "expiresAt" TIMESTAMP NOT NULL,
+        "inviterId" TEXT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE
+      );
+    `;
+
     // 3. Core domain tables
     await sql`
       CREATE TABLE IF NOT EXISTS users (
@@ -175,6 +209,9 @@ export async function initializeDatabaseSchema() {
       CREATE TABLE IF NOT EXISTS runs (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         flow_id UUID REFERENCES flows(id) ON DELETE CASCADE,
+        user_id TEXT,
+        target_url TEXT,
+        goal_text TEXT,
         persona TEXT NOT NULL,
         status TEXT NOT NULL DEFAULT 'queued',
         budget JSONB NOT NULL DEFAULT '{"max_steps": 30, "max_llm_calls": 10}'::jsonb,
@@ -183,10 +220,20 @@ export async function initializeDatabaseSchema() {
         task_success BOOLEAN DEFAULT FALSE,
         effort_ratio FLOAT,
         tier_mix JSONB DEFAULT '{}'::jsonb,
+        kendall_tau FLOAT,
+        vpat_signature JSONB,
+        payload JSONB,
         trace_path TEXT,
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
     `;
+
+    try {
+      await sql`CREATE INDEX IF NOT EXISTS idx_runs_status_started ON runs (status, started_at DESC);`;
+      await sql`CREATE INDEX IF NOT EXISTS idx_runs_user_id ON runs (user_id);`;
+    } catch (e: any) {
+      console.log('[Neon DB] runs index notice:', e.message);
+    }
 
     await sql`
       CREATE TABLE IF NOT EXISTS states (
@@ -245,8 +292,10 @@ export async function initializeDatabaseSchema() {
       await sql`ALTER TABLE findings ADD COLUMN IF NOT EXISTS severity_lo FLOAT;`;
       await sql`ALTER TABLE findings ADD COLUMN IF NOT EXISTS severity_hi FLOAT;`;
       await sql`ALTER TABLE findings ADD COLUMN IF NOT EXISTS certificate JSONB;`;
+      await sql`CREATE INDEX IF NOT EXISTS idx_findings_run_id ON findings (run_id);`;
+      await sql`CREATE INDEX IF NOT EXISTS idx_steps_run_id ON steps (run_id);`;
     } catch (e: any) {
-      console.log('[Neon DB] findings columns notice:', e.message);
+      console.log('[Neon DB] findings columns and indexes notice:', e.message);
     }
 
     await sql`
@@ -282,6 +331,7 @@ export async function initializeDatabaseSchema() {
     try {
       await sql`ALTER TABLE jobs ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();`;
       await sql`ALTER TABLE jobs ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();`;
+      await sql`CREATE INDEX IF NOT EXISTS idx_jobs_pending ON jobs (status, run_after ASC) WHERE status = 'pending';`;
     } catch (e: any) {
       console.log('[Neon DB] jobs columns notice:', e.message);
     }
@@ -346,6 +396,12 @@ export async function initializeDatabaseSchema() {
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
     `;
+
+    try {
+      await sql`CREATE INDEX IF NOT EXISTS idx_causal_certs_target ON causal_certificates (target_url, verification_status);`;
+    } catch (e: any) {
+      console.log('[Neon DB] causal certs index notice:', e.message);
+    }
 
     await sql`
       CREATE TABLE IF NOT EXISTS agent_event_traces (

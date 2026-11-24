@@ -94,15 +94,15 @@ export function PublicScorecardView({ auditRun }: PublicScorecardViewProps) {
   return (
     <div className="w-full space-y-6 text-[#f4f5f6]">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-[#141517] border border-[#23262a]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl apple-liquid-glass shadow-2xl">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Share2 className="w-4 h-4 text-[#0090ff]" />
-            <h2 className="text-xl font-bold tracking-tight text-[#f4f5f6]">
+            <Share2 className="w-4 h-4 text-[#bb7bfc]" />
+            <h2 className="text-2xl sm:text-3xl font-serif tracking-tight text-white">
               Public Verifiable Scorecard
             </h2>
           </div>
-          <p className="text-xs text-[#9ba1a6]">
+          <p className="text-xs text-[#9c9aa8]">
             Mathematically verifiable accessibility scorecard for audits, compliance filings, and public sharing.
           </p>
         </div>

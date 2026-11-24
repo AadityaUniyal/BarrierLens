@@ -36,6 +36,7 @@ import {
 import { BrandLogo } from '@/components/brand/BrandLogo';
 import { PersonaType } from '@/lib/barrierlens/types';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { KineticButton } from '@/components/ui/KineticButton';
 
 interface CinematicLandingProps {
   onLaunchStudio: (targetUrl?: string, goal?: string, persona?: PersonaType, autoStart?: boolean) => void;
@@ -87,6 +88,11 @@ export function CinematicLanding({
 
   // FAQ Accordion State
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  // Terminal Contact Inquiry State (#contact)
+  const [inquiryUrl, setInquiryUrl] = useState<string>('');
+  const [inquiryCookies, setInquiryCookies] = useState<string>('');
+  const [inquiryGoal, setInquiryGoal] = useState<string>('');
 
   // Keyboard simulator handler
   const handleSimTab = () => {
@@ -251,45 +257,48 @@ export function CinematicLanding({
       />
 
       {/* 1. HERO SECTION: Cinematic, High-Impact & Visually Gripping */}
-      <section className="relative z-10 pt-24 pb-16 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto space-y-12">
+      <section className="relative z-10 pt-20 sm:pt-28 pb-16 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto space-y-12">
         
-        {/* Release Pill Badge */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6 text-xs font-mono uppercase tracking-widest text-white/50">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#10b981] animate-ping" />
-            <span className="text-[#10b981] font-bold">( Autonomous Verification )</span>
-            <span className="text-white/40">&bull;</span>
-            <span className="text-white/80">BarrierLens &times; Enterprise</span>
+        {/* Release Pill Badge & Status Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-6 text-xs font-mono uppercase tracking-widest text-white/50">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10b981] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10b981]" />
+            </span>
+            <span className="text-[#10b981] font-semibold tracking-wider">AUTONOMOUS VERIFICATION ENGINE</span>
+            <span className="text-white/20">&bull;</span>
+            <span className="text-white/80 font-medium">BARRIERLENS PRO</span>
           </div>
           <div className="flex items-center gap-3 text-[11px] text-white/40">
-            <span className="text-white/60">PLAYWRIGHT CDP</span>
+            <span className="px-2 py-0.5 rounded bg-white/[0.04] border border-white/[0.08] text-white/70">PLAYWRIGHT CDP 1.48</span>
             <span>&bull;</span>
-            <span className="text-emerald-400 font-semibold flex items-center gap-1.5">
+            <span className="text-emerald-400 font-medium flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               AWS BEDROCK NOVA ACTIVE
             </span>
           </div>
         </div>
 
-        {/* Master Headline: Large, Monolithic, Shimmering */}
-        <div className="space-y-6">
-          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-bold tracking-[-0.04em] text-white leading-[0.94]">
+        {/* Master Headline: Tailor'd Editorial Serif & Optical Lavender Glaze */}
+        <div className="space-y-6 max-w-5xl">
+          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-serif tracking-[-0.03em] text-white leading-[0.94] selection:bg-[#bb7bfc]/20">
             Prove what locks them out. <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#0090ff] to-[#10b981]">
+            <span className="italic font-normal text-transparent bg-clip-text bg-gradient-to-r from-[#c084fc] via-[#e879f9] to-[#818cf8] crt-glow-lavender">
               Fix it before you ship.
             </span>
           </h1>
 
-          <p className="text-base sm:text-xl text-white/70 max-w-3xl leading-relaxed">
-            Over 60% of critical barriers—keyboard traps, reading-order dissonance, and silent dynamic dropouts—slip past static linters. BarrierLens navigates interactive user journeys, proving failures with deterministic recordings and verified code fixes.
+          <p className="text-base sm:text-xl text-[#9c9aa8] max-w-3xl font-light leading-relaxed tracking-tight">
+            Over 60% of critical accessibility barriers—closed-loop keyboard traps, reading-order dissonance, and silent state dropouts—slip past static linters. BarrierLens autonomously executes real user journeys, proving failures with deterministic recordings and verified source-code repairs.
           </p>
 
           {/* Quick Capability Tags */}
-          <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+          <div className="flex flex-wrap items-center gap-2 pt-2 text-[11px] font-mono">
             {['Playwright CDP Traversal', 'ATL* Game Model Checking', 'CMSD Entropy Field', 'SSIM >= 0.999 AST Surgery', 'PoA-DAG Merkle Ledger', 'Certified VPAT® 2.5'].map((tag, i) => (
               <span 
                 key={i} 
-                className="px-3 py-1 bg-white/[0.04] border border-white/10 text-white/80 rounded-full backdrop-blur-sm"
+                className="px-3 py-1 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] hover:border-white/[0.16] text-white/70 hover:text-white rounded-full transition-all cursor-default backdrop-blur-md"
               >
                 {tag}
               </span>
@@ -298,10 +307,10 @@ export function CinematicLanding({
         </div>
 
         {/* Dual CTA Actions & Live URL Audit Omnibar */}
-        <div className="space-y-4 pt-2">
-          <div className="p-2.5 rounded-full apple-liquid-glass shadow-2xl flex flex-col md:flex-row items-center gap-2 max-w-4xl">
-            <div className="flex-1 w-full flex items-center gap-2.5 px-4 py-2 bg-black/40 rounded-full border border-white/10">
-              <Compass className="w-4 h-4 text-[#0090ff] shrink-0" />
+        <div className="space-y-4 pt-4">
+          <div className="p-2 sm:p-2.5 rounded-full apple-liquid-glass shadow-[0_24px_60px_-15px_rgba(0,0,0,0.85)] border border-white/[0.12] flex flex-col md:flex-row items-center gap-2 max-w-4xl ring-1 ring-white/[0.05]">
+            <div className="flex-1 w-full flex items-center gap-3 px-5 py-2.5 bg-black/50 rounded-full border border-white/[0.08] focus-within:border-[#0090ff]/60 focus-within:ring-1 focus-within:ring-[#0090ff]/30 transition-all">
+              <Compass className="w-4 h-4 text-[#0090ff] shrink-0 animate-pulse" />
               <input
                 type="text"
                 value={trialUrl}
@@ -322,69 +331,80 @@ export function CinematicLanding({
                 size="sm"
               />
 
-              <button
+              <KineticButton
                 type="button"
                 onClick={() => onLaunchStudio(trialUrl, trialGoal, trialPersona, true)}
-                className="px-6 py-2.5 bg-white hover:bg-slate-200 active:scale-[0.98] text-black text-xs font-semibold rounded-full shrink-0 transition-all shadow-md flex items-center gap-2"
-              >
-                <Zap className="w-3.5 h-3.5 text-black fill-black" />
-                <span>Run Audit</span>
-              </button>
+                text="Run Autonomous Audit"
+                variant="mint"
+                className="shrink-0"
+              />
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 text-xs text-white/50 pl-3">
-            <span>Instant Benchmark Testbeds:</span>
+          <div className="flex flex-wrap items-center gap-3 text-xs text-white/50 pl-4 font-mono">
+            <span className="text-white/40">Pre-built Fixtures:</span>
             <button 
               type="button"
               onClick={() => { setTrialUrl('/fixtures/keyboard-trap'); onLaunchStudio('/fixtures/keyboard-trap', 'Test modal keyboard focus escape', 'keyboard', true); }}
-              className="text-white hover:text-[#0090ff] underline flex items-center gap-1 transition-colors"
+              className="px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/80 hover:text-[#0090ff] transition-all"
             >
               /fixtures/keyboard-trap
             </button>
-            <span>&bull;</span>
             <button 
               type="button"
               onClick={() => { setTrialUrl('/fixtures/accname-wcag'); onLaunchStudio('/fixtures/accname-wcag', 'Test accessible name calculation', 'screen_reader', true); }}
-              className="text-white hover:text-[#10b981] underline flex items-center gap-1 transition-colors"
+              className="px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/80 hover:text-[#10b981] transition-all"
             >
               /fixtures/accname-wcag
+            </button>
+            <button 
+              type="button"
+              onClick={() => { setTrialUrl('/benchmark'); onLaunchStudio('/benchmark', 'Run comprehensive WCAG suite', 'keyboard', true); }}
+              className="px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/80 hover:text-[#bb7bfc] transition-all"
+            >
+              /benchmark
             </button>
           </div>
         </div>
 
-        {/* High-Impact Metric Transformation Ribbons */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6">
-          <div className="p-6 bg-[#0c0d10] border border-white/10 rounded-2xl relative overflow-hidden group hover:border-white/20 transition-all">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl group-hover:bg-rose-500/20 transition-all" />
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block">Production Traps</span>
-            <div className="flex items-baseline gap-2 pt-1">
-              <span className="text-3xl font-black text-rose-400 line-through">98%</span>
+        {/* High-Impact Metric Transformation Ribbons (Linear / Apple Tier-1 Bento) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8">
+          <div className="p-6 bg-[#0c0d12]/90 border border-white/[0.08] rounded-2xl relative overflow-hidden group hover:border-rose-500/40 transition-all duration-300 backdrop-blur-xl shadow-xl">
+            <div className="absolute top-0 right-0 w-28 h-28 bg-rose-500/10 rounded-full blur-3xl group-hover:bg-rose-500/25 transition-all duration-500" />
+            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block font-medium">Production Traps</span>
+            <div className="flex items-baseline gap-2.5 pt-2">
+              <span className="text-3xl sm:text-4xl font-mono font-bold text-rose-400/60 line-through decoration-rose-500/50">98%</span>
               <span className="text-xs font-mono text-white/40">&rarr;</span>
-              <span className="text-3xl font-black text-emerald-400">0%</span>
+              <span className="text-3xl sm:text-4xl font-mono font-bold text-emerald-400">0%</span>
             </div>
-            <p className="text-xs text-white/60 pt-2">Tarjan SCC graph cycle elimination</p>
+            <p className="text-xs text-white/60 pt-2 font-mono">Tarjan SCC graph cycle elimination</p>
           </div>
 
-          <div className="p-6 bg-[#0c0d10] border border-white/10 rounded-2xl relative overflow-hidden group hover:border-white/20 transition-all">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-[#0090ff]/10 rounded-full blur-2xl group-hover:bg-[#0090ff]/20 transition-all" />
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block">Remediation MTTR</span>
-            <div className="text-3xl font-black text-white pt-1">12x Faster</div>
-            <p className="text-xs text-white/60 pt-2">Automated AST Git pull requests</p>
+          <div className="p-6 bg-[#0c0d12]/90 border border-white/[0.08] rounded-2xl relative overflow-hidden group hover:border-[#0090ff]/40 transition-all duration-300 backdrop-blur-xl shadow-xl">
+            <div className="absolute top-0 right-0 w-28 h-28 bg-[#0090ff]/10 rounded-full blur-3xl group-hover:bg-[#0090ff]/25 transition-all duration-500" />
+            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block font-medium">Remediation MTTR</span>
+            <div className="text-3xl sm:text-4xl font-mono font-bold text-white pt-2 flex items-baseline gap-2">
+              12x <span className="text-xs font-mono text-[#0090ff] font-normal uppercase">Faster</span>
+            </div>
+            <p className="text-xs text-white/60 pt-2 font-mono">Automated AST Git pull requests</p>
           </div>
 
-          <div className="p-6 bg-[#0c0d10] border border-white/10 rounded-2xl relative overflow-hidden group hover:border-white/20 transition-all">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all" />
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block">Code Regressions</span>
-            <div className="text-3xl font-black text-emerald-400 pt-1">0 Regressions</div>
-            <p className="text-xs text-white/60 pt-2">Shadow-DOM replay verification</p>
+          <div className="p-6 bg-[#0c0d12]/90 border border-white/[0.08] rounded-2xl relative overflow-hidden group hover:border-emerald-500/40 transition-all duration-300 backdrop-blur-xl shadow-xl">
+            <div className="absolute top-0 right-0 w-28 h-28 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/25 transition-all duration-500" />
+            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block font-medium">Code Regressions</span>
+            <div className="text-3xl sm:text-4xl font-mono font-bold text-emerald-400 pt-2 flex items-baseline gap-2">
+              0 <span className="text-xs font-mono text-emerald-300/70 font-normal uppercase">Verified</span>
+            </div>
+            <p className="text-xs text-white/60 pt-2 font-mono">Shadow-DOM replay verification</p>
           </div>
 
-          <div className="p-6 bg-[#0c0d10] border border-white/10 rounded-2xl relative overflow-hidden group hover:border-white/20 transition-all">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all" />
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block">Statutory Conformance</span>
-            <div className="text-3xl font-black text-white pt-1">100% Proven</div>
-            <p className="text-xs text-white/60 pt-2">Certified VPAT® 2.5 &amp; EAA 2025 ledgers</p>
+          <div className="p-6 bg-[#0c0d12]/90 border border-white/[0.08] rounded-2xl relative overflow-hidden group hover:border-purple-500/40 transition-all duration-300 backdrop-blur-xl shadow-xl">
+            <div className="absolute top-0 right-0 w-28 h-28 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/25 transition-all duration-500" />
+            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block font-medium">Statutory Conformance</span>
+            <div className="text-3xl sm:text-4xl font-mono font-bold text-white pt-2 flex items-baseline gap-2">
+              100% <span className="text-xs font-mono text-[#bb7bfc] font-normal uppercase">Proven</span>
+            </div>
+            <p className="text-xs text-white/60 pt-2 font-mono">Certified VPAT® 2.5 &amp; EAA 2025</p>
           </div>
         </div>
 
@@ -396,27 +416,27 @@ export function CinematicLanding({
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#0090ff]">
-              <Radio className="w-3.5 h-3.5 animate-pulse" />
-              <span>( VISUAL VERIFICATION LAB )</span>
+            <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#7eac81]">
+              <Radio className="w-3.5 h-3.5 animate-pulse text-[#7eac81]" />
+              <span className="crt-glow-mint">( SENSORY VERIFICATION LAB )</span>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-tight">
+            <h2 className="text-3xl sm:text-5xl font-serif tracking-tight text-white leading-tight">
               See what static linters miss. <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-amber-400 to-emerald-400">
-                Experience the difference live.
+              <span className="italic font-normal text-[#bb7bfc] crt-glow-lavender">
+                Experience the behavioral difference live.
               </span>
             </h2>
           </div>
 
-          {/* Stage Switcher Tabs */}
-          <div className="flex items-center p-1 apple-liquid-glass rounded-full text-xs">
+          {/* Stage Switcher Tabs (Apple Segmented Sliding Pill) */}
+          <div className="flex items-center p-1.5 apple-liquid-glass rounded-full text-xs border border-white/[0.1] shadow-lg ring-1 ring-white/[0.05]">
             <button
               type="button"
               onClick={() => setActiveStage(0)}
-              className={`px-4 py-1.5 rounded-full transition-all flex items-center gap-2 ${
+              className={`px-4 py-2 rounded-full transition-all duration-200 flex items-center gap-2 ${
                 activeStage === 0 
-                  ? 'bg-white text-black font-semibold shadow-md' 
-                  : 'text-white/60 hover:text-white'
+                  ? 'bg-white text-black font-semibold shadow-md active:scale-[0.98]' 
+                  : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
               }`}
             >
               <Keyboard className="w-3.5 h-3.5" />
@@ -425,10 +445,10 @@ export function CinematicLanding({
             <button
               type="button"
               onClick={() => setActiveStage(1)}
-              className={`px-4 py-1.5 rounded-full transition-all flex items-center gap-2 ${
+              className={`px-4 py-2 rounded-full transition-all duration-200 flex items-center gap-2 ${
                 activeStage === 1 
-                  ? 'bg-white text-black font-semibold shadow-md' 
-                  : 'text-white/60 hover:text-white'
+                  ? 'bg-white text-black font-semibold shadow-md active:scale-[0.98]' 
+                  : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
               }`}
             >
               <VolumeX className="w-3.5 h-3.5" />
@@ -437,10 +457,10 @@ export function CinematicLanding({
             <button
               type="button"
               onClick={() => setActiveStage(2)}
-              className={`px-4 py-1.5 rounded-full transition-all flex items-center gap-2 ${
+              className={`px-4 py-2 rounded-full transition-all duration-200 flex items-center gap-2 ${
                 activeStage === 2 
-                  ? 'bg-white text-black font-semibold shadow-md' 
-                  : 'text-white/60 hover:text-white'
+                  ? 'bg-white text-black font-semibold shadow-md active:scale-[0.98]' 
+                  : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
               }`}
             >
               <GitPullRequest className="w-3.5 h-3.5" />
@@ -449,9 +469,9 @@ export function CinematicLanding({
           </div>
         </div>
 
-        {/* STAGE 01: THE INVISIBLE KEYBOARD TRAP (Interactive Simulator) */}
+        {/* STAGE 01: THE INVISIBLE KEYBOARD TRAP (Interactive Simulator inside Tailor'd Arch) */}
         {activeStage === 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center apple-liquid-glass p-8 sm:p-12 rounded-3xl relative overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center portfolio-arch apple-liquid-glass p-8 sm:p-12 relative overflow-hidden crt-stage animate-fade-in-up">
             <div className="lg:col-span-6 space-y-6">
               <div className="space-y-2">
                 <span className="px-2.5 py-1 bg-rose-500/10 border border-rose-500/30 text-rose-400 font-mono text-xs font-bold rounded">
@@ -542,8 +562,8 @@ export function CinematicLanding({
               </div>
             </div>
 
-            {/* Generated Cinematic Image with Glowing HUD */}
-            <div className="lg:col-span-6 relative rounded-2xl overflow-hidden border border-white/15 shadow-2xl group">
+            {/* Generated Cinematic Image with Glowing HUD & Tailor'd Phosphor Shader */}
+            <div className="lg:col-span-6 relative rounded-2xl overflow-hidden border border-white/15 shadow-2xl group crt-filter-blue">
               <div className="relative aspect-[16/10] w-full">
                 <Image
                   src="/images/keyboard-trap-problem.jpg"
@@ -567,7 +587,7 @@ export function CinematicLanding({
 
         {/* STAGE 02: SCREEN READER SILENCE (Audio Equalizer Visualizer) */}
         {activeStage === 1 && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center apple-liquid-glass p-8 sm:p-12 rounded-3xl relative overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center apple-liquid-glass p-8 sm:p-12 rounded-3xl relative overflow-hidden animate-fade-in-up">
             <div className="lg:col-span-6 space-y-6">
               <div className="space-y-2">
                 <span className="px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 font-mono text-xs font-bold rounded">
@@ -631,8 +651,8 @@ export function CinematicLanding({
               </div>
             </div>
 
-            {/* Generated Cinematic Image */}
-            <div className="lg:col-span-6 relative rounded-2xl overflow-hidden border border-white/15 shadow-2xl group">
+            {/* Generated Cinematic Image with Tailor'd Phosphor Shader */}
+            <div className="lg:col-span-6 relative rounded-2xl overflow-hidden border border-white/15 shadow-2xl group crt-filter-blue">
               <div className="relative aspect-[16/10] w-full">
                 <Image
                   src="/images/screen-reader-silence.jpg"
@@ -655,7 +675,7 @@ export function CinematicLanding({
 
         {/* STAGE 03: THE AST PROOF ENGINE & AUTOMATED REPAIR */}
         {activeStage === 2 && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center apple-liquid-glass p-8 sm:p-12 rounded-3xl relative overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center apple-liquid-glass p-8 sm:p-12 rounded-3xl relative overflow-hidden animate-fade-in-up">
             <div className="lg:col-span-6 space-y-6">
               <div className="space-y-2">
                 <span className="px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-xs font-bold rounded">
@@ -699,8 +719,8 @@ export function CinematicLanding({
               </div>
             </div>
 
-            {/* Generated Cinematic Image */}
-            <div className="lg:col-span-6 relative rounded-2xl overflow-hidden border border-white/15 shadow-2xl group">
+            {/* Generated Cinematic Image with Tailor'd Phosphor Shader */}
+            <div className="lg:col-span-6 relative rounded-2xl overflow-hidden border border-white/15 shadow-2xl group crt-filter-blue">
               <div className="relative aspect-[16/10] w-full">
                 <Image
                   src="/images/proof-engine-remediation.jpg"
@@ -723,127 +743,132 @@ export function CinematicLanding({
 
       </section>
 
-      {/* 3. ASYMMETRICAL ARCHITECTURAL BENTO GRID (Visual Tech Depth) */}
+      {/* 3. TAILOR'D 9-BLOCK TECHNICAL CAPABILITIES MATRIX (01 - 09) */}
       <section className="py-24 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto border-t border-white/10 space-y-12">
         <div className="space-y-3">
-          <span className="text-xs font-mono uppercase tracking-widest text-[#10b981]">
-            ( DEEP ARCHITECTURE )
-          </span>
-          <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-tight">
-            Engineered for high-consequence interfaces.
+          <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#7eac81]">
+            <Radio className="w-3.5 h-3.5 animate-pulse text-[#7eac81]" />
+            <span className="crt-glow-mint">( TECHNICAL ARCHITECTURE • 01 - 09 )</span>
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-serif tracking-tight text-white leading-tight">
+            Engineered for high-consequence interfaces. <br />
+            <span className="italic font-normal text-[#bb7bfc] crt-glow-lavender">
+              Surgical verification at every layer.
+            </span>
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          
-          {/* Card 1 (Large - Col 8): Invention 1 - SAMC ATL* Concurrent Game Automaton */}
-          <div className="md:col-span-8 p-8 rounded-3xl apple-liquid-glass space-y-6 relative overflow-hidden group hover:border-white/30 transition-all">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#0090ff]/15 border border-[#0090ff]/30 flex items-center justify-center text-[#0090ff]">
-                  <Binary className="w-5 h-5" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            {
+              index: '01',
+              title: 'Autonomous Traversal Engine',
+              category: 'Playwright CDP Agent',
+              desc: 'Active assistive agent navigating dynamic interactive states—modals, nested drawers, and checkout funnels under true keyboard constraints.',
+              borderClass: 'border-[#7eac81]/30 hover:border-[#7eac81]',
+              accentColor: 'text-[#7eac81]',
+              glowClass: 'crt-glow-mint'
+            },
+            {
+              index: '02',
+              title: 'Tarjan Directed Cycle Proofs',
+              category: 'WCAG 2.1.2 Level A',
+              desc: 'Linear-time graph cycle verification detecting closed focus sinks (SCC) where users cannot escape interactive dialogs.',
+              borderClass: 'border-rose-500/30 hover:border-rose-500',
+              accentColor: 'text-rose-400',
+              glowClass: ''
+            },
+            {
+              index: '03',
+              title: 'Kendall Tau Monotonicity',
+              category: 'WCAG 1.3.2 Reading Order',
+              desc: 'Calculates rank correlation between 2D visual layout coordinates and screen reader DOM reading sequence.',
+              borderClass: 'border-[#bb7bfc]/30 hover:border-[#bb7bfc]',
+              accentColor: 'text-[#bb7bfc]',
+              glowClass: 'crt-glow-lavender'
+            },
+            {
+              index: '04',
+              title: 'ARIA Live Mutation Gaps',
+              category: 'WCAG 4.1.3 Assistive Silence',
+              desc: 'Detects dynamic visual UI updates (toasts, validation errors, cart totals) that lack corresponding live audio announcements.',
+              borderClass: 'border-[#dad45e]/30 hover:border-[#dad45e]',
+              accentColor: 'text-[#dad45e]',
+              glowClass: 'crt-glow-amber'
+            },
+            {
+              index: '05',
+              title: 'Causal AST Code Surgery',
+              category: 'SSIM >= 0.999 Invariance',
+              desc: 'Synthesizes minimal Abstract Syntax Tree code mutations. Pre-verifies 0.0px layout shifts in an isolated shadow browser.',
+              borderClass: 'border-[#7eac81]/30 hover:border-[#7eac81]',
+              accentColor: 'text-[#7eac81]',
+              glowClass: 'crt-glow-mint'
+            },
+            {
+              index: '06',
+              title: '1-Click GitHub PR Dispatch',
+              category: 'Automated Code Repair',
+              desc: 'Dispatches surgically tested React, Vue, and HTML fixes directly into GitHub Pull Requests with cryptographic verification proofs.',
+              borderClass: 'border-[#bb7bfc]/30 hover:border-[#bb7bfc]',
+              accentColor: 'text-[#bb7bfc]',
+              glowClass: 'crt-glow-lavender'
+            },
+            {
+              index: '07',
+              title: 'PoA-DAG Merkle Ledger',
+              category: 'Statutory Defense',
+              desc: 'Every audit run produces an immutable Merkle DAG with SHA-256 state commitments, court-admissible under ADA Title III.',
+              borderClass: 'border-[#7eac81]/30 hover:border-[#7eac81]',
+              accentColor: 'text-[#7eac81]',
+              glowClass: 'crt-glow-mint'
+            },
+            {
+              index: '08',
+              title: 'Certified VPAT® 2.5 Export',
+              category: 'Section 508 & EAA 2025',
+              desc: 'Instant generation of formal VPAT 2.5 (Revised Section 508 / EN 301 549) accessibility conformance documentation.',
+              borderClass: 'border-[#dad45e]/30 hover:border-[#dad45e]',
+              accentColor: 'text-[#dad45e]',
+              glowClass: 'crt-glow-amber'
+            },
+            {
+              index: '09',
+              title: 'Multi-Persona Swarm Arena',
+              category: 'Assistive Concurrency',
+              desc: 'Parallel multi-agent testing across 4 simultaneous constraint models: Keyboard-Only, Screen Reader, Low Vision, and Cognitive.',
+              borderClass: 'border-[#bb7bfc]/30 hover:border-[#bb7bfc]',
+              accentColor: 'text-[#bb7bfc]',
+              glowClass: 'crt-glow-lavender'
+            }
+          ].map((item) => (
+            <div
+              key={item.index}
+              className={`p-7 rounded-3xl apple-glass-card border ${item.borderClass} space-y-5 group transition-all duration-300 relative overflow-hidden flex flex-col justify-between hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] backdrop-blur-xl`}
+            >
+              <div className="space-y-3.5">
+                <div className="flex items-center justify-between">
+                  <span className={`text-xs font-mono font-bold tracking-widest ${item.accentColor} ${item.glowClass}`}>
+                    [ {item.index} ]
+                  </span>
+                  <span className="text-[10px] font-mono text-white/50 bg-white/[0.04] px-2.5 py-0.5 rounded-full border border-white/[0.06] uppercase tracking-wider">
+                    {item.category}
+                  </span>
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white">Symbolic Assistive Model Checking (SAMC)</h3>
-                  <p className="text-xs text-white/50">ATL* 2-Player Game &bull; WCAG 2.1.2 Verification</p>
-                </div>
-              </div>
-              <span className="px-3 py-1 bg-white/[0.06] border border-white/10 rounded-full text-xs text-emerald-400 font-mono">
-                ATL* Liveness Proven
-              </span>
-            </div>
-
-            <p className="text-sm text-white/70 leading-relaxed max-w-xl">
-              Models navigation as a 2-Player Game: User Agent vs. Reactive Web Environment. Formally proves whether an escape strategy exists under temporal formula &lang;&lang;User&rang;&rang; &square; (ModalActive &rArr; &lang;&lang;User&rang;&rang; &loz;<sub>&le;1</sub> ModalDismissed).
-            </p>
-
-            {/* Visual SVG Directed Graph Node Animation */}
-            <div className="h-44 bg-black/40 border border-white/5 rounded-2xl flex items-center justify-around px-8 relative overflow-hidden">
-              <div className="text-center space-y-1 z-10">
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center text-xs font-mono text-emerald-400 font-bold shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                  v0: root
-                </div>
-                <span className="text-[10px] text-white/40">Document</span>
+                <h3 className="text-xl sm:text-2xl font-serif text-white tracking-tight leading-tight group-hover:text-white transition-colors">
+                  {item.title}
+                </h3>
+                <p className="text-xs sm:text-[13px] font-mono text-[#9c9aa8] leading-relaxed">
+                  {item.desc}
+                </p>
               </div>
 
-              <div className="w-12 h-0.5 bg-emerald-500/40 relative">
-                <div className="absolute -top-1 right-0 w-2 h-2 border-t-2 border-r-2 border-emerald-400 rotate-45" />
-              </div>
-
-              <div className="text-center space-y-1 z-10">
-                <div className="w-12 h-12 rounded-xl bg-rose-500/20 border border-rose-500 flex items-center justify-center text-xs font-mono text-rose-300 font-bold shadow-[0_0_20px_rgba(244,63,94,0.4)] animate-pulse">
-                  v1: modal
-                </div>
-                <span className="text-[10px] text-rose-400 font-bold">TRAP CYCLE</span>
-              </div>
-
-              <div className="w-12 h-0.5 bg-rose-500/60 relative">
-                <div className="absolute -top-1 right-0 w-2 h-2 border-t-2 border-r-2 border-rose-400 rotate-45" />
-              </div>
-
-              <div className="text-center space-y-1 z-10">
-                <div className="w-12 h-12 rounded-xl bg-rose-500/20 border border-rose-500 flex items-center justify-center text-xs font-mono text-rose-300 font-bold">
-                  v2: input
-                </div>
-                <span className="text-[10px] text-white/40">Inescapable</span>
+              <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between text-[11px] font-mono text-white/40">
+                <span className="group-hover:text-white/80 transition-colors">Verified Module</span>
+                <span className={`${item.accentColor}`}>&rarr;</span>
               </div>
             </div>
-          </div>
-
-          {/* Card 2 (Col 4): Invention 2 - CMSD Cross-Modal Entropy Fields */}
-          <div className="md:col-span-4 p-8 rounded-3xl apple-liquid-glass space-y-6 flex flex-col justify-between hover:border-white/30 transition-all">
-            <div className="space-y-4">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <Radio className="w-5 h-5" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-lg font-bold text-white">Cross-Modal Divergence (CMSD)</h3>
-                <p className="text-xs text-amber-400 font-mono">D_CMSD(V &parallel; A) &ge; 0.65</p>
-              </div>
-              <p className="text-xs sm:text-sm text-white/70 leading-relaxed">
-                Computes Kullback-Leibler distance between visual mutation saliency V(t) and screen reader acoustic emission A(t). Certifies cognitive exclusion when speech flatlines.
-              </p>
-            </div>
-
-            <div className="p-3 bg-black/40 rounded-xl border border-white/5 font-mono text-xs text-white/60 flex justify-between items-center">
-              <span>Entropy Gap:</span>
-              <span className="text-amber-400 font-bold">3.12 bits (SILENCE)</span>
-            </div>
-          </div>
-
-          {/* Card 3 (Col 5): Invention 3 - CDAS Causal Dual-Objective AST Surgery */}
-          <div className="md:col-span-5 p-8 rounded-3xl apple-liquid-glass space-y-6 hover:border-white/30 transition-all">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-              <Cpu className="w-5 h-5" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-lg font-bold text-white">Causal AST Surgery (CDAS)</h3>
-              <p className="text-xs text-emerald-400 font-mono">SSIM &ge; 0.999 &bull; Zero Pixel Jitter</p>
-            </div>
-            <p className="text-xs sm:text-sm text-white/70 leading-relaxed">
-              Synthesizes minimal AST code interventions under strict visual invariance. Verifies 0.0px layout shift and runs counterfactual do-calculus replay in a headless sandbox.
-            </p>
-          </div>
-
-          {/* Card 4 (Col 7): Invention 4 - Cryptographic PoA-DAG Merkle Ledger */}
-          <div className="md:col-span-7 p-8 rounded-3xl apple-liquid-glass space-y-6 hover:border-white/30 transition-all">
-            <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-2xl bg-[#0090ff]/15 border border-[#0090ff]/30 flex items-center justify-center text-[#0090ff]">
-                <Scale className="w-5 h-5" />
-              </div>
-              <span className="px-3 py-1 bg-white/[0.06] border border-white/10 text-xs text-emerald-300 rounded-full font-mono">
-                O(log N) Verifiable
-              </span>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-lg font-bold text-white">Proof-of-Accessibility (PoA-DAG)</h3>
-              <p className="text-xs text-white/50">Immutable Merkle DAG &bull; ADA Title III &bull; EAA 2025</p>
-            </div>
-            <p className="text-xs sm:text-sm text-white/70 leading-relaxed">
-              Every audit mints an immutable Merkle block with SHA-256 state commitments. Legal and regulatory auditors can verify non-repudiation inclusion proofs without exposing proprietary source code.
-            </p>
-          </div>
-
+          ))}
         </div>
       </section>
 
@@ -990,40 +1015,102 @@ export function CinematicLanding({
 
       </section>
 
-      {/* 7. FINAL HIGH-CONVERTING CALL TO ACTION */}
-      <section className="py-20 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto">
-        <div className="p-10 sm:p-16 rounded-3xl bg-[#0c0d10] border border-white/15 text-center space-y-8 shadow-2xl relative overflow-hidden">
-          <div className="space-y-3 max-w-3xl mx-auto">
-            <span className="text-xs font-mono uppercase tracking-widest text-[#10b981]">
-              ( PRODUCTION READINESS )
-            </span>
-            <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-tight">
-              Make your web application provably accessible to every human.
-            </h2>
-            <p className="text-sm text-white/60 leading-relaxed">
-              Start auditing your web application in seconds. Zero credit card or complex setup required.
-            </p>
+      {/* 7. TERMINAL DIRECT INQUIRY CONSOLE (#contact) */}
+      <section id="contact" className="py-24 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto text-center space-y-12">
+        <div className="space-y-4 max-w-3xl mx-auto">
+          <span className="text-xs font-mono uppercase tracking-widest text-[#dad45e] crt-glow-amber">
+            ( 07 &bull; AUTONOMOUS AUDIT COCKPIT )
+          </span>
+          <h2 className="text-4xl sm:text-6xl font-serif tracking-tight text-white leading-tight font-normal">
+            Initiate Autonomous Verification <span className="italic text-[#dad45e] crt-glow-amber">&amp; AST Remediation</span>
+          </h2>
+          <p className="text-sm sm:text-base text-white/60 leading-relaxed max-w-2xl mx-auto">
+            Submit your staging credentials or target endpoint. The autonomous multi-persona swarm evaluates under real physical keyboard &amp; assistive sensory constraints, uncovering barriers with zero false alarms.
+          </p>
+        </div>
+
+        {/* Tailor'd Styled Terminal Inquiry Box */}
+        <div className="w-full max-w-xl mx-auto bg-[#181717] border border-[#333333] rounded-2xl p-6 sm:p-8 shadow-[0_0_60px_rgba(0,0,0,0.85)] space-y-6 text-left relative overflow-hidden">
+          {/* Terminal Title Bar */}
+          <div className="flex items-center justify-between pb-3.5 border-b border-[#2a2a2a] text-xs font-mono">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
+              <span className="text-white/40 ml-2">inquiry_terminal.sh</span>
+            </div>
+            <span className="text-[#dad45e] font-semibold text-[11px] crt-glow-amber">MODE: AST_VERIFY</span>
           </div>
 
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
-              type="button"
+          {/* Form Inputs */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-mono uppercase tracking-wider text-white/70 mb-1.5">
+                Target Domain / Endpoint URL
+              </label>
+              <input
+                type="text"
+                value={inquiryUrl}
+                onChange={(e) => setInquiryUrl(e.target.value)}
+                placeholder="https://app.acme.corp/checkout"
+                className="w-full bg-[#232323] border border-[#333333] rounded-lg px-3.5 py-2.5 text-xs font-mono text-white placeholder-white/30 focus:border-[#dad45e] focus:ring-1 focus:ring-[#dad45e]/40 focus:outline-none transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-mono uppercase tracking-wider text-white/70 mb-1.5 flex items-center justify-between">
+                <span>Custom Authentication / Staging Cookies</span>
+                <span className="text-[10px] text-white/40 font-normal">Optional JSON or Bearer</span>
+              </label>
+              <input
+                type="text"
+                value={inquiryCookies}
+                onChange={(e) => setInquiryCookies(e.target.value)}
+                placeholder='{"session_id": "stg_9f8a...", "role": "buyer"}'
+                className="w-full bg-[#232323] border border-[#333333] rounded-lg px-3.5 py-2.5 text-xs font-mono text-white placeholder-white/30 focus:border-[#dad45e] focus:ring-1 focus:ring-[#dad45e]/40 focus:outline-none transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-mono uppercase tracking-wider text-white/70 mb-1.5">
+                Journey Goal Specification
+              </label>
+              <textarea
+                rows={3}
+                value={inquiryGoal}
+                onChange={(e) => setInquiryGoal(e.target.value)}
+                placeholder="e.g. Verify keyboard focus trap and dynamic aria-live feedback on checkout modal"
+                className="w-full bg-[#232323] border border-[#333333] rounded-lg px-3.5 py-2.5 text-xs font-mono text-white placeholder-white/30 focus:border-[#dad45e] focus:ring-1 focus:ring-[#dad45e]/40 focus:outline-none transition-all resize-none"
+              />
+            </div>
+          </div>
+
+          {/* Submission Trigger */}
+          <div className="pt-2 space-y-3">
+            <KineticButton
+              text="REQUEST CUSTOM CUJ AUDIT"
+              variant="amber"
               onClick={() => {
                 if (onOpenAuth) onOpenAuth();
-                else onLaunchStudio(trialUrl, trialGoal, trialPersona);
+                else onLaunchStudio(inquiryUrl || trialUrl, inquiryGoal || trialGoal, trialPersona);
               }}
-              className="px-8 py-3.5 bg-white hover:bg-white/90 text-black text-xs font-mono font-bold tracking-wider uppercase rounded-xl flex items-center justify-center gap-2 transition-all shadow-xl"
-            >
-              <span>ACCESS AUDIT COCKPIT</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onLaunchStudio('/benchmark', 'Test modal keyboard focus escape', 'keyboard')}
-              className="px-6 py-3.5 bg-white/5 hover:bg-white/10 text-white text-xs font-mono font-bold tracking-wider uppercase rounded-xl border border-white/10 transition-all"
-            >
-              EXPLORE BENCHMARKS
-            </button>
+              className="w-full justify-center text-xs"
+            />
+
+            <div className="flex items-center justify-center gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => onLaunchStudio('/benchmark', 'Test modal keyboard focus escape', 'keyboard')}
+                className="text-[11px] font-mono text-white/50 hover:text-white transition-colors underline underline-offset-4"
+              >
+                Or launch with standard ground-truth benchmarks &rarr;
+              </button>
+            </div>
+          </div>
+
+          <div className="pt-3 flex items-center justify-between text-[11px] font-mono text-white/40 border-t border-[#2a2a2a]">
+            <span>✓ Cryptographic Causal Proofs</span>
+            <span>Zero False Alarms</span>
           </div>
         </div>
       </section>

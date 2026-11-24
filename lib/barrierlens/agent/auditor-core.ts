@@ -896,8 +896,8 @@ export class AuditorCore {
             ${finding.trustTier},
             ${finding.wcagRules},
             ${finding.severityScore},
-            ${finding.severityInterval[0]},
-            ${finding.severityInterval[1]},
+            ${finding.severityInterval?.[0] ?? finding.severityScore},
+            ${finding.severityInterval?.[1] ?? finding.severityScore},
             ${JSON.stringify(finding.evidence)},
             ${(finding.certificate || finding.gapCertificate) ? JSON.stringify(finding.certificate || finding.gapCertificate) : null}
           );

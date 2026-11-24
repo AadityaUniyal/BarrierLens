@@ -4,6 +4,7 @@ import { CUJSynthesizer } from '@/lib/barrierlens/crawler/cuj-synthesizer';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { verifyApiKey } from '@/lib/barrierlens/security/public-audit';
+import { resolvePublicTargetUrl, requestOriginFrom } from '@/lib/barrierlens/security/target-policy';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -49,15 +50,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Domain or URL is required' }, { status: 400 });
     }
 
+    let safeDomainUrl: string;
+    try {
+      safeDomainUrl = await resolvePublicTargetUrl(domainUrl, requestOriginFrom(req));
+    } catch (policyErr: any) {
+      return NextResponse.json(
+        { error: policyErr.message || 'Invalid or untrusted target domain' },
+        { status: 400 }
+      );
+    }
+
     const maxRoutes = Math.min(50, Math.max(5, parseInt(body.maxRoutes || '25')));
     const autoSaveToNeon = body.autoSaveToNeon !== false;
     const userId = authenticatedUserId;
 
-    console.log(`[Crawler API] Starting autonomous domain discovery for: ${domainUrl} (user: ${userId})`);
+    console.log(`[Crawler API] Starting autonomous domain discovery for: ${safeDomainUrl} (user: ${userId})`);
 
     // 1. Crawl domain routes & archetypes
     const crawler = new DomainCrawler();
-    const profile = await crawler.crawlDomain(domainUrl, maxRoutes);
+    const profile = await crawler.crawlDomain(safeDomainUrl, maxRoutes);
 
     // 2. Synthesize Critical User Journeys (CUJs)
     const synthesizer = new CUJSynthesizer();

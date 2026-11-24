@@ -52,9 +52,9 @@ export function SegmentedControl<T extends string>({
       className={`relative flex items-center bg-white/[0.04] border border-white/10 rounded-xl select-none ${sizeClasses} ${className}`}
       role="tablist"
     >
-      {/* Sliding Pill Indicator */}
+      {/* Apple Hardware Sliding Pill Indicator */}
       <div
-        className="absolute top-1 bottom-1 bg-[#0090ff] rounded-lg shadow-sm transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none"
+        className="absolute top-1 bottom-1 bg-white/[0.12] border border-white/[0.18] rounded-lg shadow-sm backdrop-blur-md transition-all duration-260 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none"
         style={{
           left: `${indicatorStyle.left}px`,
           width: `${indicatorStyle.width}px`,

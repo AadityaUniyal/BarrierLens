@@ -81,18 +81,57 @@ export function RemedyFixesView({
     setTimeout(() => setCopiedPatch(false), 2000);
   };
 
+  // Keyboard-First Navigation Contract (Linear / Apple Standard)
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || (e.target as HTMLElement)?.isContentEditable) return;
+
+      if (e.key === 'j' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        const currentIndex = findings.findIndex(f => f.id === selectedFindingId);
+        if (currentIndex < findings.length - 1) {
+          setSelectedFindingId(findings[currentIndex + 1].id);
+        }
+      } else if (e.key === 'k' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const currentIndex = findings.findIndex(f => f.id === selectedFindingId);
+        if (currentIndex > 0) {
+          setSelectedFindingId(findings[currentIndex - 1].id);
+        }
+      } else if (e.key === 'v' && activeFinding) {
+        e.preventDefault();
+        onVerifyRepair(activeFinding);
+      } else if (e.key === 'c') {
+        e.preventDefault();
+        handleCopy();
+      } else if (e.key === 'p' || e.key === 'Enter') {
+        if (!isPRModalOpen && findings.length > 0) {
+          e.preventDefault();
+          setIsPRModalOpen(true);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [findings, selectedFindingId, activeFinding, isPRModalOpen, onVerifyRepair]);
+
   return (
     <div className="space-y-6 text-white animate-in fade-in duration-300">
       {/* Header Station */}
       <div className="apple-liquid-glass rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-[#30d158]" />
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-              Verified AST Repairs &amp; Automated PRs
-            </h2>
+            <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
+            <span className="text-[11px] font-mono uppercase tracking-wider text-[#9c9aa8] font-semibold">
+              Autonomous Remediation Studio
+            </span>
           </div>
-          <p className="text-xs sm:text-sm text-white/60 max-w-2xl">
+          <h2 className="text-3xl sm:text-4xl font-serif tracking-tight text-white">
+            Verified AST Repairs <span className="italic font-normal text-[#bb7bfc] crt-glow-lavender">&amp; Automated PRs</span>
+          </h2>
+          <p className="text-xs sm:text-sm text-[#9c9aa8] max-w-2xl">
             Declarative AST code mutations replayed inside an isolated headless sandbox. Regressions evaluated across focus graphs and visual invariance before PR dispatch.
           </p>
         </div>
@@ -248,6 +287,32 @@ export function RemedyFixesView({
         patch={patchCode}
         targetUrl={targetUrl}
       />
+
+      {/* Floating Apple Hotkeys HUD (Linear & HIG Standard) */}
+      <div className="sticky bottom-4 left-1/2 -translate-x-1/2 z-40 flex justify-center pointer-events-none">
+        <div className="apple-liquid-glass rounded-full px-4 py-2 border border-white/10 shadow-2xl flex items-center gap-3 text-[11px] font-mono text-white/70 pointer-events-auto backdrop-blur-xl">
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white font-bold">J</kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white font-bold">K</kbd>
+            <span className="text-[#9c9aa8]">navigate</span>
+          </span>
+          <span className="text-white/20">&bull;</span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white font-bold">V</kbd>
+            <span className="text-[#9c9aa8]">verify fix</span>
+          </span>
+          <span className="text-white/20">&bull;</span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white font-bold">C</kbd>
+            <span className="text-[#9c9aa8]">copy</span>
+          </span>
+          <span className="text-white/20">&bull;</span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-white font-bold">P</kbd>
+            <span className="text-[#9c9aa8]">dispatch PR</span>
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

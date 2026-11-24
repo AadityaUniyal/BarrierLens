@@ -1,12 +1,6 @@
 import { neon, neonConfig } from '@neondatabase/serverless';
 import fs from 'node:fs';
 import path from 'node:path';
-import dns from 'node:dns';
-
-// Ensure resilient public DNS fallback for serverless Neon HTTP queries
-try {
-  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
-} catch {}
 
 // Auto-load .env.local if DATABASE_URL is not in process.env
 if (!process.env.DATABASE_URL) {
@@ -86,8 +80,12 @@ export const getDb = () => sql;
  * Helper to execute raw queries with timing and error handling
  */
 export async function queryNeon<T = any>(queryText: string, params: any[] = []): Promise<{ rows: T[]; latencyMs: number }> {
+  const client = getNeonClient();
+  if (!client) {
+    throw new Error('Neon database client unconfigured');
+  }
   const start = performance.now();
-  const rows = await sql(queryText, params);
+  const rows = await client(queryText, params);
   const latencyMs = Math.round(performance.now() - start);
   return { rows: rows as T[], latencyMs };
 }

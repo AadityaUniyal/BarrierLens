@@ -363,13 +363,13 @@ export default function Home() {
 
       if (e.key === '0') setActiveScreen('story');
       if (e.key === '1') setActiveScreen('overview');
-      if (e.key === '2') setActiveScreen('audits');
+      if (e.key === '2') setActiveScreen('studio');
       if (e.key === '3') setActiveScreen('issues');
-      if (e.key === '4') setActiveScreen('fixes');
-      if (e.key === '5') setActiveScreen('arena');
-      if (e.key === '6') setActiveScreen('genome');
-      if (e.key === '7') setActiveScreen('websites');
-      if (e.key === '8') setActiveScreen('settings');
+      if (e.key === '4') setActiveScreen('remedy');
+      if (e.key === '5') setActiveScreen('reports');
+      if (e.key === '6') setActiveScreen('websites');
+      if (e.key === '7') setActiveScreen('genome');
+      if (e.key === '8') setActiveScreen('arena');
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -538,7 +538,8 @@ export default function Home() {
   };
 
   // Headless AST Repair Verification Replay
-  const handleVerifyRepair = async (finding: BarrierFinding) => {
+  const handleVerifyRepair = async (finding?: BarrierFinding) => {
+    if (!finding?.id) return;
     setVerifyingFindingId(finding.id);
     try {
       const res = await fetch('/api/repair/verify', {
@@ -548,7 +549,7 @@ export default function Home() {
           targetUrl,
           findingId: finding.id,
           findingKind: finding.kind,
-          patch: 'aria-modal="true" role="dialog" onKeyDown={handleEsc}'
+          patch: 'aria-modal="true" role="dialog" onkeydown="handleEsc()"'
         })
       });
 

@@ -5,7 +5,19 @@ import { Pool } from '@neondatabase/serverless';
 
 const databaseUrl = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL || '';
 const isValidUrl = databaseUrl && !databaseUrl.includes('[SENSITIVE]') && (databaseUrl.startsWith('postgres://') || databaseUrl.startsWith('postgresql://'));
-const safeDbConnectionString = isValidUrl ? databaseUrl : 'postgresql://postgres:postgres@localhost:5432/postgres';
+
+// Safe mock pool for build time and unconfigured environments to prevent ECONNREFUSED schema errors
+const dummyPool = {
+  connect: async () => ({
+    query: async () => ({ rows: [] }),
+    release: () => {},
+  }),
+  query: async () => ({ rows: [] }),
+  on: () => {},
+  end: async () => {},
+} as unknown as Pool;
+
+const dbPool = isValidUrl ? new Pool({ connectionString: databaseUrl }) : dummyPool;
 
 // Fail closed in production if security secrets are missing
 const isProduction = process.env.NODE_ENV === 'production';
@@ -35,7 +47,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'),
   secret: authSecret || 'dev_secret_only_local_fallback_min_32_characters_long',
-  database: new Pool({ connectionString: safeDbConnectionString }),
+  database: dbPool,
   emailAndPassword: {
     enabled: true,
   },

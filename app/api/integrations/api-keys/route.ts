@@ -14,7 +14,7 @@ async function getUserId(req: NextRequest): Promise<string> {
     }).catch(() => null);
     if (session?.user?.id) return session.user.id;
   } catch {}
-  return req.headers.get('x-user-id') || 'guest_user';
+  return 'sample_user';
 }
 
 export async function GET(req: NextRequest) {

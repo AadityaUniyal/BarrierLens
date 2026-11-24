@@ -118,11 +118,11 @@ export default function OpenGraphImage() {
           }}
         >
           <div style={{ display: 'flex', gap: '24px' }}>
-            <span>✓ ZERO FALSE ALARMS</span>
-            <span>✓ 1-CLICK GITHUB PULL REQUESTS</span>
-            <span>✓ CRYPTOGRAPHIC AUDIT CERTIFICATES</span>
+            <span>[+] ZERO FALSE ALARMS</span>
+            <span>[+] 1-CLICK GITHUB PULL REQUESTS</span>
+            <span>[+] CRYPTOGRAPHIC AUDIT CERTIFICATES</span>
           </div>
-          <span style={{ color: '#10b981' }}>● LIVE PRODUCTION AUDITOR</span>
+          <span style={{ color: '#10b981' }}>[*] LIVE PRODUCTION AUDITOR</span>
         </div>
       </div>
     ),

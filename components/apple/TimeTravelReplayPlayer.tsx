@@ -189,8 +189,8 @@ export function TimeTravelReplayPlayer({
           }}
         />
 
-        {/* Simulated Browser Web View */}
-        <div className="relative w-[760px] h-[340px] rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-inner overflow-hidden flex flex-col">
+        {/* Simulated Browser Web View with Tailor'd CRT Phosphor Filter */}
+        <div className="relative w-[760px] h-[340px] rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-inner overflow-hidden flex flex-col crt-filter-blue">
           {/* Internal Browser Chrome */}
           <div className="h-8 bg-zinc-950/80 border-b border-zinc-800/80 px-4 flex items-center justify-between text-xs text-zinc-400 font-mono">
             <span className="truncate max-w-[400px]">{targetUrl || 'about:blank'}</span>

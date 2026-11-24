@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ParallelPersonaSwarm } from '@/lib/barrierlens/swarm/persona-swarm';
 import { PersonaType } from '@/lib/barrierlens/types';
+import { resolvePublicTargetUrl, requestOriginFrom } from '@/lib/barrierlens/security/target-policy';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300; // 5 minute max runtime for multi-persona swarm
@@ -17,6 +18,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    let safeTargetUrl: string;
+    try {
+      safeTargetUrl = await resolvePublicTargetUrl(targetUrl, requestOriginFrom(req));
+    } catch (policyErr: any) {
+      return NextResponse.json(
+        { error: policyErr.message || 'Invalid or untrusted target URL' },
+        { status: 400 }
+      );
+    }
+
     if (!goal || typeof goal !== 'string') {
       return NextResponse.json(
         { error: 'Invalid or missing goal description' },
@@ -26,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     const swarm = new ParallelPersonaSwarm();
     const result = await swarm.executeSwarm({
-      targetUrl,
+      targetUrl: safeTargetUrl,
       goal,
       personas: Array.isArray(personas) ? (personas as PersonaType[]) : undefined,
       maxStepsPerPersona: typeof maxStepsPerPersona === 'number' ? maxStepsPerPersona : 6,

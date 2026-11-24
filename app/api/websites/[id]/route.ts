@@ -16,12 +16,25 @@ export async function DELETE(
     }).catch(() => null);
 
     const userId = session?.user?.id || 'sample_user';
+    const isSample = !session?.user || userId === 'sample_user';
     const { id } = await params;
 
-    await sql`
-      DELETE FROM websites
-      WHERE id = ${id} AND (user_id = ${userId} OR ${userId} = 'sample_user')
-    `;
+    // Prevent deletion of sample demonstrator templates
+    if (id.startsWith('site_sample_')) {
+      return NextResponse.json({ success: true, id, message: 'Sample reset simulated' });
+    }
+
+    if (isSample) {
+      await sql`
+        DELETE FROM websites
+        WHERE id = ${id} AND user_id = 'sample_user'
+      `;
+    } else {
+      await sql`
+        DELETE FROM websites
+        WHERE id = ${id} AND user_id = ${userId}
+      `;
+    }
 
     return NextResponse.json({ success: true, id });
   } catch (err: any) {
@@ -39,16 +52,23 @@ export async function POST(
     }).catch(() => null);
 
     const userId = session?.user?.id || 'sample_user';
+    const isSample = !session?.user || userId === 'sample_user';
     const { id } = await params;
     const body = await req.json().catch(() => ({}));
     const { action } = body;
 
     if (action === 'verify') {
-      const [site] = await sql`
-        SELECT id, origin, verification_token, verified_at
-        FROM websites
-        WHERE id = ${id} AND (user_id = ${userId} OR ${userId} = 'sample_user')
-      `;
+      const [site] = isSample
+        ? await sql`
+            SELECT id, origin, verification_token, verified_at
+            FROM websites
+            WHERE id = ${id} AND user_id = 'sample_user'
+          `
+        : await sql`
+            SELECT id, origin, verification_token, verified_at
+            FROM websites
+            WHERE id = ${id} AND user_id = ${userId}
+          `;
 
       if (!site) {
         return NextResponse.json({ error: 'Website not found' }, { status: 404 });

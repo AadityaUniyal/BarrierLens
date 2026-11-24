@@ -22,7 +22,8 @@ import {
   LogOut,
   User,
   LayoutDashboard,
-  Fingerprint
+  Fingerprint,
+  CheckCircle2
 } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { UserSession } from './AppleAuthModal';
@@ -100,22 +101,22 @@ export function Navbar({
     }
   };
 
-  // Consolidated 5 Master Command Tabs
+  // Pure 5-Workspace Apple / Linear HIG Navigation
   const dashboardTabs = [
-    { id: 'audits' as ScreenId, label: 'Studio', icon: Compass, keyNumber: '1' },
-    { id: 'issues' as ScreenId, label: 'Proofs', icon: ShieldCheck, keyNumber: '2' },
-    { id: 'fixes' as ScreenId, label: 'Remedy', icon: Sparkles, keyNumber: '3' },
-    { id: 'reports' as ScreenId, label: 'Reports', icon: FileText, keyNumber: '4' },
-    { id: 'overview' as ScreenId, label: 'Fleet', icon: Activity, keyNumber: '5' },
+    { id: 'overview' as ScreenId, label: 'Overview', icon: Activity, keyNumber: '1' },
+    { id: 'studio' as ScreenId, label: 'Studio', icon: Compass, keyNumber: '2' },
+    { id: 'issues' as ScreenId, label: 'Findings', icon: CheckCircle2, keyNumber: '3' },
+    { id: 'remedy' as ScreenId, label: 'Remedy', icon: Sparkles, keyNumber: '4' },
+    { id: 'reports' as ScreenId, label: 'Ledger', icon: ShieldCheck, keyNumber: '5' },
   ];
 
   const isTabActive = (id: ScreenId) => {
     if (activeScreen === id) return true;
-    if (id === 'audits' && (activeScreen === 'studio' || activeScreen === 'inspector' || activeScreen === 'visual-twin')) return true;
+    if (id === 'overview' && (activeScreen === 'pulse' || activeScreen === 'trends' || activeScreen === 'websites' || activeScreen === 'settings' || activeScreen === 'vault' || activeScreen === 'aws-bridge' || activeScreen === 'multi-agent')) return true;
+    if (id === 'studio' && (activeScreen === 'audits' || activeScreen === 'inspector' || activeScreen === 'visual-twin')) return true;
     if (id === 'issues' && (activeScreen === 'triage' || activeScreen === 'focus-map' || activeScreen === 'screen-reader')) return true;
-    if (id === 'fixes' && activeScreen === 'remedy') return true;
-    if (id === 'reports' && activeScreen === 'scorecard') return true;
-    if (id === 'overview' && (activeScreen === 'pulse' || activeScreen === 'trends' || activeScreen === 'websites' || activeScreen === 'genome' || activeScreen === 'arena' || activeScreen === 'settings' || activeScreen === 'vault' || activeScreen === 'aws-bridge' || activeScreen === 'multi-agent')) return true;
+    if (id === 'remedy' && (activeScreen === 'fixes')) return true;
+    if (id === 'reports' && (activeScreen === 'scorecard' || activeScreen === 'genome' || activeScreen === 'arena')) return true;
     return false;
   };
 

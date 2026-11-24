@@ -252,13 +252,13 @@ export function AppleAuthModal({
           /* Sign In Flow */
           <div className="space-y-6">
             <div className="text-center space-y-2">
-              <div className="w-12 h-12 rounded-2xl bg-[#0090ff]/15 text-[#0090ff] mx-auto flex items-center justify-center border border-[#0090ff]/30 shadow-inner">
+              <div className="w-12 h-12 rounded-2xl bg-[#bb7bfc]/15 text-[#bb7bfc] mx-auto flex items-center justify-center border border-[#bb7bfc]/30 shadow-inner">
                 <Fingerprint className="w-6 h-6" />
               </div>
-              <h2 id="auth-modal-title" className="text-xl font-semibold text-white tracking-tight">
-                Sign in to BarrierLens
+              <h2 id="auth-modal-title" className="text-2xl font-serif text-white tracking-tight">
+                Passkey <span className="italic font-normal text-[#bb7bfc] crt-glow-lavender">Authentication</span>
               </h2>
-              <p className="text-xs text-white/60 leading-relaxed max-w-xs mx-auto">
+              <p className="text-xs text-[#9c9aa8] leading-relaxed max-w-xs mx-auto">
                 Cryptographic authentication for formal accessibility model checking and statutory ledgers.
               </p>
             </div>
@@ -288,7 +288,7 @@ export function AppleAuthModal({
                 type="button"
                 onClick={handlePasskeyAuth}
                 disabled={isAuthenticating}
-                className="w-full py-3 rounded-full bg-white text-black hover:bg-slate-200 text-xs font-semibold transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
+                className="w-full py-3 rounded-full bg-white text-black hover:bg-slate-200 text-xs font-semibold transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 min-h-[44px] active:scale-95"
               >
                 <Fingerprint className="w-4 h-4 text-black" />
                 <span>Sign in with Passkey / Touch ID</span>
@@ -298,7 +298,7 @@ export function AppleAuthModal({
                 type="button"
                 onClick={handleGitHubAuth}
                 disabled={isAuthenticating}
-                className="w-full py-3 rounded-full bg-white/[0.06] hover:bg-white/[0.10] border border-white/[0.10] text-white text-xs font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3 rounded-full bg-white/[0.06] hover:bg-white/[0.10] border border-white/[0.10] text-white text-xs font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 min-h-[44px] active:scale-95"
               >
                 <GithubIcon className="w-4 h-4 text-white/80" />
                 <span>Continue with GitHub</span>

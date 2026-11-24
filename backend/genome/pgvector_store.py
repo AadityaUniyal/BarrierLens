@@ -48,16 +48,16 @@ class PgvectorStore:
             cur.execute("""
                 INSERT INTO barrier_genomes (
                     id, finding_id, finding_kind, domain, target_url, persona, 
-                    vector, vector_json, magnitude, severity_score, wcag_rules, context
+                    vector, embedding, vector_json, magnitude, severity_score, wcag_rules, context
                 )
                 VALUES (
                     %s, %s, %s, %s, %s, %s, 
-                    %s::vector, %s, %s, %s, %s, %s
+                    %s::vector, %s::vector, %s, %s, %s, %s, %s
                 )
                 ON CONFLICT (id) DO NOTHING;
             """, (
                 gid, finding_id, finding_kind, domain, target_url, persona,
-                vec_str, json.dumps(vector), 1.0, severity_score, json.dumps(wcag_rules), json.dumps({"source": "backend_agent"})
+                vec_str, vec_str, json.dumps(vector), 1.0, severity_score, json.dumps(wcag_rules), json.dumps({"source": "backend_agent"})
             ))
 
             conn.commit()

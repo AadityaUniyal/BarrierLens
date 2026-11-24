@@ -71,6 +71,7 @@ export function AuditStudioView({
   const [activeTab, setActiveTab] = useState<StudioViewTab>('viewport');
   const [speechActive, setSpeechActive] = useState<boolean>(true);
   const [isCertDrawerOpen, setIsCertDrawerOpen] = useState<boolean>(false);
+  const [isCrtMode, setIsCrtMode] = useState<boolean>(true);
 
   // Verified benchmark presets
   const benchmarkPresets = [
@@ -242,16 +243,16 @@ export function AuditStudioView({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#0090ff] shadow-sm shadow-[#0090ff]" />
-              <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-semibold">
+              <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
+              <span className="text-[11px] font-mono uppercase tracking-wider text-[#9c9aa8] font-semibold">
                 Autonomous Traversal Sandbox
               </span>
             </div>
-            <h2 className="text-2xl font-bold tracking-tight text-white">
-              Task-Conditioned Audit Studio
+            <h2 className="text-3xl font-serif tracking-tight text-white">
+              Audit Studio <span className="italic font-normal text-[#bb7bfc] crt-glow-lavender">&amp; Traversal Stage</span>
             </h2>
-            <p className="text-xs text-slate-400">
-              Autonomous behavioral agent evaluating under real physical keyboard & assistive sensory constraints.
+            <p className="text-xs text-[#9c9aa8]">
+              Autonomous behavioral agent evaluating under real physical keyboard &amp; assistive sensory constraints.
             </p>
           </div>
 
@@ -509,17 +510,17 @@ export function AuditStudioView({
         
         {/* Left Column: Multi-Mode Visualizer (7 cols) */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="rounded-2xl glass-panel border border-white/[0.08] overflow-hidden shadow-2xl flex flex-col min-h-[540px]">
+          <div className={`portfolio-arch apple-liquid-glass overflow-hidden shadow-2xl flex flex-col min-h-[560px] ${isCrtMode ? 'crt-stage' : ''}`}>
             
-            {/* Viewport Multi-Tab Mode Bar */}
+            {/* Viewport Multi-Tab Mode Bar with CRT Toggle */}
             <div className="px-5 py-3 bg-white/[0.02] border-b border-white/[0.08] flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
-              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#07080b]/90 border border-white/[0.08]">
+              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-black/40 border border-white/[0.08]">
                 <button
                   onClick={() => setActiveTab('viewport')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     activeTab === 'viewport'
-                      ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-white/[0.12] text-white border border-white/20'
+                      : 'text-white/60 hover:text-white'
                   }`}
                 >
                   <span className="flex items-center gap-1.5">
@@ -531,8 +532,8 @@ export function AuditStudioView({
                   onClick={() => setActiveTab('theater')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     activeTab === 'theater'
-                      ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-white/[0.12] text-white border border-white/20'
+                      : 'text-white/60 hover:text-white'
                   }`}
                 >
                   <span className="flex items-center gap-1.5">
@@ -544,8 +545,8 @@ export function AuditStudioView({
                   onClick={() => setActiveTab('auditory')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     activeTab === 'auditory'
-                      ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-white/[0.12] text-white border border-white/20'
+                      : 'text-white/60 hover:text-white'
                   }`}
                 >
                   <span className="flex items-center gap-1.5">
@@ -557,8 +558,8 @@ export function AuditStudioView({
                   onClick={() => setActiveTab('focus_map')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     activeTab === 'focus_map'
-                      ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-white/[0.12] text-white border border-white/20'
+                      : 'text-white/60 hover:text-white'
                   }`}
                 >
                   <span className="flex items-center gap-1.5">
@@ -567,6 +568,21 @@ export function AuditStudioView({
                   </span>
                 </button>
               </div>
+
+              {/* CRT Phosphor Scanline Switch */}
+              <button
+                type="button"
+                onClick={() => setIsCrtMode(!isCrtMode)}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition-all flex items-center gap-1.5 border ${
+                  isCrtMode
+                    ? 'bg-[#7eac81]/15 text-[#7eac81] border-[#7eac81]/30 crt-glow-mint'
+                    : 'bg-white/[0.04] text-white/50 border-white/[0.08] hover:text-white'
+                }`}
+                title="Toggle Tailor'd Phosphor CRT Scanline Raster"
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${isCrtMode ? 'bg-[#7eac81] animate-pulse' : 'bg-white/40'}`} />
+                <span>CRT Scanlines</span>
+              </button>
 
               {/* Real-time Streaming Pulse Indicator */}
               {isAuditing ? (
@@ -599,10 +615,10 @@ export function AuditStudioView({
                   onSelectFinding={onSelectFinding}
                 />
 
-                {/* Bottom: Mechanical Physical Keystroke Visualizer */}
-                <div className="p-3.5 bg-[#181a1d] rounded-xl border border-[#23262a] space-y-2">
-                  <div className="flex items-center justify-between text-[10px] font-mono text-[#9ba1a6]">
-                    <span className="font-semibold uppercase tracking-wider text-[#9ba1a6]">
+                {/* Bottom: Mechanical Physical Keystroke Visualizer (Analog Phosphor Style) */}
+                <div className="p-3.5 apple-glass-card rounded-2xl border border-white/[0.08] space-y-2">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-[#9c9aa8]">
+                    <span className="font-semibold uppercase tracking-wider text-[#7eac81] crt-glow-mint">
                       Physical Keystroke Visualizer
                     </span>
                     <span>Hardware Interaction Stream</span>
@@ -614,10 +630,10 @@ export function AuditStudioView({
                       return (
                         <div
                           key={kc.key}
-                          className={`apple-keycap px-3 py-1 text-xs font-semibold select-none ${
+                          className={`px-3 py-1 text-xs font-mono font-semibold select-none rounded border transition-all ${
                             isActive
-                              ? 'text-white border-[#5e6ad2] shadow-[0_0_8px_rgba(94,106,210,0.5)] translate-y-[1px]'
-                              : 'text-[#9ba1a6]'
+                              ? 'bg-[#7eac81]/20 text-[#7eac81] border-[#7eac81] shadow-[0_0_12px_rgba(126,172,129,0.5)] translate-y-[1px] crt-glow-mint'
+                              : 'bg-black/30 text-[#9c9aa8] border-white/10'
                           }`}
                         >
                           <span>{kc.label}</span>

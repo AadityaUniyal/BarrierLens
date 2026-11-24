@@ -59,7 +59,6 @@ export interface SwarmExecutionResult {
  * Pareto optimization to produce zero-regression accessibility remediations.
  */
 export class ParallelPersonaSwarm {
-  private auditorCore = new AuditorCore();
   private paretoResolver = new ParetoConflictResolver();
 
   /**
@@ -104,7 +103,8 @@ export class ParallelPersonaSwarm {
         options.onProgress?.({ type: 'persona_started', persona });
 
         try {
-          const auditRun = await this.auditorCore.runAudit(
+          const auditorCore = new AuditorCore();
+          const auditRun = await auditorCore.runAudit(
             targetUrl,
             goal,
             persona,

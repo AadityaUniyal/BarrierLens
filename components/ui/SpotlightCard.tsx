@@ -12,7 +12,7 @@ interface SpotlightCardProps extends React.HTMLAttributes<HTMLDivElement> {
 export const SpotlightCard: React.FC<SpotlightCardProps> = ({
   children,
   className = '',
-  spotlightColor = 'rgba(0, 144, 255, 0.12)',
+  spotlightColor = 'rgba(187, 123, 252, 0.14)',
   borderColor = 'rgba(255, 255, 255, 0.08)',
   ...props
 }) => {
@@ -43,24 +43,26 @@ export const SpotlightCard: React.FC<SpotlightCardProps> = ({
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative rounded-2xl bg-[#0d1017]/80 backdrop-blur-sm border transition-all duration-300 overflow-hidden ${className}`}
+      className={`relative rounded-2xl apple-glass-card border transition-all duration-300 overflow-hidden ${className}`}
       style={{
-        borderColor: opacity > 0 ? 'rgba(255, 255, 255, 0.16)' : borderColor,
+        borderColor: opacity > 0 ? 'rgba(255, 255, 255, 0.20)' : borderColor,
       }}
       {...props}
     >
-      {/* Dynamic Mouse Spotlight Layer */}
+      {/* Dynamic Mouse Spotlight Flare Layer */}
       <div
-        className="pointer-events-none absolute -inset-px transition-opacity duration-300"
+        className="pointer-events-none absolute -inset-px transition-opacity duration-400 ease-out"
         style={{
           opacity,
-          background: `radial-gradient(400px circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 80%)`,
+          background: `radial-gradient(420px circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 70%)`,
         }}
         aria-hidden="true"
       />
 
-      {/* Content */}
-      <div className="relative z-10">{children}</div>
+      {/* Content wrapper */}
+      <div className="relative z-10">
+        {children}
+      </div>
     </div>
   );
 };

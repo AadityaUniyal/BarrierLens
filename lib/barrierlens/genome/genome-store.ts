@@ -34,7 +34,9 @@ export class GenomeStore {
           domain TEXT NOT NULL,
           target_url TEXT NOT NULL,
           persona TEXT NOT NULL,
-          vector JSONB NOT NULL,
+          vector vector(768),
+          embedding vector(768),
+          vector_json JSONB,
           magnitude FLOAT NOT NULL,
           severity_score FLOAT NOT NULL,
           wcag_rules JSONB NOT NULL,
@@ -42,6 +44,10 @@ export class GenomeStore {
           created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
         );
       `;
+      try {
+        await sql`ALTER TABLE barrier_genomes ADD COLUMN IF NOT EXISTS embedding vector(768);`;
+        await sql`ALTER TABLE barrier_genomes ADD COLUMN IF NOT EXISTS vector_json JSONB;`;
+      } catch {}
       this.tableInitialized = true;
     } catch {
       // Offline fallback: use in-memory store
@@ -68,7 +74,7 @@ export class GenomeStore {
       if (vectorStr) {
         await sql`
           INSERT INTO barrier_genomes (
-            id, finding_id, finding_kind, domain, target_url, persona, vector, embedding, magnitude, severity_score, wcag_rules, context, created_at
+            id, finding_id, finding_kind, domain, target_url, persona, vector, embedding, vector_json, magnitude, severity_score, wcag_rules, context, created_at
           ) VALUES (
             ${genome.findingId},
             ${genome.findingId},
@@ -76,8 +82,9 @@ export class GenomeStore {
             ${domain},
             ${genome.context.targetUrl},
             ${genome.context.persona},
-            ${JSON.stringify(genome.vector)},
             ${vectorStr}::vector,
+            ${vectorStr}::vector,
+            ${JSON.stringify(genome.vector)},
             ${genome.magnitude},
             ${genome.metadata.severityScore || 5.0},
             ${JSON.stringify(genome.metadata.wcagRules || [])},
@@ -87,6 +94,7 @@ export class GenomeStore {
           ON CONFLICT (id) DO UPDATE SET
             vector = EXCLUDED.vector,
             embedding = EXCLUDED.embedding,
+            vector_json = EXCLUDED.vector_json,
             magnitude = EXCLUDED.magnitude,
             severity_score = EXCLUDED.severity_score,
             context = EXCLUDED.context;
@@ -94,7 +102,7 @@ export class GenomeStore {
       } else {
         await sql`
           INSERT INTO barrier_genomes (
-            id, finding_id, finding_kind, domain, target_url, persona, vector, magnitude, severity_score, wcag_rules, context, created_at
+            id, finding_id, finding_kind, domain, target_url, persona, vector_json, magnitude, severity_score, wcag_rules, context, created_at
           ) VALUES (
             ${genome.findingId},
             ${genome.findingId},
@@ -110,7 +118,7 @@ export class GenomeStore {
             ${genome.timestamp}
           )
           ON CONFLICT (id) DO UPDATE SET
-            vector = EXCLUDED.vector,
+            vector_json = EXCLUDED.vector_json,
             magnitude = EXCLUDED.magnitude,
             severity_score = EXCLUDED.severity_score,
             context = EXCLUDED.context;
@@ -135,11 +143,11 @@ export class GenomeStore {
       if (queryGenome.vector && Array.isArray(queryGenome.vector) && queryGenome.vector.length === 768) {
         const queryVectorStr = `[${queryGenome.vector.join(',')}]`;
         const rows = await sql`
-          SELECT id, finding_id, finding_kind, domain, target_url, persona, vector, magnitude, severity_score, wcag_rules, context, created_at,
-                 (1 - (embedding <=> ${queryVectorStr}::vector)) as similarity
+          SELECT id, finding_id, finding_kind, domain, target_url, persona, vector, vector_json, magnitude, severity_score, wcag_rules, context, created_at,
+                 (1 - (COALESCE(embedding, vector) <=> ${queryVectorStr}::vector)) as similarity
           FROM barrier_genomes
-          WHERE embedding IS NOT NULL AND finding_id != ${queryGenome.findingId}
-          ORDER BY embedding <=> ${queryVectorStr}::vector ASC
+          WHERE COALESCE(embedding, vector) IS NOT NULL AND finding_id != ${queryGenome.findingId}
+          ORDER BY COALESCE(embedding, vector) <=> ${queryVectorStr}::vector ASC
           LIMIT ${topK * 2};
         `;
 

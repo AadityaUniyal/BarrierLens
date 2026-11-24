@@ -1,44 +1,53 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:ital,wght@0,600;0,700;0,800;0,900;1,600;1,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Apple Liquid Glass Canvas Tokens */
-  --bg: #050608;
-  --bg-secondary: #0a0b10;
-  --bg-surface: #10121a;
-  --bg-alt: #f4f2ee;
+  /* Apple Liquid Glass Canvas Tokens & Tailor'd Warm Carbon */
+  --bg: #111114;
+  --bg-secondary: #16161b;
+  --bg-surface: #1c1c24;
+  --bg-alt: #f5f2eb;
   --fg: #f5f5f7;
-  --fg-dark: #050608;
-  --fg-muted: rgba(255, 255, 255, 0.65);
+  --fg-dark: #111114;
+  --fg-muted: #9c9aa8;
   --fg-subtle: rgba(255, 255, 255, 0.40);
-  --line: rgba(255, 255, 255, 0.06);
+  --line: rgba(255, 255, 255, 0.08);
   --line-strong: rgba(255, 255, 255, 0.16);
-  --scrim: rgba(0, 0, 0, 0.65);
-  --accent: #0090ff;
-  --accent-cyan: #06b6d4;
-  --accent-emerald: #10b981;
-  --accent-rose: #f43f5e;
-  --accent-amber: #f59e0b;
-  --accent-purple: #8b5cf6;
+  --scrim: rgba(0, 0, 0, 0.70);
 
-  /* Specular Edge & Refraction Highlights */
-  --specular-lip: rgba(255, 255, 255, 0.32);
+  /* Tailor'd Design Calibrated Phosphor Accents */
+  --color-crt: #a9a9b6;
+  --color-primary: #f5f2eb;
+  --color-accent: #7eac81;         /* Terminal Mint */
+  --color-accentTwo: #bb7bfc;      /* Electric Lavender */
+  --color-accentThree: #dad45e;    /* Telemetry Amber */
+  --color-danger: #ff453a;         /* Apple Destructive Red */
+
+  /* Apple System Semantics */
+  --apple-blue: #0071e3;
+  --apple-blue-hover: #0077ed;
+  --apple-emerald: #32d74b;
+  --apple-amber: #ff9f0a;
+  --apple-rose: #ff453a;
+  --apple-purple: #bf5af2;
+
+  /* Specular Edge & Refraction Highlights (Apple Liquid Glass) */
+  --specular-lip: rgba(255, 255, 255, 0.28);
   --specular-side: rgba(255, 255, 255, 0.08);
   --specular-bottom: rgba(255, 255, 255, 0.03);
 
   /* Typography */
-  --font-display: "Inter Tight", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-  --font-italic: "Instrument Serif", "Playfair Display", Georgia, serif;
-  --font-mono: "JetBrains Mono", monospace;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 
   /* Apple Hardware Physics */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-apple-spring: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-liquid: cubic-bezier(0.25, 1, 0.5, 1);
+  --duration-spring: 260ms;
 }
 
 [data-theme="oled"] {
@@ -65,6 +74,13 @@ body {
   font-family: var(--font-body);
   overflow-x: hidden;
   letter-spacing: -0.01em;
+}
+
+/* WCAG 2.2 AAA & Apple Pro Hardware Focus Indicators */
+:focus-visible {
+  outline: 2px solid #0090ff !important;
+  outline-offset: 2px !important;
+  border-radius: 4px;
 }
 
 /* Typography Utility Classes */
@@ -221,6 +237,55 @@ body {
   z-index: 0;
 }
 
+/* Linear & Apple Pro Micro-Interactions & Hardware Easing */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes laser-scan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(1000%);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 650ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 4s ease-in-out infinite;
+}
+
+.animate-laser {
+  animation: laser-scan 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Smooth stage cross-fade transitions */
+.stage-transition {
+  transition: opacity 300ms cubic-bezier(0.16, 1, 0.3, 1), transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
@@ -233,9 +298,264 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 0px;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.35);
+}
+
+/* Tailor'd Design Arched Framing & CRT Effects */
+.portfolio-arch {
+  border-radius: 36px 36px 16px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 24px rgba(126, 172, 129, 0.08), inset 0 0 16px rgba(126, 172, 129, 0.04);
+}
+
+.portfolio-arch-lavender {
+  border-radius: 36px 36px 16px 16px;
+  border: 1px solid rgba(187, 123, 252, 0.35);
+  box-shadow: 0 0 24px rgba(187, 123, 252, 0.12), inset 0 0 16px rgba(187, 123, 252, 0.05);
+}
+
+/* Encapsulated CRT Viewport (Safe for live stage) */
+.crt-stage {
+  position: relative;
+  overflow: hidden;
+}
+
+.crt-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+  background: repeating-linear-gradient(0deg, rgba(3, 3, 12, 0.45) 0 1px, transparent 1px 3px);
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.6);
+}
+
+.crt-glow-mint {
+  text-shadow: 0 0 12px rgba(126, 172, 129, 0.45);
+}
+
+.crt-glow-lavender {
+  text-shadow: 0 0 14px rgba(187, 123, 252, 0.45);
+}
+
+.crt-glow-amber {
+  text-shadow: 0 0 12px rgba(218, 212, 94, 0.45);
+}
+
+/* Apple Liquid Glass Card */
+.apple-glass-card {
+  background: rgba(22, 22, 28, 0.65);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top-color: rgba(255, 255, 255, 0.22);
+  transition: all 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.apple-glass-card:hover {
+  background: rgba(28, 28, 36, 0.78);
+  border-top-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.6);
+}
+
+/* Tailor'd Design Complete CRT Raster Engine */
+.crt-enabled body:before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(3, 3, 12, 0.28) 0 1px,
+    transparent 1px 3px
+  );
+  box-shadow: inset 0 0 80px rgba(2, 3, 11, 0.45);
+  opacity: 0.65;
+}
+
+.crt-enabled body:after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.055;
+  mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Subpixel Chromatic Aberration & Text Bloom */
+.crt-enabled :is(h1, h2, h3, h4, p, label, span, a:not(.no-crt), .font-mono, .font-serif) {
+  text-shadow: 
+    -0.7px 0 color-mix(in srgb, currentColor 50%, transparent),
+     0.7px 0 color-mix(in srgb, currentColor 35%, transparent),
+     0 0 13px color-mix(in srgb, currentColor 20%, transparent);
+}
+
+/* Kinetic Rotating Animation */
+@keyframes rotating {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes blinking {
+  0% { opacity: 0.15; }
+  50% { opacity: 1.0; }
+  100% { opacity: 0.15; }
+}
+
+@keyframes swap {
+  0% { transform: translate(0); }
+  100% { transform: translate(100%); }
+}
+
+@keyframes button-grow {
+  0% { width: 50%; height: 5%; }
+  50% { width: 100%; height: 5%; }
+  100% { width: 100%; height: 100%; }
+}
+
+/* Tailor'd Design Kinetic Double-Border Button (.btn) */
+.btn-tailord {
+  display: inline-flex;
+  position: relative;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  min-height: 48px;
+  padding-left: 20px;
+  padding-right: 48px;
+  border-style: double;
+  border-width: 3px;
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  line-height: 2.25rem;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.btn-tailord:hover {
+  border-style: none;
+  background-color: var(--color-accent);
+  color: #181717;
+  text-shadow: none !important;
+}
+
+.btn-tailord .circles {
+  position: absolute;
+  right: 14px;
+  width: 20px;
+  height: 20px;
+  transform-origin: 50% 50%;
+  pointer-events: none;
+}
+
+.btn-tailord:hover .circles {
+  animation: 0.4s linear infinite rotating;
+}
+
+/* Tailor'd Roman Arch Viewport */
+.portfolio-arch {
+  position: relative;
+  overflow: hidden;
+  border-top-left-radius: 3.40282e38px;
+  border-top-right-radius: 3.40282e38px;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--color-crt) 50%, transparent);
+  box-shadow: 
+    0 0 16px color-mix(in srgb, var(--color-crt) 25%, transparent),
+    inset 0 0 10px color-mix(in srgb, var(--color-crt) 12%, transparent);
+  transition: box-shadow 0.4s ease-in-out, border-color 0.3s ease;
+}
+
+.portfolio-arch:after {
+  content: "";
+  display: block;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-top-left-radius: 3.40282e38px;
+  border-top-right-radius: 3.40282e38px;
+  box-shadow: inset 6px 10px 14px rgba(0, 0, 0, 0.85);
+  z-index: 10;
+}
+
+.portfolio-arch:hover,
+.portfolio-arch.selected {
+  border-color: var(--color-accentTwo);
+  box-shadow: 0 0 60px 20px rgba(187, 123, 252, 0.22);
+}
+
+/* Tailor'd Content Box */
+.content-box {
+  width: clamp(340px, 32vw, 440px);
+  padding: 0 20px;
+}
+
+.content-box > div {
+  margin-bottom: 20px;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--color-accent);
+  padding: 6px 16px;
+  display: flex;
+}
+
+/* Tailor'd SVG Phosphor Filter Utilities */
+.crt-filter-blue {
+  filter: url(#crt-imageBlue);
+  transition: filter 350ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.crt-filter-blue:hover {
+  filter: url(#crt-imageBlueHover);
+}
+
+.crt-filter-ink {
+  filter: url(#crt-ink);
+}
+
+/* Accessibility: Strict Prefers-Reduced-Motion & High-Contrast */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .crt-enabled body:before,
+  .crt-enabled body:after,
+  .crt-stage::before {
+    display: none !important;
+  }
+  .crt-filter-blue,
+  .crt-filter-blue:hover,
+  .crt-filter-ink {
+    filter: none !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --line: rgba(255, 255, 255, 0.35);
+    --fg-muted: #ffffff;
+  }
+  .apple-glass-card, .apple-liquid-glass, .glass-panel {
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    background: #111114 !important;
+  }
+  * {
+    text-shadow: none !important;
+  }
 }

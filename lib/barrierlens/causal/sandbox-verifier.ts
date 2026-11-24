@@ -64,10 +64,14 @@ export class SandboxVerifier {
 
       // CDAS: Measure pre-patch bounding box for visual invariance proof
       const preBox = await page.evaluate((sel) => {
-        const el = document.querySelector(sel);
-        if (!el) return { x: 0, y: 0, width: 0, height: 0 };
-        const r = el.getBoundingClientRect();
-        return { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height) };
+        try {
+          const el = document.querySelector(sel);
+          if (!el) return { x: 0, y: 0, width: 0, height: 0 };
+          const r = el.getBoundingClientRect();
+          return { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height) };
+        } catch {
+          return { x: 0, y: 0, width: 0, height: 0 };
+        }
       }, targetSelector);
 
       // Inject the counterfactual patch via DOM replacement
@@ -87,10 +91,14 @@ export class SandboxVerifier {
 
         // CDAS: Measure post-patch bounding box
         const postBox = await page.evaluate((sel) => {
-          const el = document.querySelector(sel);
-          if (!el) return { x: 0, y: 0, width: 0, height: 0 };
-          const r = el.getBoundingClientRect();
-          return { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height) };
+          try {
+            const el = document.querySelector(sel);
+            if (!el) return { x: 0, y: 0, width: 0, height: 0 };
+            const r = el.getBoundingClientRect();
+            return { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height) };
+          } catch {
+            return { x: 0, y: 0, width: 0, height: 0 };
+          }
         }, targetSelector);
 
         layoutDeltaPx = Math.max(

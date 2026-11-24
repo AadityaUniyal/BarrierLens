@@ -66,12 +66,12 @@ export class CausalDualObjectiveASTSurgeryEngine {
         if (rawHTML.includes('<dialog') || rawHTML.includes('role="dialog"') || rawHTML.includes('trap-modal')) {
           patchedHTML = rawHTML.replace(
             /(<(?:dialog|div)[^>]*)/i,
-            `$1 onKeyDown={(e) => { if (e.key === 'Escape') { e.currentTarget.dispatchEvent(new CustomEvent('close-modal', { bubbles: true })); } }} tabIndex={-1} aria-modal="true"`
+            `$1 onkeydown="if (event.key === 'Escape') { this.dispatchEvent(new CustomEvent('close-modal', { bubbles: true })); }" tabindex="-1" aria-modal="true"`
           );
         } else {
           patchedHTML = rawHTML.replace(
             /(<[a-zA-Z0-9_-]+)/,
-            `$1 onKeyDown={(e) => { if (e.key === 'Escape') (document.activeElement as HTMLElement)?.blur(); }}`
+            `$1 onkeydown="if (event.key === 'Escape') { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); }"`
           );
         }
         interventionType = 'add_listener';

@@ -47,12 +47,15 @@ export function CommandPalette({ isOpen, onClose, onSelectScreen, onRunAudit }: 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const actions: CommandAction[] = useMemo(() => [
-    // 5 Primary Hubs
-    { id: 'hub-studio', category: 'Hubs', label: 'Audit Studio', description: 'Real-time multi-agent execution & action trace', icon: Terminal, shortcut: '1', action: () => { onSelectScreen('audits'); onClose(); } },
-    { id: 'hub-issues', category: 'Hubs', label: 'Evidence & Proofs', description: 'Deterministic Tarjan SCC cycles & WCAG violations', icon: CheckCircle2, shortcut: '2', action: () => { onSelectScreen('issues'); onClose(); } },
-    { id: 'hub-remedy', category: 'Hubs', label: 'Verified Fixes', description: 'Causal AST repair engine & GitHub PR generator', icon: GitBranch, shortcut: '3', action: () => { onSelectScreen('remedy'); onClose(); } },
-    { id: 'hub-reports', category: 'Hubs', label: 'Executive Scorecard & Reports', description: '5-axis radar chart, PDF export & governance', icon: Share2, shortcut: '4', action: () => { onSelectScreen('scorecard'); onClose(); } },
-    { id: 'hub-websites', category: 'Hubs', label: 'Websites Manager', description: 'Domain verification & critical user journey governance', icon: Globe, shortcut: 'W', action: () => { onSelectScreen('websites'); onClose(); } },
+    // 5 Primary HIG Hubs (Matching Navbar 1-5)
+    { id: 'hub-overview', category: 'Hubs', label: 'Overview Dashboard', description: 'Fleet telemetry, KPI metrics & executive health', icon: Activity, shortcut: '1', action: () => { onSelectScreen('overview'); onClose(); } },
+    { id: 'hub-studio', category: 'Hubs', label: 'Traversal Studio', description: 'Real-time multi-agent execution & action trace', icon: Terminal, shortcut: '2', action: () => { onSelectScreen('studio'); onClose(); } },
+    { id: 'hub-issues', category: 'Hubs', label: 'Findings & Proofs (Master-Detail)', description: 'Deterministic Tarjan SCC cycles & WCAG violations', icon: CheckCircle2, shortcut: '3', action: () => { onSelectScreen('issues'); onClose(); } },
+    { id: 'hub-remedy', category: 'Hubs', label: 'Remedy Studio', description: 'Causal AST repair engine & GitHub PR generator', icon: GitBranch, shortcut: '4', action: () => { onSelectScreen('remedy'); onClose(); } },
+    { id: 'hub-reports', category: 'Hubs', label: 'Statutory Ledger & VPAT', description: '5-axis radar chart, PDF export & cryptographic PoA', icon: Share2, shortcut: '5', action: () => { onSelectScreen('reports'); onClose(); } },
+    
+    // Core Navigation
+    { id: 'hub-websites', category: 'Hubs', label: 'Websites Manager', description: 'Domain verification & critical user journey governance', icon: Globe, shortcut: '6', action: () => { onSelectScreen('websites'); onClose(); } },
 
     // Primary Actions
     { id: 'act-run', category: 'Actions', label: 'Launch Autonomous Flow Audit', description: 'Dispatch Tarjan graph & screen reader probes', icon: Play, shortcut: '↵', action: () => { onRunAudit(); onClose(); } },

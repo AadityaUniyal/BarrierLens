@@ -51,49 +51,6 @@ export function ExecutiveReport({
   const [activeFilter, setActiveFilter] = useState<FilterCategory>('all');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  // Clean Zero-State when no active audit run has been executed yet
-  if (!auditRun) {
-    return (
-      <div className="w-full space-y-8 animate-in fade-in duration-300">
-        <div className="apple-liquid-glass rounded-3xl p-12 sm:p-16 text-center space-y-6 max-w-3xl mx-auto my-12">
-          <div className="w-16 h-16 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mx-auto text-[#0090ff]">
-            <ShieldCheck className="w-8 h-8" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-              No Active Conformance Attestation
-            </h2>
-            <p className="text-sm text-white/60 max-w-lg mx-auto leading-relaxed">
-              Executive statutory certificates (VPAT 2.5, EAA 2025, ADA Title III) and PoA-DAG Merkle roots are computed dynamically upon completing an autonomous traversal audit.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            {onNavigateToStudio && (
-              <button
-                type="button"
-                onClick={onNavigateToStudio}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black hover:bg-white/90 text-xs font-semibold shadow-lg transition-all active:scale-[0.98]"
-              >
-                <Compass className="w-3.5 h-3.5" />
-                <span>Launch Traversal Studio</span>
-              </button>
-            )}
-            {onLoadBenchmarkFindings && (
-              <button
-                type="button"
-                onClick={onLoadBenchmarkFindings}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.1] text-xs font-medium text-white/90 transition-all active:scale-[0.98]"
-              >
-                <Layers className="w-3.5 h-3.5 text-[#0090ff]" />
-                <span>Load Benchmark Fixture</span>
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const findingsList = auditRun?.findings || [];
   const selectedFinding = findingsList.find(f => f.id === selectedFindingId) || findingsList[0];
   const activeFix = selectedFinding ? verifiedFixes[selectedFinding.id] : null;
@@ -198,6 +155,49 @@ export function ExecutiveReport({
     }
   }, [findingsList, activeFilter]);
 
+  // Clean Zero-State when no active audit run has been executed yet
+  if (!auditRun) {
+    return (
+      <div className="w-full space-y-8 animate-in fade-in duration-300">
+        <div className="apple-liquid-glass rounded-3xl p-12 sm:p-16 text-center space-y-6 max-w-3xl mx-auto my-12">
+          <div className="w-16 h-16 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mx-auto text-[#0090ff]">
+            <ShieldCheck className="w-8 h-8" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+              No Active Conformance Attestation
+            </h2>
+            <p className="text-sm text-white/60 max-w-lg mx-auto leading-relaxed">
+              Executive statutory certificates (VPAT 2.5, EAA 2025, ADA Title III) and PoA-DAG Merkle roots are computed dynamically upon completing an autonomous traversal audit.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            {onNavigateToStudio && (
+              <button
+                type="button"
+                onClick={onNavigateToStudio}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black hover:bg-white/90 text-xs font-semibold shadow-lg transition-all active:scale-[0.98]"
+              >
+                <Compass className="w-3.5 h-3.5" />
+                <span>Launch Traversal Studio</span>
+              </button>
+            )}
+            {onLoadBenchmarkFindings && (
+              <button
+                type="button"
+                onClick={onLoadBenchmarkFindings}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.1] text-xs font-medium text-white/90 transition-all active:scale-[0.98]"
+              >
+                <Layers className="w-3.5 h-3.5 text-[#0090ff]" />
+                <span>Load Benchmark Fixture</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Metamorphic Effort Ratio calculations for visual circular dial
   const effortRatio = auditRun?.effortRatio || 1.0;
   const effortAngle = Math.min(270, Math.max(30, (effortRatio / 5.0) * 270));
@@ -246,11 +246,22 @@ export function ExecutiveReport({
               </button>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-[-0.03em] text-white leading-tight">
+            <h2 className="text-3xl sm:text-4xl font-serif tracking-tight text-white leading-tight">
+              {auditRun?.taskSuccess ? (
+                <>
+                  Statutory Proof <span className="italic font-normal text-[#7eac81] crt-glow-mint">&amp; Certified Pass</span>
+                </>
+              ) : (
+                <>
+                  Conformance Risk <span className="italic font-normal text-[#ff453a]">&amp; Barrier Evidence</span>
+                </>
+              )}
+            </h2>
+            <div className="text-xs font-mono text-[#9c9aa8]">
               {auditRun?.taskSuccess
                 ? `Flow Completed Successfully by ${auditRun?.persona?.toUpperCase() || 'KEYBOARD'} User`
                 : `Task Cannot be Completed by ${auditRun?.persona?.toUpperCase() || 'KEYBOARD'} User`}
-            </h2>
+            </div>
 
             <p className="text-sm text-white/60 leading-relaxed max-w-2xl font-normal">
               {findingsList.length === 0

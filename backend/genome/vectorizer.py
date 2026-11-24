@@ -3,8 +3,13 @@ Barrier Genome 768-Dimensional Vectorizer
 Encodes accessibility barrier signatures into normalized embedding vectors.
 """
 
+import hashlib
 import math
 from typing import List
+
+def _stable_hash(val: str) -> int:
+    """Deterministic cryptographic hash independent of Python process random hash seed."""
+    return int(hashlib.sha256(val.encode('utf-8')).hexdigest()[:16], 16)
 
 class GenomeVectorizer:
     def encode_barrier(
@@ -22,15 +27,15 @@ class GenomeVectorizer:
         vec = [0.0] * dim
 
         # 1. Finding kind semantic hash
-        kind_hash = hash(finding_kind)
+        kind_hash = _stable_hash(finding_kind)
         for i in range(128):
-            vec[i] = ((kind_hash >> (i % 32)) & 1) * 0.5
+            vec[i] = ((kind_hash >> (i % 60)) & 1) * 0.5
 
         # 2. WCAG rules semantic hash
         rules_str = " ".join(wcag_rules)
-        rule_hash = hash(rules_str)
+        rule_hash = _stable_hash(rules_str)
         for i in range(128, 384):
-            vec[i] = ((rule_hash >> (i % 32)) & 1) * 0.35
+            vec[i] = ((rule_hash >> (i % 60)) & 1) * 0.35
 
         # 3. Severity & continuous metrics
         norm_severity = severity_score / 10.0
@@ -38,9 +43,9 @@ class GenomeVectorizer:
             vec[i] = norm_severity * math.sin(i * 0.1)
 
         # 4. Target domain contextual tokens
-        url_hash = hash(target_url)
+        url_hash = _stable_hash(target_url)
         for i in range(512, dim):
-            vec[i] = ((url_hash >> (i % 32)) & 1) * 0.25
+            vec[i] = ((url_hash >> (i % 60)) & 1) * 0.25
 
         # L2-normalization
         norm = math.sqrt(sum(x * x for x in vec))

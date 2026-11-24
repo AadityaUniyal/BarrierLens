@@ -73,8 +73,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
-        mono: ["JetBrains Mono", "SF Mono", "Fira Code", "monospace"],
+        sans: ["-apple-system", "BlinkMacSystemFont", "SF Pro Display", "Inter", "sans-serif"],
+        serif: ["Instrument Serif", "Georgia", "serif"],
+        mono: ["IBM Plex Mono", "SF Mono", "JetBrains Mono", "monospace"],
       },
       transitionTimingFunction: {
         spring: "cubic-bezier(0.16, 1, 0.3, 1)",
