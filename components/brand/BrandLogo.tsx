@@ -27,7 +27,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     <div className={`flex items-center gap-2.5 group select-none ${className}`}>
       {/* Precision Dual-Lens Optical Aperture Mark */}
       <div
-        className={`${iconDimensions} relative rounded-lg bg-gradient-to-br from-[#0c121e] via-[#080d16] to-[#04070c] border border-white/10 shadow-[0_2px_10px_rgba(0,144,255,0.15)] flex items-center justify-center p-1.5 transition-all duration-300 group-hover:border-[#0090ff]/40 group-hover:shadow-[0_0_15px_rgba(0,144,255,0.25)]`}
+        className={`${iconDimensions} relative rounded-lg bg-gradient-to-br from-[#0d1527] via-[#09101d] to-[#04070c] border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.25)] flex items-center justify-center p-1.5 transition-all duration-300 group-hover:border-cyan-400/50 group-hover:shadow-[0_0_20px_rgba(6,182,212,0.4)]`}
       >
         <svg
           viewBox="0 0 24 24"
@@ -46,18 +46,18 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
             strokeDasharray="2 3"
           />
 
-          {/* Left Barrier Arc (Electric Cobalt #0090ff) */}
+          {/* Left Barrier Arc (Electric Google Blue #3b82f6) */}
           <path
             d="M 12 3 C 7 3 3 7 3 12 C 3 17 7 21 12 21"
-            stroke="#0090ff"
+            stroke="#3b82f6"
             strokeWidth="2.2"
             strokeLinecap="round"
           />
 
-          {/* Right Focusing Lens Arc (Emerald #10b981) */}
+          {/* Right Focusing Lens Arc (Cyan #06b6d4) */}
           <path
             d="M 12 3 C 17 3 21 7 21 12 C 21 17 17 21 12 21"
-            stroke="#10b981"
+            stroke="#06b6d4"
             strokeWidth="2.2"
             strokeLinecap="round"
             strokeDasharray="16 4"
@@ -83,10 +83,10 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         <span
           className={`font-semibold tracking-[-0.03em] text-white ${textStyles} font-sans`}
         >
-          Barrier<span className="text-[#0090ff]">Lens</span>
+          Barrier<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Lens</span>
         </span>
         {showBadge && (
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-slate-400">
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-cyan-300">
             v2.0
           </span>
         )}

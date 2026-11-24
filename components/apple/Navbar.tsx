@@ -157,41 +157,20 @@ export function Navbar({
 
         {/* Center Navigation: Landing Page Anchors vs Dashboard Primary Sliding Tabs */}
         {isLandingPage ? (
-          <nav aria-label="Public Navigation" className="hidden md:flex items-center gap-5 text-xs text-white/70">
+          <nav aria-label="Public Navigation" className="hidden md:flex items-center gap-1.5 p-1 rounded-full bg-white/[0.04] border border-white/[0.08] backdrop-blur-md">
             <button 
               type="button" 
               onClick={() => scrollToLandingSection('proofs')}
-              className="hover:text-white transition-colors"
+              className="px-3.5 py-1 rounded-full text-xs font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-all"
             >
-              Proof Engine
-            </button>
-            <button 
-              type="button" 
-              onClick={() => scrollToLandingSection('how-it-works')}
-              className="hover:text-white transition-colors"
-            >
-              Inventions
+              Capabilities
             </button>
             <button 
               type="button" 
               onClick={() => scrollToLandingSection('benchmarks')}
-              className="hover:text-white transition-colors"
+              className="px-3.5 py-1 rounded-full text-xs font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-all"
             >
               Benchmarks
-            </button>
-            <button 
-              type="button" 
-              onClick={() => scrollToLandingSection('comparison')}
-              className="hover:text-white transition-colors"
-            >
-              Comparison
-            </button>
-            <button 
-              type="button" 
-              onClick={() => scrollToLandingSection('pricing')}
-              className="hover:text-white transition-colors"
-            >
-              Pricing
             </button>
           </nav>
         ) : (
@@ -302,15 +281,16 @@ export function Navbar({
             </button>
           )}
 
-          {/* Landing CTA: Open Cockpit */}
+          {/* Landing CTA: Open Studio */}
           {isLandingPage && (
             <button
               type="button"
-              onClick={() => setActiveScreen('audits')}
-              className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#0090ff] hover:bg-[#0080e5] text-white text-xs font-semibold shadow-sm transition-all"
+              onClick={() => setActiveScreen('studio')}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-semibold shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all hover:scale-105"
             >
-              <span>Cockpit</span>
-              <ArrowRight className="w-3 h-3" />
+              <Sparkles className="w-3.5 h-3.5 text-cyan-200" />
+              <span>Studio</span>
+              <ArrowRight className="w-3 h-3 ml-0.5" />
             </button>
           )}
         </div>

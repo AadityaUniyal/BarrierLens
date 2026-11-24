@@ -38,7 +38,7 @@ export function AWSBridgeConsole() {
     remaining: 120.0,
     spent: 0.0,
     estimatedRuns: 20000,
-    modelCascade: 'Amazon Nova Micro ($0.000035/1K) + Nova Pro'
+    modelCascade: 'Neural Reasoning Cascade (Fast + Pro)'
   });
 
   const fetchLiveAwsStatus = async () => {

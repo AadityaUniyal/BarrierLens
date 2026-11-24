@@ -659,35 +659,38 @@ export default function Home() {
       />
 
       {/* 4. Viewport: Cinematic Landing (Full-Bleed) vs Production App Workspace */}
-      {activeScreen === 'story' ? (
-        <CinematicLanding
-          onLaunchStudio={(url, customGoal, customPersona, autoStart) => {
-            const nextUrl = url || targetUrl;
-            const nextGoal = customGoal || goal;
-            const nextPersona = customPersona || persona;
-            if (url) setTargetUrl(url);
-            if (customGoal) setGoal(customGoal);
-            if (customPersona) setPersona(customPersona);
-            setActiveScreen('audits');
-            if (autoStart) {
-              setTimeout(() => {
-                handleRunAudit(nextUrl, nextGoal, nextPersona);
-              }, 120);
-            }
-          }}
-          onSelectBenchmark={(url, customGoal) => {
-            setTargetUrl(url);
-            if (customGoal) setGoal(customGoal);
-            setActiveScreen('audits');
-            setTimeout(() => {
-              handleRunAudit(url, customGoal, persona);
-            }, 120);
-          }}
-          onOpenAuth={() => setIsAuthModalOpen(true)}
-        />
-      ) : (
-        <>
-          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
+      <div className="flex-1 w-full flex flex-col relative transition-opacity duration-300">
+        {activeScreen === 'story' ? (
+          <div key="story" className="w-full animate-in fade-in zoom-in-[0.99] duration-300">
+            <CinematicLanding
+              onLaunchStudio={(url, customGoal, customPersona, autoStart) => {
+                const nextUrl = url || targetUrl;
+                const nextGoal = customGoal || goal;
+                const nextPersona = customPersona || persona;
+                if (url) setTargetUrl(url);
+                if (customGoal) setGoal(customGoal);
+                if (customPersona) setPersona(customPersona);
+                setActiveScreen('audits');
+                if (autoStart) {
+                  setTimeout(() => {
+                    handleRunAudit(nextUrl, nextGoal, nextPersona);
+                  }, 120);
+                }
+              }}
+              onSelectBenchmark={(url, customGoal) => {
+                setTargetUrl(url);
+                if (customGoal) setGoal(customGoal);
+                setActiveScreen('audits');
+                setTimeout(() => {
+                  handleRunAudit(url, customGoal, persona);
+                }, 120);
+              }}
+              onOpenAuth={() => setIsAuthModalOpen(true)}
+            />
+          </div>
+        ) : (
+          <div key="workspace" className="w-full flex-1 flex flex-col animate-in fade-in zoom-in-[0.99] duration-300">
+            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
             {/* Workspace View Mode Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-white/5 gap-4">
               <div>
@@ -1047,9 +1050,10 @@ export default function Home() {
               <span>WCAG 2.2 LEVEL AAA</span>
             </div>
           </div>
-        </footer>
-      </>
+          </footer>
+        </div>
       )}
+      </div>
     </div>
   );
 }

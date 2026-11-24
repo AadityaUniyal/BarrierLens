@@ -82,6 +82,9 @@ export function CinematicLanding({
   const [simEscaped, setSimEscaped] = useState<boolean>(false);
   const [simPatchApplied, setSimPatchApplied] = useState<boolean>(false);
 
+  // Antigravity Zero-G Barrier Sandbox State
+  const [gravityRemediated, setGravityRemediated] = useState<boolean>(false);
+
   // Interactive Audio Waveform Animation State
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(true);
   const [isMutedGap, setIsMutedGap] = useState<boolean>(true);
@@ -167,56 +170,33 @@ export function CinematicLanding({
     }
   ];
 
-  const pricingTiers = [
+  const agentPillars = [
     {
-      name: 'Developer Sandbox',
-      price: '$0',
-      period: 'free forever',
-      desc: 'Engineered for indie engineers and open-source teams verifying interactive user journeys.',
-      features: [
-        '10 autonomous user journey audits / month',
-        'Interactive keyboard trap detection (Tarjan SCC)',
-        'Pre-loaded benchmark testbed access',
-        'Visual DOM and code diff previews',
-        'Community documentation & guides'
-      ],
-      cta: 'Start Free Sandbox',
-      popular: false,
-      highlight: false
+      step: '01',
+      title: 'Perception Mesh',
+      subtitle: 'Playwright CDP Assistive Driver',
+      desc: 'Simulates real human interaction vectors: humanized keyboard tab sequences, voiceover speech calculation, and motor tremor modeling.',
+      metrics: ['Sub-pixel Pointer Drift', 'CDP Tree Traversal', 'Synthetic Voice Synthesis'],
+      badge: 'Perception Agent',
+      color: 'border-blue-500/30 text-blue-400 bg-blue-950/20'
     },
     {
-      name: 'Team Pro',
-      price: '$79',
-      period: 'per month',
-      desc: 'Continuous accessibility verification, automated GitHub pull requests, and real-time CI/CD gates.',
-      features: [
-        'Unlimited autonomous user journey audits',
-        'Automated code fixes & 1-click GitHub PRs',
-        'Screen reader voice synthesis simulation',
-        'Visual vs. assistive reading order checks',
-        'Slack & Webhook instant alert channels',
-        'Full WCAG 2.2 & EAA 2025 compliance reports'
-      ],
-      cta: 'Start 14-Day Free Trial',
-      popular: true,
-      highlight: true
+      step: '02',
+      title: 'Proof Engine',
+      subtitle: 'Tarjan SCC & Kendall τ Verification',
+      desc: 'Applies formal graph theory to prove keyboard traps as inescapable strongly connected components and measure visual order concordance.',
+      metrics: ['Tarjan SCC Cycles', 'Kendall τ Metric', 'CMSD Entropy Fields'],
+      badge: 'Formal Verifier',
+      color: 'border-indigo-500/30 text-indigo-400 bg-indigo-950/20'
     },
     {
-      name: 'Enterprise',
-      price: 'Custom',
-      period: 'tailored SLA',
-      desc: 'For high-velocity engineering organizations requiring dedicated environments and statutory legal ledgers.',
-      features: [
-        'Dedicated isolated cloud environment',
-        'Custom assistive persona journey training',
-        'SAML 2.0 / Okta / Azure AD SSO',
-        'Certified VPAT® 2.5 & Section 508 ledgers',
-        '99.99% uptime SLA & dedicated engineering support',
-        'Custom enterprise CI/CD integration'
-      ],
-      cta: 'Talk to Engineering Team',
-      popular: false,
-      highlight: false
+      step: '03',
+      title: 'AST Causal Surgery',
+      subtitle: 'Zero-Regression Code Patching',
+      desc: 'Parses component AST syntax trees, synthesizes exact repairs, verifies shadow-DOM rendering (SSIM >= 0.999), and submits GitHub PRs.',
+      metrics: ['Babel AST Surgery', 'Shadow-DOM Verification', '1-Click GitHub PRs'],
+      badge: 'Remediation Agent',
+      color: 'border-cyan-500/30 text-cyan-400 bg-cyan-950/20'
     }
   ];
 
@@ -263,33 +243,38 @@ export function CinematicLanding({
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-6 text-xs font-mono uppercase tracking-widest text-white/50">
           <div className="flex items-center gap-2.5">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10b981] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10b981]" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-400" />
             </span>
-            <span className="text-[#10b981] font-semibold tracking-wider">AUTONOMOUS VERIFICATION ENGINE</span>
+            <span className="text-cyan-400 font-semibold tracking-wider">AUTONOMOUS VERIFICATION ENGINE</span>
             <span className="text-white/20">&bull;</span>
-            <span className="text-white/80 font-medium">BARRIERLENS PRO</span>
+            <span className="text-white/80 font-medium">BARRIERLENS 2.0</span>
           </div>
           <div className="flex items-center gap-3 text-[11px] text-white/40">
             <span className="px-2 py-0.5 rounded bg-white/[0.04] border border-white/[0.08] text-white/70">PLAYWRIGHT CDP 1.48</span>
             <span>&bull;</span>
-            <span className="text-emerald-400 font-medium flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              AWS BEDROCK NOVA ACTIVE
+            <span className="text-cyan-400 font-medium flex items-center gap-1.5 font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+              NEURAL VERIFICATION CORE ACTIVE
             </span>
           </div>
         </div>
 
-        {/* Master Headline: Tailor'd Editorial Serif & Optical Lavender Glaze */}
+        {/* Master Headline: Antigravity-Inspired High-Vibrancy Typography */}
         <div className="space-y-6 max-w-5xl">
-          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-serif tracking-[-0.03em] text-white leading-[0.94] selection:bg-[#bb7bfc]/20">
-            Prove what locks them out. <br className="hidden sm:inline" />
-            <span className="italic font-normal text-transparent bg-clip-text bg-gradient-to-r from-[#c084fc] via-[#e879f9] to-[#818cf8] crt-glow-lavender">
-              Fix it before you ship.
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-cyan-500/10 border border-blue-500/30 text-xs font-mono text-cyan-300 backdrop-blur-md shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Autonomous Accessibility Engine &middot; The Agent-First Era</span>
+          </div>
+
+          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-sans font-extrabold tracking-[-0.04em] text-white leading-[0.96]">
+            Prove what locks them out. <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-300 drop-shadow-[0_0_35px_rgba(59,130,246,0.35)]">
+              Repair it before you ship.
             </span>
           </h1>
 
-          <p className="text-base sm:text-xl text-[#9c9aa8] max-w-3xl font-light leading-relaxed tracking-tight">
+          <p className="text-base sm:text-xl text-slate-300 max-w-3xl font-normal leading-relaxed tracking-tight">
             Over 60% of critical accessibility barriers—closed-loop keyboard traps, reading-order dissonance, and silent state dropouts—slip past static linters. BarrierLens autonomously executes real user journeys, proving failures with deterministic recordings and verified source-code repairs.
           </p>
 
@@ -298,7 +283,7 @@ export function CinematicLanding({
             {['Playwright CDP Traversal', 'ATL* Game Model Checking', 'CMSD Entropy Field', 'SSIM >= 0.999 AST Surgery', 'PoA-DAG Merkle Ledger', 'Certified VPAT® 2.5'].map((tag, i) => (
               <span 
                 key={i} 
-                className="px-3 py-1 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] hover:border-white/[0.16] text-white/70 hover:text-white rounded-full transition-all cursor-default backdrop-blur-md"
+                className="px-3 py-1 bg-white/[0.03] hover:bg-blue-500/10 border border-white/[0.08] hover:border-blue-400/40 text-white/70 hover:text-cyan-200 rounded-full transition-all cursor-default backdrop-blur-md shadow-sm"
               >
                 {tag}
               </span>
@@ -335,8 +320,8 @@ export function CinematicLanding({
                 type="button"
                 onClick={() => onLaunchStudio(trialUrl, trialGoal, trialPersona, true)}
                 text="Run Autonomous Audit"
-                variant="mint"
-                className="shrink-0"
+                variant="antigravity"
+                className="shrink-0 font-sans"
               />
             </div>
           </div>
@@ -346,24 +331,169 @@ export function CinematicLanding({
             <button 
               type="button"
               onClick={() => { setTrialUrl('/fixtures/keyboard-trap'); onLaunchStudio('/fixtures/keyboard-trap', 'Test modal keyboard focus escape', 'keyboard', true); }}
-              className="px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/80 hover:text-[#0090ff] transition-all"
+              className="px-2 py-0.5 rounded bg-white/[0.04] hover:bg-blue-500/10 border border-white/[0.08] hover:border-blue-400/40 text-white/80 hover:text-cyan-300 transition-all"
             >
               /fixtures/keyboard-trap
             </button>
             <button 
               type="button"
               onClick={() => { setTrialUrl('/fixtures/accname-wcag'); onLaunchStudio('/fixtures/accname-wcag', 'Test accessible name calculation', 'screen_reader', true); }}
-              className="px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/80 hover:text-[#10b981] transition-all"
+              className="px-2 py-0.5 rounded bg-white/[0.04] hover:bg-emerald-500/10 border border-white/[0.08] hover:border-emerald-400/40 text-white/80 hover:text-emerald-300 transition-all"
             >
               /fixtures/accname-wcag
             </button>
             <button 
               type="button"
               onClick={() => { setTrialUrl('/benchmark'); onLaunchStudio('/benchmark', 'Run comprehensive WCAG suite', 'keyboard', true); }}
-              className="px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/80 hover:text-[#bb7bfc] transition-all"
+              className="px-2 py-0.5 rounded bg-white/[0.04] hover:bg-indigo-500/10 border border-white/[0.08] hover:border-indigo-400/40 text-white/80 hover:text-indigo-300 transition-all"
             >
               /benchmark
             </button>
+          </div>
+        </div>
+
+        {/* UNIQUE ZERO-G ANTIGRAVITY HERO PLAYGROUND */}
+        <div className="relative p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-blue-950/30 via-[#0d0f17]/90 to-[#08090d]/95 border border-blue-500/30 shadow-[0_0_60px_-15px_rgba(59,130,246,0.3)] overflow-hidden">
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/[0.08] relative z-10">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                <span className="text-xs font-mono uppercase tracking-widest text-cyan-300 font-semibold">
+                  Zero-G Interactive Simulator
+                </span>
+              </div>
+              <h3 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                Real-Time Barrier Physics &amp; AST Remediation
+              </h3>
+              <p className="text-xs text-slate-300 max-w-xl">
+                Observe how digital accessibility barriers float without constraints across user journeys, and watch autonomous agents magnetically resolve them into mathematically proven states.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setGravityRemediated(!gravityRemediated)}
+              className={`px-5 py-2.5 rounded-full text-xs font-mono font-semibold tracking-wide uppercase transition-all duration-300 flex items-center gap-2 shrink-0 ${
+                gravityRemediated 
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 shadow-[0_0_25px_rgba(16,185,129,0.35)] hover:bg-emerald-500/30' 
+                  : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-[0_0_25px_rgba(59,130,246,0.5)] hover:scale-105'
+              }`}
+            >
+              <Sparkles className="w-4 h-4 text-cyan-200" />
+              <span>{gravityRemediated ? '↺ Reset to Floating Zero-G' : '⚡ Trigger Autonomous Repair'}</span>
+            </button>
+          </div>
+
+          {/* 4 Barrier Cards: Zero-G Float vs Magnetically Remediated Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6 relative z-10">
+            
+            {/* Card 1: Keyboard Trap */}
+            <div className={`p-5 rounded-2xl border transition-all duration-500 backdrop-blur-xl relative overflow-hidden ${
+              gravityRemediated 
+                ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-300 shadow-[0_0_30px_rgba(16,185,129,0.15)] scale-100' 
+                : 'bg-rose-950/20 border-rose-500/30 text-rose-300 animate-float-1 shadow-[0_0_25px_rgba(244,63,94,0.15)]'
+            }`}>
+              <div className="flex items-center justify-between pb-3">
+                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
+                  {gravityRemediated ? 'Graph Cycle Resolved' : 'Closed Focus Sink'}
+                </span>
+                <span className={`w-2 h-2 rounded-full ${gravityRemediated ? 'bg-emerald-400' : 'bg-rose-400 animate-pulse'}`} />
+              </div>
+              <h4 className="font-semibold text-sm text-white">{gravityRemediated ? '✓ Escape Key Focus Return' : 'Inescapable Modal Trap'}</h4>
+              <p className="text-xs text-slate-400 pt-1.5 leading-relaxed font-mono">
+                {gravityRemediated 
+                  ? 'Tarjan SCC confirms cycle broken. Keydown Escape handler restores focus to origin.'
+                  : '#dialog-modal: Tab and Shift+Tab form an inescapable loop. Escape ignored.'}
+              </p>
+              <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-[11px] font-mono">
+                <span className={gravityRemediated ? 'text-emerald-400 font-bold' : 'text-rose-400'}>
+                  {gravityRemediated ? 'PR #104 Ready' : 'WCAG 2.1.2 FAIL'}
+                </span>
+                <span className="text-white/40">{gravityRemediated ? 'Verified' : 'Cycle Loop'}</span>
+              </div>
+            </div>
+
+            {/* Card 2: Reading Order */}
+            <div className={`p-5 rounded-2xl border transition-all duration-500 backdrop-blur-xl relative overflow-hidden ${
+              gravityRemediated 
+                ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-300 shadow-[0_0_30px_rgba(16,185,129,0.15)] scale-100' 
+                : 'bg-amber-950/20 border-amber-500/30 text-amber-300 animate-float-2 shadow-[0_0_25px_rgba(245,158,11,0.15)]'
+            }`}>
+              <div className="flex items-center justify-between pb-3">
+                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
+                  {gravityRemediated ? 'Order Conformance' : 'Reading Sequence'}
+                </span>
+                <span className={`w-2 h-2 rounded-full ${gravityRemediated ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
+              </div>
+              <h4 className="font-semibold text-sm text-white">{gravityRemediated ? '✓ Kendall τ = 1.00 Concordance' : 'Assistive Order Inversion'}</h4>
+              <p className="text-xs text-slate-400 pt-1.5 leading-relaxed font-mono">
+                {gravityRemediated 
+                  ? 'DOM node order aligned with visual layout stream. Zero assistive disconnect.'
+                  : 'CSS flex-direction: row-reverse causes DOM traversal order divergence (τ = 0.52).'}
+              </p>
+              <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-[11px] font-mono">
+                <span className={gravityRemediated ? 'text-emerald-400 font-bold' : 'text-amber-400'}>
+                  {gravityRemediated ? 'Deterministic' : 'WCAG 1.3.2 WARN'}
+                </span>
+                <span className="text-white/40">{gravityRemediated ? 'SSIM 0.999' : 'Tau 0.52'}</span>
+              </div>
+            </div>
+
+            {/* Card 3: Missing Accessible Name */}
+            <div className={`p-5 rounded-2xl border transition-all duration-500 backdrop-blur-xl relative overflow-hidden ${
+              gravityRemediated 
+                ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-300 shadow-[0_0_30px_rgba(16,185,129,0.15)] scale-100' 
+                : 'bg-purple-950/20 border-purple-500/30 text-purple-300 animate-float-3 shadow-[0_0_25px_rgba(168,85,247,0.15)]'
+            }`}>
+              <div className="flex items-center justify-between pb-3">
+                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
+                  {gravityRemediated ? 'Synthetic Speech' : 'Assistive Speech'}
+                </span>
+                <span className={`w-2 h-2 rounded-full ${gravityRemediated ? 'bg-emerald-400' : 'bg-purple-400 animate-pulse'}`} />
+              </div>
+              <h4 className="font-semibold text-sm text-white">{gravityRemediated ? '✓ VoiceOver Announcement' : 'Silent Action Element'}</h4>
+              <p className="text-xs text-slate-400 pt-1.5 leading-relaxed font-mono">
+                {gravityRemediated 
+                  ? 'Synthesized aria-label="Confirm Transaction" injected into AST.'
+                  : 'Icon-only button has empty accessible name string in Chrome CDP tree.'}
+              </p>
+              <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-[11px] font-mono">
+                <span className={gravityRemediated ? 'text-emerald-400 font-bold' : 'text-purple-400'}>
+                  {gravityRemediated ? 'VoiceOver OK' : 'WCAG 4.1.2 FAIL'}
+                </span>
+                <span className="text-white/40">{gravityRemediated ? 'Verified' : 'Silent Node'}</span>
+              </div>
+            </div>
+
+            {/* Card 4: Color Contrast */}
+            <div className={`p-5 rounded-2xl border transition-all duration-500 backdrop-blur-xl relative overflow-hidden ${
+              gravityRemediated 
+                ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-300 shadow-[0_0_30px_rgba(16,185,129,0.15)] scale-100' 
+                : 'bg-cyan-950/20 border-cyan-500/30 text-cyan-300 animate-float-1 shadow-[0_0_25px_rgba(6,182,212,0.15)]'
+            }`}>
+              <div className="flex items-center justify-between pb-3">
+                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
+                  {gravityRemediated ? 'Photometric Contrast' : 'Contrast Ratio'}
+                </span>
+                <span className={`w-2 h-2 rounded-full ${gravityRemediated ? 'bg-emerald-400' : 'bg-cyan-400 animate-pulse'}`} />
+              </div>
+              <h4 className="font-semibold text-sm text-white">{gravityRemediated ? '✓ 7.2:1 Level AAA Certified' : 'Low Contrast 2.1:1'}</h4>
+              <p className="text-xs text-slate-400 pt-1.5 leading-relaxed font-mono">
+                {gravityRemediated 
+                  ? 'Luminance algorithm recalibrates foreground palette preserving design token semantics.'
+                  : 'Muted grey on dark slate fails minimum 4.5:1 ratio requirement.'}
+              </p>
+              <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-[11px] font-mono">
+                <span className={gravityRemediated ? 'text-emerald-400 font-bold' : 'text-cyan-400'}>
+                  {gravityRemediated ? 'AAA Compliant' : 'WCAG 1.4.3 FAIL'}
+                </span>
+                <span className="text-white/40">{gravityRemediated ? 'Pass' : '2.1:1'}</span>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -909,49 +1039,47 @@ export function CinematicLanding({
 
       </section>
 
-      {/* 5. TRANSPARENT PRICING & TIERS */}
-      <section id="pricing" className="py-24 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto space-y-16 border-t border-white/10">
+      {/* 5. THE AUTONOMOUS AGENT ARCHITECTURE */}
+      <section id="architecture" className="py-24 px-6 sm:px-8 lg:px-12 max-w-7xl mx-auto space-y-16 border-t border-white/10">
         
         <div className="space-y-3">
-          <span className="text-xs font-mono uppercase tracking-widest text-[#10b981]">
-            ( COMMERCIAL TIERS )
-          </span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-cyan-300">
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Autonomous Core Pillars</span>
+          </div>
           <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-tight">
-            Predictable plans for teams of any size.
+            How BarrierLens Works: The Verification Loop
           </h2>
+          <p className="text-sm sm:text-base text-slate-400 max-w-2xl">
+            A tripartite agent architecture executing continuous perception, formal mathematical graph verification, and surgical AST code repair.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {pricingTiers.map((tier, idx) => (
+          {agentPillars.map((pillar, idx) => (
             <div 
               key={idx}
-              className={`p-8 rounded-3xl border flex flex-col justify-between space-y-8 ${
-                tier.highlight 
-                  ? 'bg-[#14161b] border-white/30 shadow-2xl relative' 
-                  : 'bg-[#0c0d10] border-white/10'
-              }`}
+              className={`p-8 rounded-3xl border flex flex-col justify-between space-y-8 bg-[#0c0d12]/90 ${pillar.color} shadow-2xl relative overflow-hidden backdrop-blur-xl group hover:scale-[1.02] transition-all duration-300`}
             >
-              {tier.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#10b981] text-black text-[10px] font-bold uppercase tracking-wider font-mono">
-                  Most Popular
-                </div>
-              )}
-
               <div className="space-y-4">
-                <h3 className="text-base font-bold text-white uppercase font-mono">{tier.name}</h3>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-white tracking-tight">{tier.price}</span>
-                  <span className="text-xs text-white/50 font-mono">/ {tier.period}</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-white/5 border border-white/10">
+                    {pillar.badge}
+                  </span>
+                  <span className="text-2xl font-mono font-bold opacity-30 text-white">{pillar.step}</span>
                 </div>
-                <p className="text-xs text-white/60 leading-relaxed">
-                  {tier.desc}
+
+                <h3 className="text-xl font-bold text-white tracking-tight">{pillar.title}</h3>
+                <p className="text-xs font-mono text-cyan-300/80">{pillar.subtitle}</p>
+                <p className="text-xs text-slate-300 leading-relaxed font-light">
+                  {pillar.desc}
                 </p>
 
-                <div className="pt-6 border-t border-white/10 space-y-3 text-xs text-white/80">
-                  {tier.features.map((feat, fIdx) => (
-                    <div key={fIdx} className="flex items-start gap-2.5">
-                      <Check className="w-4 h-4 text-[#10b981] shrink-0 mt-0.5" />
-                      <span>{feat}</span>
+                <div className="pt-4 border-t border-white/10 space-y-2.5 text-xs text-white/80 font-mono">
+                  {pillar.metrics.map((metric, mIdx) => (
+                    <div key={mIdx} className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                      <span>{metric}</span>
                     </div>
                   ))}
                 </div>
@@ -959,17 +1087,11 @@ export function CinematicLanding({
 
               <button
                 type="button"
-                onClick={() => {
-                  if (onOpenAuth) onOpenAuth();
-                  else onLaunchStudio('/benchmark', 'Run default benchmark audit', 'keyboard');
-                }}
-                className={`w-full py-3 rounded-xl text-xs font-mono font-bold tracking-wider uppercase transition-all ${
-                  tier.highlight
-                    ? 'bg-white text-black hover:bg-white/90 shadow-lg'
-                    : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'
-                }`}
+                onClick={() => onLaunchStudio('/benchmark', 'Run default benchmark audit', 'keyboard')}
+                className="w-full py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider uppercase transition-all bg-white/5 hover:bg-white/10 border border-white/10 text-white flex items-center justify-center gap-2 group-hover:border-cyan-400/40"
               >
-                {tier.cta}
+                <span>Inspect Engine</span>
+                <ArrowRight className="w-3.5 h-3.5 text-cyan-400 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
           ))}
@@ -1184,7 +1306,7 @@ export function CinematicLanding({
           <div className="flex items-center gap-6 text-white/40 font-mono text-[11px]">
             <span>WCAG 2.2 LEVEL AAA</span>
             <span>EAA 2025 COMPLIANT</span>
-            <span>ENTERPRISE SOC2 READY</span>
+            <span>MERKLE AUDIT LEDGER</span>
           </div>
         </div>
       </footer>

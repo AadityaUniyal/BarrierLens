@@ -5,14 +5,14 @@ import React from 'react';
 interface KineticButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children?: React.ReactNode;
   text?: string;
-  variant?: 'mint' | 'lavender' | 'amber';
+  variant?: 'mint' | 'lavender' | 'amber' | 'antigravity';
   icon?: React.ReactNode;
 }
 
 export function KineticButton({
   children,
   text,
-  variant = 'mint',
+  variant = 'antigravity',
   icon,
   className = '',
   disabled,
@@ -22,6 +22,7 @@ export function KineticButton({
     mint: 'border-[var(--color-accent,#7eac81)] text-[var(--color-accent,#7eac81)] hover:bg-[var(--color-accent,#7eac81)]',
     lavender: 'border-[var(--color-accentTwo,#bb7bfc)] text-[var(--color-accentTwo,#bb7bfc)] hover:bg-[var(--color-accentTwo,#bb7bfc)]',
     amber: 'border-[var(--color-accentThree,#dad45e)] text-[var(--color-accentThree,#dad45e)] hover:bg-[var(--color-accentThree,#dad45e)]',
+    antigravity: 'border-blue-500/40 text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 shadow-[0_0_25px_rgba(59,130,246,0.5)] rounded-full px-5 py-2.5',
   }[variant];
 
   return (
