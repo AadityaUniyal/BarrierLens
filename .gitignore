@@ -56,3 +56,6 @@ lightsail-startup.sh
 test-results/
 
 /lib/generated/prisma
+
+.vercel
+.env*
