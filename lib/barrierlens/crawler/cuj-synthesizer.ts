@@ -1,5 +1,5 @@
 import { DiscoveredDomainProfile, RouteArchetype, DiscoveredRoute } from './domain-crawler';
-import { sql } from '../../neon/db';
+import { sql } from '../../supabase/db';
 import crypto from 'node:crypto';
 
 export interface CUJStepMilestone {
@@ -224,9 +224,9 @@ export class CUJSynthesizer {
   }
 
   /**
-   * Persists synthesized website and journeys directly into Neon Postgres
+   * Persists synthesized website and journeys directly into Supabase Postgres
    */
-  async persistToNeon(
+  async persistToDatabase(
     profile: DiscoveredDomainProfile,
     journeys: SynthesizedCUJ[],
     userId: string = 'usr_autonomous_system'
@@ -251,7 +251,7 @@ export class CUJSynthesizer {
         );
       `;
 
-      // 2. Insert journeys & flows into Neon
+      // 2. Insert journeys & flows into Supabase
       for (const j of journeys) {
         await sql`
           INSERT INTO journeys (id, website_id, user_id, name, description, starting_url, steps, criticality, version, created_at, updated_at)
@@ -281,9 +281,9 @@ export class CUJSynthesizer {
         `;
       }
 
-      console.log(`[CUJSynthesizer] Persisted website ${profile.domain} (${websiteId}) and ${journeys.length} journeys to Neon Postgres.`);
+      console.log(`[CUJSynthesizer] Persisted website ${profile.domain} (${websiteId}) and ${journeys.length} journeys to Supabase Postgres.`);
     } catch (err: any) {
-      console.warn('[CUJSynthesizer] Neon DB persistence notice (offline fallback):', err.message);
+      console.warn('[CUJSynthesizer] Supabase DB persistence notice (offline fallback):', err.message);
     }
 
     return {
@@ -293,5 +293,14 @@ export class CUJSynthesizer {
       journeys,
       createdAt: new Date().toISOString()
     };
+  }
+
+  // Backward compatibility alias
+  async persistToNeon(
+    profile: DiscoveredDomainProfile,
+    journeys: SynthesizedCUJ[],
+    userId: string = 'usr_autonomous_system'
+  ): Promise<DomainCUJBundle> {
+    return this.persistToDatabase(profile, journeys, userId);
   }
 }

@@ -6,7 +6,7 @@ frontend:
         - npm ci --cache .npm --prefer-offline
     build:
       commands:
-        - env | grep -e NEON_ -e BETTER_AUTH_ -e NEXT_PUBLIC_ -e AWS_ -e GROQ_ -e GEMINI_ >> .env.production
+        - env | grep -e SUPABASE_ -e DATABASE_URL -e DIRECT_URL -e BETTER_AUTH_ -e NEXT_PUBLIC_ -e AWS_ -e GROQ_ -e GEMINI_ >> .env.production
         - npm run build
   artifacts:
     baseDirectory: .next

@@ -248,8 +248,8 @@ export function AuditStudioView({
                 Autonomous Traversal Sandbox
               </span>
             </div>
-            <h2 className="text-3xl font-serif tracking-tight text-white">
-              Audit Studio <span className="italic font-normal text-[#bb7bfc] crt-glow-lavender">&amp; Traversal Stage</span>
+            <h2 className="text-3xl font-display font-bold tracking-[-0.03em] text-white">
+              Audit Studio <span className="font-normal text-slate-400">&amp; Traversal Stage</span>
             </h2>
             <p className="text-xs text-[#9c9aa8]">
               Autonomous behavioral agent evaluating under real physical keyboard &amp; assistive sensory constraints.

@@ -1,7 +1,7 @@
 import { chromium } from 'playwright';
 import { BrowserProvider } from '../agent/browser-provider';
 import { VerifiedFixResult, FindingKind } from '../types';
-import { sql } from '../../neon/db';
+import { sql } from '../../supabase/db';
 
 export interface DeclarativePatchRule {
   targetSelector?: string;

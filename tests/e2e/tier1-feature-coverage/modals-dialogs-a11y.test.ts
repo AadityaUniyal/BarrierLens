@@ -29,6 +29,9 @@ describe('Tier 1 Part A - Modals, Dialogs & Accessibility Feature Coverage', () 
 
   after(async () => {
     await closeBrowser();
+    setTimeout(() => {
+      process.exit(0);
+    }, 100).unref();
   });
 
   beforeEach(async () => {
@@ -402,8 +405,9 @@ describe('Tier 1 Part A - Modals, Dialogs & Accessibility Feature Coverage', () 
   describe('Feature 20: Modal Dialog Accessibility', () => {
     it('F20.1: should ensure modal dialogs declare role="dialog" attribute', async () => {
       await navigateTo(page, '/?tab=overview');
+      await page.waitForSelector('nav[aria-label="Dashboard Navigation"]', { timeout: 10000 });
       await page.keyboard.press('Control+k');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(400);
 
       const dialog = page.locator('[role="dialog"]');
       assert.ok(await dialog.count() > 0, 'Modal container must declare role="dialog"');
@@ -411,8 +415,9 @@ describe('Tier 1 Part A - Modals, Dialogs & Accessibility Feature Coverage', () 
 
     it('F20.2: should ensure modal dialogs declare aria-modal="true" attribute', async () => {
       await navigateTo(page, '/?tab=overview');
+      await page.waitForSelector('nav[aria-label="Dashboard Navigation"]', { timeout: 10000 });
       await page.keyboard.press('Control+k');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(400);
 
       const ariaModal = page.locator('[aria-modal="true"]');
       assert.ok(await ariaModal.count() > 0, 'Modal container must declare aria-modal="true"');

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { sql } from '@/lib/neon/db';
+import { sql } from '@/lib/supabase/db';
 
 export const dynamic = 'force-dynamic';
 

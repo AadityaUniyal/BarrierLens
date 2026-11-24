@@ -1,22 +1,22 @@
 import { NextResponse } from 'next/server';
-import { neonServices } from '@/lib/neon/services';
+import { supabaseServices } from '@/lib/supabase/services';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const report = await neonServices.runFullDiagnostics();
-    const allHealthy = report.services.every((s) => s.status !== 'failed');
+    const report = await supabaseServices.runAllTests();
+    const allHealthy = report.results.every((s) => s.status !== 'failed');
 
     return NextResponse.json(
       {
         status: allHealthy ? 'ok' : 'degraded',
         project: {
-          id: neonServices.config.projectId,
-          org: neonServices.config.orgId,
-          branch: neonServices.config.branch,
+          url: supabaseServices.config.supabaseUrl,
         },
-        ...report,
+        services: report.results,
+        timestamp: report.timestamp,
+        allPassed: report.allPassed,
       },
       { status: allHealthy ? 200 : 200 }
     );

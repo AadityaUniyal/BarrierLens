@@ -1,12 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=JetBrains+Mono:wght@300;400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Linear & Apple High-Craft Obsidian Slate Tokens (Non-Black, Deep Slate) */
-  --bg: #0b0f19;
+  /* Swiss Editorial Monochrome Tokens (sbwebdesign.ch standard) */
+  --swiss-canvas: #F7F7F5;
+  --swiss-canvas-pure: #FFFFFF;
+  --swiss-ink: #121212;
+  --swiss-muted: #6E6E6E;
+  --swiss-subtle: #8A8A8A;
+  --swiss-hairline: rgba(18, 18, 18, 0.10);
+  --swiss-orange: #FF4D00;
+  --swiss-blue: #0055FF;
+  --swiss-accent: #0055FF;
+
+  /* Default CSS Root Tokens (passes F18.1 for dark mode) */
+  --bg: #0a0a0a;
   --bg-secondary: #111726;
   --bg-surface: #172033;
   --bg-alt: #1e293b;
@@ -19,10 +30,10 @@
   --scrim: rgba(11, 15, 25, 0.8);
 
   /* Calibrated Engineering Accents */
-  --color-primary: #f8fafc;
+  --color-primary: #121212;
   --color-accent: #10b981;         /* Verification Emerald */
-  --color-accentTwo: #6366f1;      /* Architectural Indigo */
-  --color-accentThree: #f59e0b;    /* Telemetry Amber */
+  --color-accentTwo: #0055FF;      /* Swiss Cobalt Blue */
+  --color-accentThree: #FF4D00;    /* Swiss Signal Orange */
   --color-danger: #ef4444;         /* Destructive Red */
 
   /* System Semantics */
@@ -38,15 +49,29 @@
   --specular-side: rgba(255, 255, 255, 0.06);
   --specular-bottom: rgba(255, 255, 255, 0.02);
 
-  /* Typography */
-  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
-  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
-  --font-serif: "Instrument Serif", Georgia, serif;
-  --font-mono: "IBM Plex Mono", "SF Mono", Menlo, monospace;
+  /* Swiss Typography */
+  --font-display: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  --font-body: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  --font-mono: 'JetBrains Mono', "IBM Plex Mono", Menlo, monospace;
 
   /* Hardware Physics */
   --ease-apple-spring: cubic-bezier(0.16, 1, 0.3, 1);
   --duration-spring: 260ms;
+}
+
+[data-theme="dark"] {
+  --bg: #0a0a0a;
+  --bg-secondary: #111726;
+  --bg-surface: #172033;
+  --bg-alt: #1e293b;
+  --fg: #f8fafc;
+  --fg-dark: #0b0f19;
+  --fg-muted: #94a3b8;
+  --fg-subtle: rgba(203, 213, 225, 0.5);
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.15);
+  --swiss-canvas: #0a0a0a;
+  --swiss-hairline: rgba(255, 255, 255, 0.10);
 }
 
 [data-theme="oled"] {
@@ -54,17 +79,23 @@
   --bg-secondary: #050507;
   --bg-surface: #0a0a0e;
   --line: rgba(255, 255, 255, 0.08);
+  --swiss-canvas: #000000;
+  --swiss-hairline: rgba(255, 255, 255, 0.10);
 }
 
 [data-theme="light"] {
   --bg: #f8fafc;
-  --bg-secondary: #ffffff;
-  --bg-surface: #f1f5f9;
-  --fg: #0f172a;
-  --fg-muted: rgba(15, 23, 42, 0.65);
-  --fg-subtle: rgba(15, 23, 42, 0.4);
-  --line: rgba(15, 23, 42, 0.12);
-  --line-strong: rgba(15, 23, 42, 0.24);
+  --bg-secondary: #FFFFFF;
+  --bg-surface: #F0F0ED;
+  --fg: #121212;
+  --fg-muted: #6E6E6E;
+  --fg-subtle: #8A8A8A;
+  --line: rgba(18, 18, 18, 0.12);
+  --line-strong: rgba(18, 18, 18, 0.24);
+  --swiss-canvas: #F7F7F5;
+  --swiss-ink: #121212;
+  --swiss-muted: #6E6E6E;
+  --swiss-hairline: rgba(18, 18, 18, 0.12);
 }
 
 body {
@@ -87,6 +118,19 @@ body {
   font-family: var(--font-display);
 }
 
+.font-bricolage {
+  font-family: var(--font-display);
+}
+
+.font-jetbrains {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
 .font-editorial-italic {
   font-family: var(--font-italic);
   font-style: italic;
@@ -95,6 +139,28 @@ body {
 
 .font-mono-code {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Swiss Hairline Borders & Architectural Grids */
+.border-swiss {
+  border: 1px solid var(--swiss-hairline);
+}
+
+.border-swiss-t {
+  border-top: 1px solid var(--swiss-hairline);
+}
+
+.border-swiss-b {
+  border-bottom: 1px solid var(--swiss-hairline);
+}
+
+.border-swiss-l {
+  border-left: 1px solid var(--swiss-hairline);
+}
+
+.border-swiss-r {
+  border-right: 1px solid var(--swiss-hairline);
 }
 
 /* Editorial Hairline Borders & Glass */

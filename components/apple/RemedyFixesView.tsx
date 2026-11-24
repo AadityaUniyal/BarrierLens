@@ -128,8 +128,8 @@ export function RemedyFixesView({
               Autonomous Remediation Studio
             </span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-serif tracking-tight text-white">
-            Verified AST Repairs <span className="italic font-normal text-[#bb7bfc] crt-glow-lavender">&amp; Automated PRs</span>
+          <h2 className="text-3xl sm:text-4xl font-display font-bold tracking-[-0.03em] text-white">
+            Verified AST Repairs <span className="font-normal text-slate-400">&amp; Automated PRs</span>
           </h2>
           <p className="text-xs sm:text-sm text-[#9c9aa8] max-w-2xl">
             Declarative AST code mutations replayed inside an isolated headless sandbox. Regressions evaluated across focus graphs and visual invariance before PR dispatch.
@@ -257,7 +257,7 @@ export function RemedyFixesView({
               {/* Sandbox Differential Proof Card */}
               <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                  <span className="font-semibold text-white">Differential Sandbox Certification</span>
+                  <span className="font-semibold text-white">Differential Replay Certification</span>
                   <span className="font-mono text-[11px] text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
                     SSIM = 0.9998 (&ge; 0.999) &bull; Layout Shift = 0.00px
                   </span>

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { sql } from '@/lib/neon/db';
+import { sql } from '@/lib/supabase/db';
 import { assertAuditQuota, clientIp } from '@/lib/barrierlens/security/rate-limit';
 import {
   assertGoal,
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       INSERT INTO jobs (type, payload, status, run_after)
       VALUES (
         'audit_run',
-        ${JSON.stringify({ targetUrl, goal, persona, maxSteps, runId })},
+        ${JSON.stringify({ targetUrl, goal, persona, maxSteps, runId })}::jsonb,
         'pending',
         NOW()
       )

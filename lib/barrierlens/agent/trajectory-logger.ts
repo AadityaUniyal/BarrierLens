@@ -1,4 +1,4 @@
-import { sql } from '../../neon/db';
+import { sql } from '../../supabase/db';
 
 export interface TrajectoryEntry {
   runId: string;

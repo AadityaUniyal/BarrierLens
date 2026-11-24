@@ -248,6 +248,15 @@ export default function Home() {
       const tabParam = params.get('tab') || params.get('view');
       if (tabParam) {
         setActiveScreen(tabParam as ScreenId);
+        if (tabParam === 'arena') setMonitoringSubTab('arena');
+        else if (tabParam === 'genome') setMonitoringSubTab('genome');
+        else if (tabParam === 'websites') setMonitoringSubTab('websites');
+        else if (tabParam === 'settings' || tabParam === 'vault' || tabParam === 'aws-bridge') setMonitoringSubTab('vault');
+        else if (tabParam === 'overview' || tabParam === 'pulse') setMonitoringSubTab('pulse');
+        else if (tabParam === 'studio') setStudioSubTab('theater');
+        else if (tabParam === 'visual-twin') setStudioSubTab('twin');
+        else if (tabParam === 'focus-map') setIssuesSubTab('focus-map');
+        else if (tabParam === 'screen-reader') setIssuesSubTab('screen-reader');
       }
       const urlParam = params.get('url') || params.get('targetUrl');
       if (urlParam) {
@@ -294,7 +303,7 @@ export default function Home() {
         setServicesHealth({ operational: 6, total: 7 });
       });
 
-    // 3. Fetch Runs History from Neon DB
+    // 3. Fetch Runs History from Supabase DB
     fetch('/api/runs/list')
       .then(res => res.json())
       .then(data => {
@@ -399,11 +408,11 @@ export default function Home() {
       if (e.key === '1') setActiveScreen('overview');
       if (e.key === '2') setActiveScreen('studio');
       if (e.key === '3') setActiveScreen('issues');
-      if (e.key === '4') setActiveScreen('remedy');
-      if (e.key === '5') setActiveScreen('reports');
-      if (e.key === '6') setActiveScreen('websites');
-      if (e.key === '7') setActiveScreen('genome');
-      if (e.key === '8') setActiveScreen('arena');
+      if (e.key === '4') setActiveScreen('fixes');
+      if (e.key === '5') setActiveScreen('arena');
+      if (e.key === '6') setActiveScreen('genome');
+      if (e.key === '7') setActiveScreen('websites');
+      if (e.key === '8') setActiveScreen('vault');
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -645,8 +654,15 @@ export default function Home() {
   const currentFindings = auditResult?.findings?.length ? auditResult.findings : historicalFindings;
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-[#f8fafc] flex flex-col font-sans selection:bg-blue-600/30 selection:text-white antialiased relative">
-      <div className="ambient-mesh" />
+    <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#0a0a0a] text-[#121212] dark:text-[#f8fafc] flex flex-col font-sans selection:bg-[#0055FF]/15 selection:text-[#0055FF] antialiased relative">
+      {/* Subtle Swiss Architectural Grid Hairlines */}
+      <div 
+        className="fixed inset-0 pointer-events-none opacity-40 z-0"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(18, 18, 18, 0.08) 1px, transparent 1px)',
+          backgroundSize: '32px 32px'
+        }}
+      />
       {/* 1. Master Hub Navigation Bar */}
       <Navbar
         activeScreen={activeScreen}
@@ -732,15 +748,15 @@ export default function Home() {
           <div key="workspace" className="w-full flex-1 flex flex-col animate-in fade-in zoom-in-[0.99] duration-300">
             <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
             {/* Workspace View Mode Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-white/5 gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-black/[0.08] dark:border-white/[0.08] gap-4">
               <div>
-                <h1 className="text-xl font-medium tracking-tight text-white flex items-center gap-2">
+                <h1 className="text-xl font-bold tracking-tight text-[#121212] dark:text-white flex items-center gap-2">
                   Workspace Intelligence
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#0090ff]/10 text-[#0090ff] font-mono border border-[#0090ff]/20">
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-[#121212] dark:text-white font-mono border border-black/[0.08] dark:border-white/[0.08]">
                     Live Production
                   </span>
                 </h1>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-[#6E6E6E] dark:text-slate-400 mt-0.5">
                   {workspaceMode === 'executive'
                     ? 'Executive view: High-level WCAG compliance scoring, legal exposure risk, and remediation actions.'
                     : 'Diagnostic Lab view: Deep interaction analysis, focus loop graphs, and assistive telemetry.'}
@@ -760,34 +776,34 @@ export default function Home() {
 
             {/* Executive Mode Quick Health Summary Banner */}
             {workspaceMode === 'executive' && (
-              <div className="mb-8 p-5 rounded-2xl bg-gradient-to-r from-blue-950/20 via-slate-900/40 to-slate-950/20 border border-blue-500/20 shadow-lg">
+              <div className="mb-8 p-5 rounded-2xl bg-white dark:bg-[#121212] border border-black/[0.08] dark:border-white/[0.08] shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <SpotlightCard className="p-4 rounded-xl border-white/5">
-                    <span className="text-xs text-slate-400 uppercase font-mono tracking-wider">WCAG AA Health</span>
-                    <div className="text-2xl font-semibold text-emerald-400 mt-1 flex items-baseline gap-1.5">
-                      94.2% <span className="text-xs font-normal text-slate-400 font-sans">Grade A</span>
+                  <div className="p-4 rounded-xl bg-[#F7F7F5] dark:bg-[#181818] border border-black/[0.06] dark:border-white/[0.06]">
+                    <span className="text-xs text-[#6E6E6E] dark:text-slate-400 uppercase font-mono tracking-wider">WCAG AA Health</span>
+                    <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 flex items-baseline gap-1.5 tabular-nums">
+                      94.2% <span className="text-xs font-normal text-[#6E6E6E] dark:text-slate-400 font-sans">Grade A</span>
                     </div>
-                    <span className="text-[11px] text-slate-500 mt-1 block">0 critical keyboard traps</span>
-                  </SpotlightCard>
+                    <span className="text-[11px] text-[#8A8A8A] mt-1 block">0 critical keyboard traps</span>
+                  </div>
 
-                  <SpotlightCard className="p-4 rounded-xl border-white/5">
-                    <span className="text-xs text-slate-400 uppercase font-mono tracking-wider">Active Target</span>
-                    <div className="text-sm font-medium text-white truncate mt-1.5" title={targetUrl}>
+                  <div className="p-4 rounded-xl bg-[#F7F7F5] dark:bg-[#181818] border border-black/[0.06] dark:border-white/[0.06]">
+                    <span className="text-xs text-[#6E6E6E] dark:text-slate-400 uppercase font-mono tracking-wider">Active Target</span>
+                    <div className="text-sm font-semibold text-[#121212] dark:text-white truncate mt-1.5" title={targetUrl}>
                       {targetUrl}
                     </div>
-                    <span className="text-[11px] text-slate-500 mt-1 block font-mono">Persona: {persona}</span>
-                  </SpotlightCard>
+                    <span className="text-[11px] text-[#8A8A8A] mt-1 block font-mono">Persona: {persona}</span>
+                  </div>
 
-                  <SpotlightCard className="p-4 rounded-xl border-white/5">
-                    <span className="text-xs text-slate-400 uppercase font-mono tracking-wider">Legal Exposure Risk</span>
-                    <div className="text-2xl font-semibold text-emerald-400 mt-1">
+                  <div className="p-4 rounded-xl bg-[#F7F7F5] dark:bg-[#181818] border border-black/[0.06] dark:border-white/[0.06]">
+                    <span className="text-xs text-[#6E6E6E] dark:text-slate-400 uppercase font-mono tracking-wider">Legal Exposure Risk</span>
+                    <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
                       Low
                     </div>
-                    <span className="text-[11px] text-slate-500 mt-1 block">ADA Title III & EAA Compliant</span>
-                  </SpotlightCard>
+                    <span className="text-[11px] text-[#8A8A8A] mt-1 block">ADA Title III &amp; EAA Compliant</span>
+                  </div>
 
-                  <SpotlightCard className="p-4 rounded-xl border-white/5 flex flex-col justify-between">
-                    <span className="text-xs text-slate-400 uppercase font-mono tracking-wider">Fast Actions</span>
+                  <div className="p-4 rounded-xl bg-[#F7F7F5] dark:bg-[#181818] border border-black/[0.06] dark:border-white/[0.06] flex flex-col justify-between">
+                    <span className="text-xs text-[#6E6E6E] dark:text-slate-400 uppercase font-mono tracking-wider">Fast Actions</span>
                     <div className="flex gap-2 mt-2">
                       <button
                         type="button"
@@ -795,19 +811,19 @@ export default function Home() {
                           const reportId = auditResult?.id || (runsHistory.length > 0 ? runsHistory[0].id : '90c78a35-699d-460a-99cc-5f22c3d152f1');
                           window.open(`/api/audit/${reportId}/export?format=html`, '_blank');
                         }}
-                        className="flex-1 px-3 py-1.5 text-xs font-medium bg-white/10 hover:bg-white/15 active:scale-[0.98] text-white rounded-lg transition-all text-center"
+                        className="flex-1 px-3 py-1.5 text-xs font-semibold bg-black/[0.05] dark:bg-white/10 hover:bg-black/[0.08] dark:hover:bg-white/15 text-[#121212] dark:text-white rounded-lg transition-all text-center border border-black/[0.06] dark:border-white/[0.08]"
                       >
                         Export VPAT
                       </button>
                       <button
                         type="button"
                         onClick={() => setActiveScreen('fixes')}
-                        className="flex-1 px-3 py-1.5 text-xs font-medium bg-[#0090ff] hover:bg-[#0090ff]/90 active:scale-[0.98] text-white rounded-lg transition-all text-center"
+                        className="flex-1 px-3 py-1.5 text-xs font-semibold bg-[#0055FF] hover:bg-[#0044CC] text-white rounded-lg transition-all text-center shadow-sm"
                       >
                         Fix PR
                       </button>
                     </div>
-                  </SpotlightCard>
+                  </div>
                 </div>
               </div>
             )}
@@ -817,13 +833,13 @@ export default function Home() {
         {(activeScreen === 'audits' || activeScreen === 'inspector' || activeScreen === 'studio' || activeScreen === 'visual-twin') && (
           <div className="space-y-6">
             {/* Studio Lens Switcher */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-white/5 gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-black/[0.08] dark:border-white/[0.08] gap-3">
               <div className="flex items-center gap-2">
-                <Compass className="w-4 h-4 text-[#0090ff]" />
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-white">
+                <Compass className="w-4 h-4 text-[#0055FF]" />
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#121212] dark:text-white">
                   Traversal Studio
                 </span>
-                <span className="text-xs text-white/40 font-mono hidden sm:inline">
+                <span className="text-xs text-[#8A8A8A] font-mono hidden sm:inline">
                   &bull; Autonomous CDP Playwright Engine
                 </span>
               </div>
@@ -900,13 +916,13 @@ export default function Home() {
         {(activeScreen === 'issues' || activeScreen === 'triage' || activeScreen === 'focus-map' || activeScreen === 'screen-reader') && (
           <div className="space-y-6">
             {/* Proof Lens Switcher */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-white/5 gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-black/[0.08] dark:border-white/[0.08] gap-3">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-white">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#121212] dark:text-white">
                   Proofs &amp; Findings Lab
                 </span>
-                <span className="text-xs text-white/40 font-mono hidden sm:inline">
+                <span className="text-xs text-[#8A8A8A] font-mono hidden sm:inline">
                   &bull; Mathematical Diagnostics
                 </span>
               </div>
@@ -986,13 +1002,13 @@ export default function Home() {
         {(activeScreen === 'overview' || activeScreen === 'pulse' || activeScreen === 'websites' || activeScreen === 'genome' || activeScreen === 'arena' || activeScreen === 'settings' || activeScreen === 'vault' || activeScreen === 'aws-bridge' || activeScreen === 'multi-agent' || activeScreen === 'trends') && (
           <div className="space-y-6">
             {/* Monitoring Lens Switcher */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-white/5 gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-black/[0.08] dark:border-white/[0.08] gap-3">
               <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-[#0090ff]" />
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-white">
+                <Activity className="w-4 h-4 text-[#0055FF]" />
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#121212] dark:text-white">
                   Fleet Monitoring &amp; Infrastructure
                 </span>
-                <span className="text-xs text-white/40 font-mono hidden sm:inline">
+                <span className="text-xs text-[#8A8A8A] font-mono hidden sm:inline">
                   &bull; Monorepo Health &amp; CI/CD
                 </span>
               </div>

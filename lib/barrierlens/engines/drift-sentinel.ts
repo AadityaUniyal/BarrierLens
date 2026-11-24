@@ -64,7 +64,7 @@ export class DriftSentinelEngine {
   async persistDriftAlert(flowId: string | null, score: number, kind = 'effort_ratio_jump') {
     if (typeof window !== 'undefined') return;
     try {
-      const modulePath = '../../neon/db';
+      const modulePath = '../../supabase/db';
       const { sql } = await import(/* webpackIgnore: true */ modulePath);
       if (sql) {
         await sql`

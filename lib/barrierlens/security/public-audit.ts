@@ -1,7 +1,7 @@
 import { AuditorCore } from '../agent/auditor-core';
 import { PersonaType } from '../types';
 import crypto from 'node:crypto';
-import { sql } from '@/lib/neon/db';
+import { sql } from '@/lib/supabase/db';
 import {
   assertAuditQuota,
   beginAudit,

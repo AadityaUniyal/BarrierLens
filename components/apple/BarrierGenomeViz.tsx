@@ -198,7 +198,7 @@ export function BarrierGenomeViz({
           <div className="space-y-2.5 pt-1">
             {activeInsights.length === 0 ? (
               <p className="text-xs text-[#9ba1a6] font-mono py-4 text-center">
-                Vectors recorded in Neon DB. Run audits across multiple sites to compute cross-site transfer similarities.
+                Vectors recorded in Supabase pgvector. Run audits across multiple sites to compute cross-site transfer similarities.
               </p>
             ) : (
               activeInsights.map((insight, idx) => (

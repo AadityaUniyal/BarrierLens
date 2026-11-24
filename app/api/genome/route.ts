@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sql } from '@/lib/neon/db';
+import { sql } from '@/lib/supabase/db';
 import { GenomeStore } from '@/lib/barrierlens/genome/genome-store';
 import { BarrierGenomeEncoder } from '@/lib/barrierlens/genome/barrier-encoder';
 import { CrossSiteTransfer } from '@/lib/barrierlens/genome/cross-site-transfer';

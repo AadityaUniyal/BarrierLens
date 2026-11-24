@@ -5,7 +5,6 @@
  */
 
 import { chromium } from 'playwright';
-import fetch from 'node:fetch';
 
 const COLORS = {
   reset: '\x1b[0m',
@@ -246,7 +245,7 @@ async function runTests() {
   });
 
   await test('VPAT generator exists', async () => {
-    const fs = await import('node:fs/permissions');
+    const fs = await import('node:fs/promises');
     await fs.access('lib/barrierlens/compliance/vpat-generator.ts');
   });
 

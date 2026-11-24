@@ -29,6 +29,9 @@ describe('Tier 1 Part A - Studio, Audits & Visualizers Feature Coverage', () => 
 
   after(async () => {
     await closeBrowser();
+    setTimeout(() => {
+      process.exit(0);
+    }, 100).unref();
   });
 
   beforeEach(async () => {
@@ -419,6 +422,7 @@ describe('Tier 1 Part A - Studio, Audits & Visualizers Feature Coverage', () => 
     it('F9.4: should provide Launch Stress Test button with interactive progress state', async () => {
       await navigateTo(page, '/?tab=arena');
       const launchBtn = page.locator('button:has-text("Launch Stress Test"), button:has-text("Stress Test")').first();
+      await launchBtn.waitFor({ state: 'visible', timeout: 10000 });
       assert.ok(await launchBtn.isVisible(), 'Launch Stress Test button missing');
 
       await launchBtn.click();

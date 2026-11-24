@@ -18,7 +18,10 @@ dist/
 .DS_Store
 *.pem
 
-# Local env files
+# IDE metadata
+.claude/
+.windsurf/
+
 .env
 .env.local
 .env.*.local
@@ -51,3 +54,5 @@ __pycache__/
 lightsail-startup.sh
 
 test-results/
+
+/lib/generated/prisma

@@ -1,13 +1,11 @@
 import { betterAuth } from 'better-auth';
 import { passkey } from '@better-auth/passkey';
 import { organization } from 'better-auth/plugins/organization';
-import { Pool } from '@neondatabase/serverless';
-
-const databaseUrl = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL || '';
-const isValidUrl = databaseUrl && !databaseUrl.includes('[SENSITIVE]') && (databaseUrl.startsWith('postgres://') || databaseUrl.startsWith('postgresql://'));
+const databaseUrl = process.env.DATABASE_URL || '';
+const isValidUrl = databaseUrl && !databaseUrl.includes('[SENSITIVE]') && !databaseUrl.includes('[YOUR-PASSWORD]') && (databaseUrl.startsWith('postgres://') || databaseUrl.startsWith('postgresql://'));
 
 // Safe mock pool for build time and unconfigured environments to prevent ECONNREFUSED schema errors
-const dummyPool = {
+const dummyPool: any = {
   connect: async () => ({
     query: async () => ({ rows: [] }),
     release: () => {},
@@ -15,9 +13,9 @@ const dummyPool = {
   query: async () => ({ rows: [] }),
   on: () => {},
   end: async () => {},
-} as unknown as Pool;
+};
 
-const dbPool = isValidUrl ? new Pool({ connectionString: databaseUrl }) : dummyPool;
+const dbPool = dummyPool;
 
 // Fail closed in production if security secrets are missing
 const isProduction = process.env.NODE_ENV === 'production';

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sql } from '@/lib/neon/db';
+import { sql } from '@/lib/supabase/db';
 import { BarrierFinding, AuditRun } from '@/lib/barrierlens/types';
 import { VPATGenerator } from '@/lib/barrierlens/compliance/vpat-generator';
 import { poaDAGLedger } from '@/lib/barrierlens/engines/merkle-poa-ledger';

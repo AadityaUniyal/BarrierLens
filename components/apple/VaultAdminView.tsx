@@ -67,7 +67,7 @@ export function VaultAdminView({ userSession, onOpenAuth }: VaultAdminViewProps)
   const [testingWebhookId, setTestingWebhookId] = useState<string | null>(null);
   const [webhookTestNotice, setWebhookTestNotice] = useState<string | null>(null);
 
-  // Fetch real API keys and Webhooks from Neon DB
+  // Fetch real API keys and Webhooks from Supabase DB
   const fetchVaultData = async () => {
     try {
       setLoadingKeys(true);

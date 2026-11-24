@@ -1,4 +1,4 @@
-import { sql } from '../../neon/db';
+import { sql } from '../../supabase/db';
 import crypto from 'node:crypto';
 
 export type WebhookEventType = 
@@ -29,7 +29,7 @@ export interface WebhookDispatcherSummary {
 /**
  * Enterprise Webhook Dispatcher
  * Dispatches HMAC-SHA256 signed event notifications to active subscribers
- * stored in the Neon Postgres webhooks table, updating delivery metrics.
+ * stored in the Supabase Postgres webhooks table, updating delivery metrics.
  */
 export class WebhookDispatcher {
   /**

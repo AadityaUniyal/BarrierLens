@@ -31,6 +31,9 @@ describe('Tier 1 Part A - UI Navigation & Shell Feature Coverage', () => {
 
   after(async () => {
     await closeBrowser();
+    setTimeout(() => {
+      process.exit(0);
+    }, 100).unref();
   });
 
   beforeEach(async () => {

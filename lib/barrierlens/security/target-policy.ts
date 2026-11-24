@@ -91,8 +91,13 @@ export async function resolvePublicTargetUrl(
     throw new TargetPolicyError('Target URL is required. Please specify a website URL or /benchmark.', 'invalid_url');
   }
 
-  // Auto-prepend https:// if user entered domain without scheme (e.g. "example.com" or "github.com")
-  if (!raw.startsWith('http://') && !raw.startsWith('https://') && !raw.startsWith('/')) {
+  // Reject explicit non-http/https schemes immediately
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(raw)) {
+    if (!raw.startsWith('http://') && !raw.startsWith('https://')) {
+      throw new TargetPolicyError('Only http and https URLs are allowed.', 'invalid_url');
+    }
+  } else if (!raw.startsWith('/')) {
+    // Auto-prepend https:// if user entered domain without scheme (e.g. "example.com" or "github.com")
     raw = `https://${raw}`;
   }
 

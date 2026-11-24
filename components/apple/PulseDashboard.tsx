@@ -12,7 +12,7 @@ import {
   Volume2, 
   Key, 
   ExternalLink,
-  Sparkles, 
+  GitPullRequest,
   Play, 
   RotateCcw, 
   Cpu, 
@@ -80,11 +80,11 @@ export function PulseDashboard({
           <div className="flex items-center gap-2 mb-1.5">
             <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
             <span className="text-[11px] font-mono uppercase tracking-wider text-[#9c9aa8]">
-              Autonomous Accessibility Telemetry
+              Pulse · Continuous Accessibility Radar
             </span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-serif tracking-tight text-white">
-            System Posture <span className="italic font-normal text-[#bb7bfc] crt-glow-lavender">&amp; Radar</span>
+          <h1 className="text-3xl sm:text-4xl font-display font-bold tracking-[-0.03em] text-white">
+            System Posture <span className="font-normal text-slate-400">&amp; Radar</span>
           </h1>
           <p className="text-xs sm:text-[13px] text-[#9c9aa8] mt-1">
             Deterministic behavioral verification across monitored web assets under assistive constraints.
@@ -96,6 +96,7 @@ export function PulseDashboard({
             onClick={onRunQuickAudit}
             disabled={isAuditing}
             className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black hover:bg-slate-200 text-xs font-semibold shadow-sm transition-all duration-200 active:scale-95 disabled:opacity-50 min-h-[44px]"
+            title="Run Quick Audit"
           >
             {isAuditing ? (
               <>
@@ -105,7 +106,7 @@ export function PulseDashboard({
             ) : (
               <>
                 <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Run Autonomous Audit</span>
+                <span>Run Quick Audit</span>
               </>
             )}
           </button>
@@ -117,19 +118,22 @@ export function PulseDashboard({
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-[#9c9aa8] font-semibold">
+                Traversability Index
+              </span>
               <span className={`text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full border ${
                 overallTraversability >= 85 
-                  ? 'bg-emerald-500/10 text-[#7eac81] border-emerald-500/25 crt-glow-mint'
-                  : 'bg-amber-500/10 text-[#dad45e] border-amber-500/25 crt-glow-amber'
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
+                  : 'bg-amber-500/10 text-amber-400 border-amber-500/25'
               }`}>
-                {overallTraversability >= 85 ? 'Grade A • Production Certified' : 'Action Required • Trap Detected'}
+                {overallTraversability >= 85 ? 'Optimal • Grade A' : 'Action Required • Trap Detected'}
               </span>
               <span className="text-[11px] font-mono text-[#9c9aa8]">
                 WCAG 2.2 AA / EAA 2025
               </span>
             </div>
-            <div className="text-4xl sm:text-5xl font-mono font-bold tracking-tight text-white flex items-baseline gap-3">
-              <span>{overallTraversability}%</span>
+            <div className="text-3xl sm:text-5xl font-mono font-bold tracking-tight text-white flex items-baseline gap-3">
+              <span className="tabular-nums">{overallTraversability}%</span>
               <span className="text-sm font-sans font-normal text-[#9c9aa8]">Global Conformance</span>
             </div>
             <p className="text-xs text-[#9c9aa8] max-w-xl">
@@ -144,21 +148,19 @@ export function PulseDashboard({
               onClick={onOpenInspector}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] border border-white/[0.10] text-xs font-medium text-white transition-all min-h-[44px]"
             >
-              <Compass className="w-4 h-4 text-[#7eac81]" />
+              <Compass className="w-4 h-4 text-emerald-400" />
               <span>Inspect in Studio</span>
             </button>
             <button
               onClick={onOpenRemedy}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#bb7bfc]/15 hover:bg-[#bb7bfc]/25 border border-[#bb7bfc]/30 text-xs font-medium text-[#bb7bfc] transition-all min-h-[44px]"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.14] border border-white/[0.10] text-xs font-medium text-white transition-all min-h-[44px]"
             >
-              <Sparkles className="w-4 h-4 text-[#bb7bfc]" />
+              <GitPullRequest className="w-4 h-4 text-emerald-400" />
               <span>Review AST Fixes</span>
             </button>
           </div>
         </div>
 
-        {/* Ambient Top Light Beam */}
-        <div className="absolute top-0 right-1/4 w-96 h-28 bg-[#bb7bfc]/10 blur-3xl pointer-events-none" />
       </div>
 
       {/* 3. The Three Sensory Columns (Bento Grid) */}
@@ -169,14 +171,14 @@ export function PulseDashboard({
             <span className="text-[11px] font-mono uppercase tracking-wider text-[#9c9aa8] font-semibold">
               Spatial Traversal
             </span>
-            <span className={`w-2 h-2 rounded-full ${criticalFindings === 0 ? 'bg-[#7eac81]' : 'bg-[#ff453a]'}`} />
+            <span className={`w-2 h-2 rounded-full ${criticalFindings === 0 ? 'bg-emerald-400' : 'bg-rose-500'}`} />
           </div>
-          <div className="text-3xl font-mono font-bold tracking-tight text-white">
+          <div className="text-3xl font-mono font-bold tracking-tight text-white tabular-nums">
             {spatialScore}%
           </div>
           <div className="h-1.5 w-full bg-white/[0.06] rounded-full overflow-hidden">
             <div 
-              className={`h-full rounded-full transition-all duration-700 ${criticalFindings === 0 ? 'bg-[#7eac81]' : 'bg-[#ff453a]'}`}
+              className={`h-full rounded-full transition-all duration-700 ${criticalFindings === 0 ? 'bg-emerald-400' : 'bg-rose-500'}`}
               style={{ width: `${spatialScore}%` }}
             />
           </div>
@@ -191,19 +193,19 @@ export function PulseDashboard({
             <span className="text-[11px] font-mono uppercase tracking-wider text-[#9c9aa8] font-semibold">
               Acoustic Parity
             </span>
-            <span className="w-2 h-2 rounded-full bg-[#7eac81]" />
+            <span className="w-2 h-2 rounded-full bg-blue-400" />
           </div>
-          <div className="text-3xl font-mono font-bold tracking-tight text-white">
+          <div className="text-3xl font-mono font-bold tracking-tight text-white tabular-nums">
             {auditoryScore}%
           </div>
           <div className="h-1.5 w-full bg-white/[0.06] rounded-full overflow-hidden">
             <div 
-              className="h-full bg-[#7eac81] rounded-full transition-all duration-700" 
+              className="h-full bg-blue-400 rounded-full transition-all duration-700" 
               style={{ width: `${auditoryScore}%` }}
             />
           </div>
           <p className="text-[11px] text-[#9c9aa8]">
-            Kendall Tau monotonicity: <strong className="text-[#7eac81] font-mono">τ = {active?.kendallTau?.tau ?? 0.88}</strong>
+            Kendall Tau monotonicity: <strong className="text-blue-400 font-mono">τ = {active?.kendallTau?.tau ?? 0.88}</strong>
           </p>
         </div>
 
@@ -213,14 +215,14 @@ export function PulseDashboard({
             <span className="text-[11px] font-mono uppercase tracking-wider text-[#9c9aa8] font-semibold">
               Cognitive Friction
             </span>
-            <span className="w-2 h-2 rounded-full bg-[#bb7bfc]" />
+            <span className="w-2 h-2 rounded-full bg-indigo-400" />
           </div>
-          <div className="text-3xl font-mono font-bold tracking-tight text-white">
+          <div className="text-3xl font-mono font-bold tracking-tight text-white tabular-nums">
             {active?.effortRatio ? `${active.effortRatio}x` : '1.1x'}
           </div>
           <div className="h-1.5 w-full bg-white/[0.06] rounded-full overflow-hidden">
             <div 
-              className="h-full bg-[#bb7bfc] rounded-full transition-all duration-700" 
+              className="h-full bg-indigo-400 rounded-full transition-all duration-700" 
               style={{ width: `${cognitiveScore}%` }}
             />
           </div>
@@ -240,7 +242,7 @@ export function PulseDashboard({
 
           <button
             onClick={onOpenInspector}
-            className="text-xs font-mono text-[#bb7bfc] hover:underline flex items-center gap-1 font-medium min-h-[36px]"
+            className="text-xs font-mono text-slate-300 hover:text-white flex items-center gap-1 font-medium min-h-[36px]"
           >
             <span>Launch Studio Stage</span>
             <ArrowRight className="w-3 h-3" />

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sql } from '@/lib/neon/db';
+import { sql } from '@/lib/supabase/db';
 import { AuditRun, BarrierFinding, ActionStep } from '@/lib/barrierlens/types';
 
 export const dynamic = 'force-dynamic';

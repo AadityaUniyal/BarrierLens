@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { poaDAGLedger } from '@/lib/barrierlens/engines/merkle-poa-ledger';
-import { sql } from '@/lib/neon/db';
+import { sql } from '@/lib/supabase/db';
 
 export const runtime = 'nodejs';
 

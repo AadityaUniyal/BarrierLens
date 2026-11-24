@@ -246,14 +246,14 @@ export function ExecutiveReport({
               </button>
             </div>
 
-            <h2 className="text-3xl sm:text-4xl font-serif tracking-tight text-white leading-tight">
+            <h2 className="text-3xl sm:text-4xl font-display font-bold tracking-[-0.03em] text-white leading-tight">
               {auditRun?.taskSuccess ? (
                 <>
-                  Statutory Proof <span className="italic font-normal text-[#7eac81] crt-glow-mint">&amp; Certified Pass</span>
+                  Statutory Proof <span className="font-normal text-emerald-400">&amp; Certified Pass</span>
                 </>
               ) : (
                 <>
-                  Conformance Risk <span className="italic font-normal text-[#ff453a]">&amp; Barrier Evidence</span>
+                  Conformance Risk <span className="font-normal text-rose-400">&amp; Barrier Evidence</span>
                 </>
               )}
             </h2>

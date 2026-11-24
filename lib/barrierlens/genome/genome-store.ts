@@ -1,6 +1,6 @@
 import { BarrierGenome, BarrierGenomeEncoder } from './barrier-encoder';
 import { FindingKind } from '../types';
-import { sql } from '../../neon/db';
+import { sql } from '../../supabase/db';
 
 export interface GenomeSimilarityResult {
   genome: BarrierGenome;
@@ -136,7 +136,7 @@ export class GenomeStore {
   ): Promise<GenomeSimilarityResult[]> {
     const results: GenomeSimilarityResult[] = [];
 
-    // 1. Try Neon Postgres HNSW pgvector search if embedding is available
+    // 1. Try Supabase pgvector HNSW search if embedding is available
     try {
       await this.ensureTable();
 

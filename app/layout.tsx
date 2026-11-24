@@ -1,5 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { SwissScrollProvider } from '@/components/swiss/SwissScrollProvider';
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const viewport: Viewport = {
   themeColor: '#000000',
@@ -59,7 +64,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark crt-enabled">
+    <html lang="en" className={cn("dark crt-enabled", "font-sans", geist.variable)}>
       <body className="min-h-screen bg-[var(--bg)] text-[var(--fg)] antialiased selection:bg-[#7eac81] selection:text-black font-sans">
         {/* Global SVG Shaders & Phosphor Filter Definitions (Tailor'd Design) */}
         <svg width="0" height="0" className="absolute pointer-events-none -z-50 overflow-hidden" aria-hidden="true">
@@ -141,7 +146,17 @@ export default function RootLayout({
           </defs>
         </svg>
 
-        {children}
+        {/*
+          ====================================================================
+          BARRIERLENS ARCHITECTURAL MANIFESTO · SWISS EDITORIAL SYSTEM
+          "Eine Website ist tausend kleine Entscheidungen — treffen jede davon von Hand."
+          Aesthetic: Swiss-Minimalist Monochrome · Bricolage Grotesque · Tabular JetBrains
+          Deterministic Verification Core: Tarjan Directed Cycle SCC · Kendall Tau Reading Order
+          ====================================================================
+        */}
+        <SwissScrollProvider>
+          {children}
+        </SwissScrollProvider>
       </body>
     </html>
   );

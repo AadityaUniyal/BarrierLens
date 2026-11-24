@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { sql } from '@/lib/neon/db';
+import { sql } from '@/lib/supabase/db';
 import { AuditorCore } from '@/lib/barrierlens/agent/auditor-core';
 import { VPATGenerator } from '@/lib/barrierlens/compliance/vpat-generator';
 import { WebhookDispatcher, WebhookEventType } from '@/lib/barrierlens/integrations/webhook-dispatcher';
@@ -61,7 +61,11 @@ export async function POST(req: Request) {
       // Update job to completed
       await sql`
         UPDATE jobs
-        SET status = 'completed', payload = jsonb_set(payload, '{result_id}', to_jsonb(${result.id}::text))
+        SET status = 'completed', payload = jsonb_set(
+          CASE WHEN jsonb_typeof(payload) = 'object' THEN payload ELSE '{}'::jsonb END,
+          '{result_id}',
+          to_jsonb(${result.id}::text)
+        )
         WHERE id = ${job.id};
       `;
 

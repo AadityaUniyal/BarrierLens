@@ -26,7 +26,7 @@ import { AxeBaselineRunner } from '../engines/axe-baseline-runner';
 import { AutonomousReconEngine } from './recon-engine';
 import { ContextAwareInputFuzzer } from './input-fuzzer';
 import { AuditRun, BarrierFinding, ActionStep, PersonaType, FocusNode } from '../types';
-import { sql } from '../../neon/db';
+import { sql } from '../../supabase/db';
 import { trajectoryLogger } from './trajectory-logger';
 import { WebhookDispatcher } from '../integrations/webhook-dispatcher';
 import crypto from 'node:crypto';
@@ -817,7 +817,7 @@ export class AuditorCore {
     };
 
     // -------------------------------------------------------------
-    // Persist Run & Findings to Neon Postgres
+    // Persist Run & Findings to Supabase Postgres
     // -------------------------------------------------------------
     try {
       try {
@@ -855,7 +855,7 @@ export class AuditorCore {
         `;
       }
 
-      // Persist findings to Neon & Barrier Genome Store with Cross-Site Transfer
+      // Persist findings to Supabase & Barrier Genome Store with Cross-Site Transfer
       for (const finding of findings) {
         try {
           const genome = this.genomeEncoder.encode(finding, {
@@ -903,7 +903,7 @@ export class AuditorCore {
           );
         `;
 
-        // Persist verified causal certificate into Neon causal_certificates table
+        // Persist verified causal certificate into Supabase causal_certificates table
         if (finding.certificate) {
           try {
             const cert = finding.certificate;
@@ -932,12 +932,12 @@ export class AuditorCore {
               );
             `;
           } catch (certErr: any) {
-            console.warn('[Neon DB] Causal certificate persistence note:', certErr.message);
+            console.warn('[Supabase DB] Causal certificate persistence note:', certErr.message);
           }
         }
       }
 
-      // Persist steps to Neon
+      // Persist steps to Supabase
       for (const step of steps) {
         await sql`
           INSERT INTO steps (run_id, idx, action, tier, latency_ms, ok)
@@ -966,7 +966,7 @@ export class AuditorCore {
         );
       `;
 
-      console.log(`[Neon DB] Audit run ${runId}, ${steps.length} steps, and ${findings.length} findings saved to Neon Postgres.`);
+      console.log(`[Supabase DB] Audit run ${runId}, ${steps.length} steps, and ${findings.length} findings saved to Supabase Postgres.`);
 
       // Non-blocking Webhook dispatch for completed audit & proven traps
       try {
@@ -995,7 +995,7 @@ export class AuditorCore {
         }).catch(() => {});
       } catch {}
     } catch (dbErr: any) {
-      console.warn('[Neon DB] Could not persist run to Postgres:', dbErr.message);
+      console.warn('[Supabase DB] Could not persist run to Postgres:', dbErr.message);
     }
 
     onProgress?.({ type: 'complete', data: auditRunResult });

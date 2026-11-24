@@ -56,7 +56,7 @@ export function TrendsView({ runs = [] }: TrendsViewProps) {
   const [analytics, setAnalytics] = useState<AnalyticsTrendsResponse | null>(null);
   const [loadingAnalytics, setLoadingAnalytics] = useState<boolean>(true);
 
-  // Fetch real longitudinal metrics from Neon Analytics API
+  // Fetch real longitudinal metrics from Supabase Analytics API
   const fetchAnalytics = async () => {
     setLoadingAnalytics(true);
     try {

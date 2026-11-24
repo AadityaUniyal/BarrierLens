@@ -14,7 +14,7 @@ import { BarrierGenomeEncoder } from '../genome/barrier-encoder';
 import { GenomeStore } from '../genome/genome-store';
 import { extractCDPAXTree } from '../cdp/cdp-ax-extractor';
 import { FocusGraphEngine } from '../engines/focus-graph';
-import { neonServices } from '../../neon/services';
+import { supabaseServices } from '../../supabase/services';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -238,7 +238,7 @@ export class StrandsAgentMesh {
       };
       steps.push(step1);
 
-      await neonServices.recordAgentTrace({
+      await supabaseServices.recordAgentTrace({
         traceId,
         agentRole: 'Navigator',
         eventType: 'NAVIGATION_COMPLETED',
@@ -303,7 +303,7 @@ export class StrandsAgentMesh {
       };
       steps.push(step2);
 
-      await neonServices.recordAgentTrace({
+      await supabaseServices.recordAgentTrace({
         traceId,
         agentRole: 'Auditor',
         eventType: 'TRAP_ANALYSIS_COMPLETED',
@@ -388,7 +388,7 @@ export class StrandsAgentMesh {
 
       const certId = 'cert-' + crypto.randomUUID().slice(0, 8);
 
-      await neonServices.saveCausalCertificate({
+      await supabaseServices.saveCausalCertificate({
         findingId: certId,
         sha256Hash: certHash,
         targetUrl,

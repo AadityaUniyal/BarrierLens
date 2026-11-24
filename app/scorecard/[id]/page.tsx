@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { sql } from '@/lib/neon/db';
+import { sql } from '@/lib/supabase/db';
 import { PublicScorecardView } from '@/components/apple/PublicScorecardView';
 import { AuditRun, BarrierFinding } from '@/lib/barrierlens/types';
 import { Zap, ArrowLeft, ShieldCheck, Terminal, AlertTriangle, ExternalLink } from 'lucide-react';
