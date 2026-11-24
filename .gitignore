@@ -48,4 +48,6 @@ __pycache__/
 .pytest_cache/
 
 # Test output
+lightsail-startup.sh
+
 test-results/

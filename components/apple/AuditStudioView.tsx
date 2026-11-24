@@ -337,7 +337,7 @@ export function AuditStudioView({
               value={targetUrl}
               onChange={(e) => setTargetUrl(e.target.value)}
               placeholder="https://example.com or /benchmark"
-              className="w-full px-3.5 py-2 rounded-xl bg-[#07080b]/90 border border-white/[0.08] text-xs text-white font-mono focus:outline-none focus:border-blue-500 transition-colors shadow-inner"
+              className="w-full px-3.5 py-2 rounded-xl bg-[#0f1b38] border border-blue-500/25 text-xs text-white font-mono focus:outline-none focus:border-blue-400 transition-colors shadow-inner"
             />
           </div>
 
@@ -351,7 +351,7 @@ export function AuditStudioView({
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
               placeholder="e.g. Subscribe to newsletter"
-              className="w-full px-3.5 py-2 rounded-xl bg-[#07080b]/90 border border-white/[0.08] text-xs text-white focus:outline-none focus:border-blue-500 transition-colors shadow-inner"
+              className="w-full px-3.5 py-2 rounded-xl bg-[#0f1b38] border border-blue-500/25 text-xs text-white focus:outline-none focus:border-blue-400 transition-colors shadow-inner"
             />
           </div>
 
@@ -363,7 +363,7 @@ export function AuditStudioView({
             <select
               value={persona}
               onChange={(e) => setPersona(e.target.value as PersonaType)}
-              className="w-full px-3.5 py-2 rounded-xl bg-[#07080b]/90 border border-white/[0.08] text-xs text-white focus:outline-none focus:border-blue-500 transition-colors shadow-inner"
+              className="w-full px-3.5 py-2 rounded-xl bg-[#0f1b38] border border-blue-500/25 text-xs text-white focus:outline-none focus:border-blue-400 transition-colors shadow-inner"
             >
               <option value="keyboard">Keyboard Only (WCAG 2.1.1)</option>
               <option value="screen_reader">Screen Reader (VoiceOver/NVDA)</option>
@@ -712,7 +712,7 @@ export function AuditStudioView({
               {steps.map((step: ActionStep) => (
                 <div
                   key={step.idx}
-                  className="p-3 rounded-xl bg-[#07080b]/80 border border-white/[0.06] space-y-1.5 text-xs hover:border-white/[0.15] transition-all shadow-sm"
+                  className="p-3 rounded-xl bg-[#0f1b38]/90 border border-blue-500/20 space-y-1.5 text-xs hover:border-blue-400/40 transition-all shadow-sm"
                 >
                   <div className="flex items-center justify-between font-mono text-[10px]">
                     <span className="text-slate-400">Step #{step.idx}</span>

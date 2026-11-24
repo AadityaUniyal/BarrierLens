@@ -224,7 +224,7 @@ export function CinematicLanding({
   ];
 
   return (
-    <div className="min-h-screen bg-[#07080b] text-[#f8fafc] font-sans antialiased selection:bg-white selection:text-black">
+    <div className="min-h-screen bg-[#091124] text-[#f8fafc] font-sans antialiased selection:bg-[#3b82f6]/30 selection:text-white">
       
       {/* Subtle Ambient Radial Lighting with dot-matrix watermark */}
       <div className="ambient-mesh pointer-events-none" />
@@ -499,42 +499,42 @@ export function CinematicLanding({
 
         {/* High-Impact Metric Transformation Ribbons (Linear / Apple Tier-1 Bento) */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8">
-          <div className="p-6 bg-[#0c0d12]/90 border border-white/[0.08] rounded-2xl relative overflow-hidden group hover:border-rose-500/40 transition-all duration-300 backdrop-blur-xl shadow-xl">
+          <div className="p-6 bg-[#0f1b38]/90 border border-blue-500/25 rounded-2xl relative overflow-hidden group hover:border-rose-500/50 transition-all duration-300 backdrop-blur-xl shadow-xl">
             <div className="absolute top-0 right-0 w-28 h-28 bg-rose-500/10 rounded-full blur-3xl group-hover:bg-rose-500/25 transition-all duration-500" />
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block font-medium">Production Traps</span>
+            <span className="text-[11px] font-mono text-white/50 uppercase tracking-wider block font-medium">Production Traps</span>
             <div className="flex items-baseline gap-2.5 pt-2">
               <span className="text-3xl sm:text-4xl font-mono font-bold text-rose-400/60 line-through decoration-rose-500/50">98%</span>
               <span className="text-xs font-mono text-white/40">&rarr;</span>
               <span className="text-3xl sm:text-4xl font-mono font-bold text-emerald-400">0%</span>
             </div>
-            <p className="text-xs text-white/60 pt-2 font-mono">Tarjan SCC graph cycle elimination</p>
+            <p className="text-xs text-white/70 pt-2 font-mono">Tarjan SCC graph cycle elimination</p>
           </div>
 
-          <div className="p-6 bg-[#0c0d12]/90 border border-white/[0.08] rounded-2xl relative overflow-hidden group hover:border-[#0090ff]/40 transition-all duration-300 backdrop-blur-xl shadow-xl">
-            <div className="absolute top-0 right-0 w-28 h-28 bg-[#0090ff]/10 rounded-full blur-3xl group-hover:bg-[#0090ff]/25 transition-all duration-500" />
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block font-medium">Remediation MTTR</span>
+          <div className="p-6 bg-[#0f1b38]/90 border border-blue-500/25 rounded-2xl relative overflow-hidden group hover:border-cyan-400/50 transition-all duration-300 backdrop-blur-xl shadow-xl">
+            <div className="absolute top-0 right-0 w-28 h-28 bg-blue-500/15 rounded-full blur-3xl group-hover:bg-blue-500/30 transition-all duration-500" />
+            <span className="text-[11px] font-mono text-white/50 uppercase tracking-wider block font-medium">Remediation MTTR</span>
             <div className="text-3xl sm:text-4xl font-mono font-bold text-white pt-2 flex items-baseline gap-2">
-              12x <span className="text-xs font-mono text-[#0090ff] font-normal uppercase">Faster</span>
+              12x <span className="text-xs font-mono text-cyan-400 font-normal uppercase">Faster</span>
             </div>
-            <p className="text-xs text-white/60 pt-2 font-mono">Automated AST Git pull requests</p>
+            <p className="text-xs text-white/70 pt-2 font-mono">Automated AST Git pull requests</p>
           </div>
 
-          <div className="p-6 bg-[#0c0d12]/90 border border-white/[0.08] rounded-2xl relative overflow-hidden group hover:border-emerald-500/40 transition-all duration-300 backdrop-blur-xl shadow-xl">
+          <div className="p-6 bg-[#0f1b38]/90 border border-blue-500/25 rounded-2xl relative overflow-hidden group hover:border-emerald-500/50 transition-all duration-300 backdrop-blur-xl shadow-xl">
             <div className="absolute top-0 right-0 w-28 h-28 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/25 transition-all duration-500" />
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block font-medium">Code Regressions</span>
+            <span className="text-[11px] font-mono text-white/50 uppercase tracking-wider block font-medium">Code Regressions</span>
             <div className="text-3xl sm:text-4xl font-mono font-bold text-emerald-400 pt-2 flex items-baseline gap-2">
               0 <span className="text-xs font-mono text-emerald-300/70 font-normal uppercase">Verified</span>
             </div>
-            <p className="text-xs text-white/60 pt-2 font-mono">Shadow-DOM replay verification</p>
+            <p className="text-xs text-white/70 pt-2 font-mono">Shadow-DOM replay verification</p>
           </div>
 
-          <div className="p-6 bg-[#0c0d12]/90 border border-white/[0.08] rounded-2xl relative overflow-hidden group hover:border-purple-500/40 transition-all duration-300 backdrop-blur-xl shadow-xl">
+          <div className="p-6 bg-[#0f1b38]/90 border border-blue-500/25 rounded-2xl relative overflow-hidden group hover:border-purple-500/50 transition-all duration-300 backdrop-blur-xl shadow-xl">
             <div className="absolute top-0 right-0 w-28 h-28 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/25 transition-all duration-500" />
-            <span className="text-[11px] font-mono text-white/40 uppercase tracking-wider block font-medium">Statutory Conformance</span>
+            <span className="text-[11px] font-mono text-white/50 uppercase tracking-wider block font-medium">Statutory Conformance</span>
             <div className="text-3xl sm:text-4xl font-mono font-bold text-white pt-2 flex items-baseline gap-2">
-              100% <span className="text-xs font-mono text-[#bb7bfc] font-normal uppercase">Proven</span>
+              100% <span className="text-xs font-mono text-indigo-300 font-normal uppercase">Proven</span>
             </div>
-            <p className="text-xs text-white/60 pt-2 font-mono">Certified VPAT® 2.5 &amp; EAA 2025</p>
+            <p className="text-xs text-white/70 pt-2 font-mono">Certified VPAT® 2.5 &amp; EAA 2025</p>
           </div>
         </div>
 
@@ -628,22 +628,22 @@ export function CinematicLanding({
                 <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
                   <div className={`p-3 rounded-lg border transition-all ${
                     simStep === 1 
-                      ? 'bg-[#0090ff]/20 border-[#0090ff] text-white shadow-[0_0_15px_rgba(0,144,255,0.4)]' 
-                      : 'bg-[#07080b] border-white/5 text-white/40'
+                      ? 'bg-blue-600/30 border-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' 
+                      : 'bg-[#091124] border-blue-500/20 text-white/50'
                   }`}>
                     1. #nav-bar
                   </div>
                   <div className={`p-3 rounded-lg border transition-all ${
                     simStep === 2 
                       ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.4)]' 
-                      : 'bg-[#07080b] border-white/5 text-white/40'
+                      : 'bg-[#091124] border-blue-500/20 text-white/50'
                   }`}>
                     2. #modal-input
                   </div>
                   <div className={`p-3 rounded-lg border transition-all ${
                     simStep === 3 
                       ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.4)]' 
-                      : 'bg-[#07080b] border-white/5 text-white/40'
+                      : 'bg-[#091124] border-blue-500/20 text-white/50'
                   }`}>
                     3. #submit-btn
                   </div>
@@ -732,7 +732,7 @@ export function CinematicLanding({
               </div>
 
               {/* Dynamic Soundwave Equalizer */}
-              <div className="p-5 bg-[#121316] border border-white/10 rounded-2xl space-y-4">
+              <div className="p-5 bg-[#0f1b38] border border-blue-500/25 rounded-2xl space-y-4">
                 <div className="flex items-center justify-between text-xs font-mono">
                   <span className="text-white/60">LIVE SPEECH SYNTHESIZER TELEMETRY</span>
                   <span className={isMutedGap ? "text-amber-400 font-bold" : "text-emerald-400 font-bold"}>
@@ -741,7 +741,7 @@ export function CinematicLanding({
                 </div>
 
                 {/* Animated Audio Equalizer Bars */}
-                <div className="h-16 bg-[#07080b] border border-white/5 rounded-xl flex items-center justify-center gap-1.5 px-4 overflow-hidden">
+                <div className="h-16 bg-[#091124] border border-blue-500/20 rounded-xl flex items-center justify-center gap-1.5 px-4 overflow-hidden">
                   {[24, 45, 12, 60, 32, 18, 55, 40, 28, 50, 15, 38, 48, 20, 58, 30, 44, 22].map((height, i) => (
                     <div
                       key={i}
@@ -820,13 +820,13 @@ export function CinematicLanding({
               </div>
 
               {/* Code Diff Box */}
-              <div className="p-5 bg-[#121316] border border-white/10 rounded-2xl space-y-3 font-mono text-xs">
+              <div className="p-5 bg-[#0f1b38] border border-blue-500/25 rounded-2xl space-y-3 font-mono text-xs">
                 <div className="flex items-center justify-between text-white/50 border-b border-white/5 pb-2">
                   <span>components/NewsletterModal.tsx</span>
                   <span className="text-emerald-400 font-bold">REPLAY PROOF: PASSED</span>
                 </div>
 
-                <div className="p-3 bg-[#07080b] rounded-lg border border-white/5 space-y-1 overflow-x-auto text-[11px] leading-relaxed">
+                <div className="p-3 bg-[#091124] rounded-lg border border-blue-500/20 space-y-1 overflow-x-auto text-[11px] leading-relaxed">
                   <div className="text-rose-400">- &lt;div id=&quot;newsletter-modal&quot; className=&quot;modal&quot;&gt;</div>
                   <div className="text-emerald-400">+ &lt;div id=&quot;newsletter-modal&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot; onKeyDown=&#123;handleEscape&#125;&gt;</div>
                   <div className="text-white/40">    &lt;h2&gt;Sign up for updates&lt;/h2&gt;</div>
@@ -1014,10 +1014,10 @@ export function CinematicLanding({
           </h2>
         </div>
 
-        <div className="overflow-x-auto rounded-3xl border border-white/10 bg-[#0c0d10]">
+        <div className="overflow-x-auto rounded-3xl border border-blue-500/25 bg-[#0f1b38] shadow-2xl">
           <table className="w-full text-left font-sans text-xs sm:text-sm divide-y divide-white/10">
             <thead>
-              <tr className="bg-[#121316] text-white/70 text-xs uppercase tracking-wider font-mono">
+              <tr className="bg-[#142247] text-white/70 text-xs uppercase tracking-wider font-mono">
                 <th className="p-5 font-semibold">Capability</th>
                 <th className="p-5 bg-white text-black font-bold">BarrierLens 2.0</th>
                 <th className="p-5 font-semibold text-white/70">Static Linters</th>
@@ -1059,7 +1059,7 @@ export function CinematicLanding({
           {agentPillars.map((pillar, idx) => (
             <div 
               key={idx}
-              className={`p-8 rounded-3xl border flex flex-col justify-between space-y-8 bg-[#0c0d12]/90 ${pillar.color} shadow-2xl relative overflow-hidden backdrop-blur-xl group hover:scale-[1.02] transition-all duration-300`}
+              className={`p-8 rounded-3xl border flex flex-col justify-between space-y-8 bg-[#0f1b38]/90 border-blue-500/20 ${pillar.color} shadow-2xl relative overflow-hidden backdrop-blur-xl group hover:scale-[1.02] transition-all duration-300`}
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -1115,7 +1115,7 @@ export function CinematicLanding({
           {faqs.map((faq, idx) => (
             <div 
               key={idx}
-              className="rounded-2xl border border-white/10 bg-[#0c0d10] overflow-hidden transition-colors"
+              className="rounded-2xl border border-blue-500/20 bg-[#0f1b38] overflow-hidden transition-colors"
             >
               <button
                 type="button"
@@ -1152,9 +1152,9 @@ export function CinematicLanding({
         </div>
 
         {/* Tailor'd Styled Terminal Inquiry Box */}
-        <div className="w-full max-w-xl mx-auto bg-[#181717] border border-[#333333] rounded-2xl p-6 sm:p-8 shadow-[0_0_60px_rgba(0,0,0,0.85)] space-y-6 text-left relative overflow-hidden">
+        <div className="w-full max-w-xl mx-auto bg-[#0f1b38] border border-blue-500/30 rounded-2xl p-6 sm:p-8 shadow-[0_0_60px_rgba(9,17,36,0.9)] space-y-6 text-left relative overflow-hidden">
           {/* Terminal Title Bar */}
-          <div className="flex items-center justify-between pb-3.5 border-b border-[#2a2a2a] text-xs font-mono">
+          <div className="flex items-center justify-between pb-3.5 border-b border-blue-500/20 text-xs font-mono">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
               <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
@@ -1238,7 +1238,7 @@ export function CinematicLanding({
       </section>
 
       {/* 8. EDITORIAL ENTERPRISE FOOTER */}
-      <footer className="pt-16 pb-12 px-6 sm:px-8 lg:px-12 border-t border-white/10 bg-[#07080b] text-xs text-white/50">
+      <footer className="pt-16 pb-12 px-6 sm:px-8 lg:px-12 border-t border-blue-500/20 bg-[#080e1f] text-xs text-white/60">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 pb-12 border-b border-white/10">
           
           <div className="md:col-span-5 space-y-3">

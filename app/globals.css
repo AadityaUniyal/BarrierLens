@@ -5,39 +5,39 @@
 @tailwind utilities;
 
 :root {
-  /* Apple Liquid Glass Canvas Tokens & Tailor'd Warm Carbon */
-  --bg: #111114;
-  --bg-secondary: #16161b;
-  --bg-surface: #1c1c24;
-  --bg-alt: #f5f2eb;
-  --fg: #f5f5f7;
-  --fg-dark: #111114;
-  --fg-muted: #9c9aa8;
-  --fg-subtle: rgba(255, 255, 255, 0.40);
-  --line: rgba(255, 255, 255, 0.08);
-  --line-strong: rgba(255, 255, 255, 0.16);
-  --scrim: rgba(0, 0, 0, 0.70);
+  /* Cosmic Oceanic Sapphire Canvas Tokens */
+  --bg: #091124;
+  --bg-secondary: #0f1b38;
+  --bg-surface: #142247;
+  --bg-alt: #1e293b;
+  --fg: #f8fafc;
+  --fg-dark: #091124;
+  --fg-muted: #94a3b8;
+  --fg-subtle: rgba(203, 213, 225, 0.45);
+  --line: rgba(59, 130, 246, 0.18);
+  --line-strong: rgba(59, 130, 246, 0.32);
+  --scrim: rgba(9, 17, 36, 0.75);
 
-  /* Tailor'd Design Calibrated Phosphor Accents */
-  --color-crt: #a9a9b6;
-  --color-primary: #f5f2eb;
-  --color-accent: #7eac81;         /* Terminal Mint */
-  --color-accentTwo: #bb7bfc;      /* Electric Lavender */
-  --color-accentThree: #dad45e;    /* Telemetry Amber */
-  --color-danger: #ff453a;         /* Apple Destructive Red */
+  /* Calibrated Phosphor & Antigravity Accents */
+  --color-crt: #93c5fd;
+  --color-primary: #f8fafc;
+  --color-accent: #10b981;         /* Terminal Mint */
+  --color-accentTwo: #8b5cf6;      /* Cosmic Violet */
+  --color-accentThree: #f59e0b;    /* Telemetry Solar Amber */
+  --color-danger: #f43f5e;         /* Crimson Red */
 
-  /* Apple System Semantics */
-  --apple-blue: #0071e3;
-  --apple-blue-hover: #0077ed;
-  --apple-emerald: #32d74b;
-  --apple-amber: #ff9f0a;
-  --apple-rose: #ff453a;
-  --apple-purple: #bf5af2;
+  /* System Semantics */
+  --apple-blue: #3b82f6;
+  --apple-blue-hover: #2563eb;
+  --apple-emerald: #10b981;
+  --apple-amber: #f59e0b;
+  --apple-rose: #f43f5e;
+  --apple-purple: #8b5cf6;
 
-  /* Specular Edge & Refraction Highlights (Apple Liquid Glass) */
-  --specular-lip: rgba(255, 255, 255, 0.28);
-  --specular-side: rgba(255, 255, 255, 0.08);
-  --specular-bottom: rgba(255, 255, 255, 0.03);
+  /* Specular Edge & Refraction Highlights */
+  --specular-lip: rgba(147, 197, 253, 0.35);
+  --specular-side: rgba(59, 130, 246, 0.18);
+  --specular-bottom: rgba(59, 130, 246, 0.08);
 
   /* Typography */
   --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
@@ -45,7 +45,7 @@
   --font-serif: "Instrument Serif", Georgia, serif;
   --font-mono: "IBM Plex Mono", "SF Mono", Menlo, monospace;
 
-  /* Apple Hardware Physics */
+  /* Hardware Physics */
   --ease-apple-spring: cubic-bezier(0.16, 1, 0.3, 1);
   --duration-spring: 260ms;
 }
@@ -130,7 +130,7 @@ body {
 }
 
 .apple-liquid-glass {
-  background: rgba(16, 18, 26, 0.68);
+  background: rgba(15, 27, 56, 0.72);
   backdrop-filter: blur(28px) saturate(190%) contrast(105%);
   -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(105%);
   border-top: 1px solid var(--specular-lip);
@@ -138,8 +138,9 @@ body {
   border-right: 1px solid var(--specular-side);
   border-bottom: 1px solid var(--specular-bottom);
   box-shadow: 
-    0 24px 48px -12px rgba(0, 0, 0, 0.70),
-    0 1px 0 0 rgba(255, 255, 255, 0.12) inset;
+    0 24px 48px -12px rgba(6, 12, 26, 0.75),
+    0 0 20px rgba(59, 130, 246, 0.15),
+    0 1px 0 0 rgba(255, 255, 255, 0.15) inset;
 }
 
 .apple-pill {
@@ -598,7 +599,7 @@ body {
   }
   .apple-glass-card, .apple-liquid-glass, .glass-panel {
     border-color: rgba(255, 255, 255, 0.4) !important;
-    background: #111114 !important;
+    background: #091124 !important;
   }
   * {
     text-shadow: none !important;

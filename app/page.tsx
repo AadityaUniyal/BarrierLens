@@ -189,7 +189,7 @@ export default function Home() {
 
   // Initial Data & Session Load
   useEffect(() => {
-    // 0. Check real session from BetterAuth
+    // 0. Check real session from BetterAuth or verified local session
     authClient.getSession()
       .then(({ data }) => {
         if (data?.user) {
@@ -197,16 +197,50 @@ export default function Home() {
             id: data.user.id,
             name: data.user.name || 'Auditor',
             email: data.user.email,
-            authMethod: 'apple_passkey',
+            authMethod: 'session',
             organization: 'Pro Workspace',
             role: 'Lead Auditor',
-            awsRegion: 'us-east-1',
-            bedrockQuota: 'Active',
             verifiedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           });
+        } else {
+          try {
+            const stored = sessionStorage.getItem('barrierlens_user');
+            if (stored) {
+              const u = JSON.parse(stored);
+              if (u && u.id) {
+                setUserSession({
+                  id: u.id,
+                  name: u.name || 'Lead Auditor',
+                  email: u.email || 'auditor@barrierlens.ai',
+                  authMethod: 'session',
+                  organization: u.organization || 'Pro Workspace',
+                  role: u.role || 'Lead Auditor',
+                  verifiedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                });
+              }
+            }
+          } catch {}
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        try {
+          const stored = sessionStorage.getItem('barrierlens_user');
+          if (stored) {
+            const u = JSON.parse(stored);
+            if (u && u.id) {
+              setUserSession({
+                id: u.id,
+                name: u.name || 'Lead Auditor',
+                email: u.email || 'auditor@barrierlens.ai',
+                authMethod: 'session',
+                organization: u.organization || 'Pro Workspace',
+                role: u.role || 'Lead Auditor',
+                verifiedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              });
+            }
+          }
+        } catch {}
+      });
 
     // 1. Inspect URL parameters and sessionStorage on mount
     try {
@@ -611,7 +645,7 @@ export default function Home() {
   const currentFindings = auditResult?.findings?.length ? auditResult.findings : historicalFindings;
 
   return (
-    <div className="min-h-screen bg-[#07080b] text-[#f8fafc] flex flex-col font-sans selection:bg-[#0090ff]/30 selection:text-white antialiased relative">
+    <div className="min-h-screen bg-[#091124] text-[#f8fafc] flex flex-col font-sans selection:bg-[#3b82f6]/30 selection:text-white antialiased relative">
       <div className="ambient-mesh" />
       {/* 1. Master Hub Navigation Bar */}
       <Navbar
@@ -627,6 +661,9 @@ export default function Home() {
           } catch (e) {
             console.warn('[Page] authClient.signOut error:', e);
           }
+          try {
+            sessionStorage.removeItem('barrierlens_user');
+          } catch {}
           setUserSession(null);
         }}
       />
@@ -646,6 +683,9 @@ export default function Home() {
           } catch (e) {
             console.warn('[Page] authClient.signOut error:', e);
           }
+          try {
+            sessionStorage.removeItem('barrierlens_user');
+          } catch {}
           setUserSession(null);
         }}
       />

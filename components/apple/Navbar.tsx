@@ -274,10 +274,11 @@ export function Navbar({
             <button
               type="button"
               onClick={onOpenAuth}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-black hover:bg-slate-200 text-xs font-semibold transition-all shadow-sm"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-slate-900 hover:bg-slate-100 text-xs font-semibold transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:scale-105"
+              title="Sign in to your account"
             >
-              <Fingerprint className="w-3.5 h-3.5 text-black" />
-              <span>Passkey</span>
+              <User className="w-3.5 h-3.5 text-slate-800" />
+              <span>Sign In</span>
             </button>
           )}
 
