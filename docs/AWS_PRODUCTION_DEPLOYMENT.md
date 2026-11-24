@@ -33,7 +33,7 @@ BarrierLens 2.0 is deployed in production on Amazon Web Services in region `ap-s
 |   +----------------------------------+   +----------------------------------------------+   |
 |                                                                                             |
 |   +----------------------------------+   +----------------------------------------------+   |
-|   |   IAM Role & Instance Profile    |   |   Neon Serverless PostgreSQL (pgvector)      |   |
+|   |   IAM Role & Instance Profile    |   |   Supabase Enterprise PostgreSQL (pgvector)  |   |
 |   |   - BarrierLensInstanceProfile   |   |   - 768-d Barrier Genome Embeddings          |   |
 |   |   - Role: BarrierLensEC2Role     |   |   - HNSW Cosine Similarity Index             |   |
 |   +----------------------------------+   +----------------------------------------------+   |
@@ -44,7 +44,8 @@ BarrierLens 2.0 is deployed in production on Amazon Web Services in region `ap-s
 
 ## Live Production Endpoints
 
-- **Mission Control Web App**: [http://43.205.254.136](http://43.205.254.136)
+- **Secured HTTPS Edge App (AWS CloudFront)**: [https://d16apr4v8qm91m.cloudfront.net](https://d16apr4v8qm91m.cloudfront.net)
+- **Direct EC2 Production IP**: [http://43.205.254.136](http://43.205.254.136)
 - **Unified Health API**: `http://43.205.254.136/api/health`
 - **AWS Bedrock & S3 Telemetry**: `http://43.205.254.136/api/aws/status`
 - **Python ML Backend Health**: `http://43.205.254.136/api/backend/health`
