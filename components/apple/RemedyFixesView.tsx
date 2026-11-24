@@ -13,10 +13,13 @@ import {
   AlertTriangle,
   Play,
   Layers,
-  ArrowRight
+  ArrowRight,
+  Download,
+  Terminal
 } from 'lucide-react';
 import { BarrierFinding, VerifiedFixResult } from '@/lib/barrierlens/types';
 import { GitHubPRModal } from './GitHubPRModal';
+import { GitPatchGenerator } from '@/lib/barrierlens/repair/git-patch-generator';
 
 interface RemedyFixesViewProps {
   findings: BarrierFinding[];
@@ -36,49 +39,158 @@ export function RemedyFixesView({
   const [selectedFindingId, setSelectedFindingId] = useState<string>(findings[0]?.id || '');
   const [isPRModalOpen, setIsPRModalOpen] = useState(false);
   const [copiedPatch, setCopiedPatch] = useState(false);
+  const [patchFormat, setPatchFormat] = useState<'tsx' | 'tailwind' | 'patch'>('tsx');
 
   const activeFinding = findings.find(f => f.id === selectedFindingId) || findings[0];
   const activeVerification = activeFinding ? verifiedFixes[activeFinding.id] : null;
 
-  // Synthesize realistic surgical patch
-  const patchCode = activeFinding?.kind === 'keyboard_trap'
-    ? `// Surgical Focus Trap & Escape Key Handler (WCAG 2.1.2)
-<dialog 
-  id="trap-modal"
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby="modal-title"
-  onKeyDown={(e) => {
-    if (e.key === 'Escape') {
-      closeModal();
-      triggerButtonRef.current?.focus();
+  // Synthesize realistic surgical patch based on selected format
+  const getSnippetForFormat = () => {
+    if (!activeFinding) return '';
+
+    if (patchFormat === 'patch') {
+      const generator = new GitPatchGenerator();
+      return generator.generatePatchForFinding(activeFinding, 'src/components/AuditedView.tsx').unifiedDiff;
     }
-  }}
->`
-    : activeFinding?.kind === 'empty_accessible_name'
-    ? `// Accessible Name & Touch Target Patch (WCAG 4.1.2)
-<button 
-  className="action-btn"
-  aria-label="Confirm Action and Close Drawer"
-  title="Confirm Action"
-  style={{ minWidth: '44px', minHeight: '44px' }}
+
+    if (patchFormat === 'tailwind') {
+      if (activeFinding.kind === 'keyboard_trap') {
+        return `<!-- Tailwind Accessible Dialog with Focus Trap & Escape Handler -->
+<div 
+  role="dialog" 
+  aria-modal="true" 
+  aria-labelledby="dialog-title"
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm focus:outline-none"
+  tabindex="-1"
 >
-  <CloseIcon aria-hidden="true" />
-</button>`
-    : `// Live Announcement Aria Region Patch (WCAG 4.1.3)
+  <div class="relative w-full max-w-md p-6 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl focus-within:ring-2 focus-within:ring-blue-500">
+    <h2 id="dialog-title" class="text-lg font-bold text-white">Confirmation</h2>
+    <div class="mt-4 flex justify-end gap-3">
+      <button type="button" class="px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white rounded-lg focus-visible:ring-2 focus-visible:ring-blue-400">Cancel</button>
+      <button type="button" class="px-4 py-2 text-xs font-semibold bg-blue-600 text-white rounded-lg focus-visible:ring-2 focus-visible:ring-white">Confirm</button>
+    </div>
+  </div>
+</div>`;
+      }
+      if (activeFinding.kind === 'empty_accessible_name') {
+        return `<!-- Tailwind 44px Touch Target with Accessible Screen Reader Label -->
+<button 
+  type="button"
+  aria-label="Close dialog window"
+  class="inline-flex items-center justify-center min-w-[44px] min-h-[44px] p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors"
+>
+  <svg aria-hidden="true" class="w-5 h-5 fill-current" viewBox="0 0 20 20">
+    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+  </svg>
+</button>`;
+      }
+      return `<!-- Tailwind Live Status Announcement Region -->
 <div 
   role="status" 
   aria-live="polite" 
   aria-atomic="true"
-  className="sr-only"
+  class="sr-only"
 >
-  {statusMessage}
+  Update completed successfully.
 </div>`;
+    }
+
+    // Default: React TSX
+    if (activeFinding.kind === 'keyboard_trap') {
+      return `// Surgical Focus Trap & Escape Key Handler (WCAG 2.1.2)
+import React, { useEffect, useRef } from 'react';
+
+export function AccessibleModal({ isOpen, onClose, title, children }: any) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousFocus = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      previousFocus.current = document.activeElement as HTMLElement;
+      modalRef.current?.focus();
+    } else {
+      previousFocus.current?.focus();
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div 
+      ref={modalRef}
+      role="dialog" 
+      aria-modal="true" 
+      aria-labelledby="modal-title"
+      tabIndex={-1}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          e.stopPropagation();
+          onClose();
+        }
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+    >
+      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-lg w-full">
+        <h2 id="modal-title" className="text-lg font-bold text-white">{title}</h2>
+        <div className="mt-4">{children}</div>
+      </div>
+    </div>
+  );
+}`;
+    }
+
+    if (activeFinding.kind === 'empty_accessible_name') {
+      return `// Accessible Name & Touch Target Patch (WCAG 4.1.2 / 2.5.8)
+export function ActionIconButton({ onClick, label = "Dismiss notice" }: any) {
+  return (
+    <button 
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 focus-visible:ring-2 focus-visible:ring-blue-500"
+    >
+      <CloseIcon aria-hidden="true" className="w-5 h-5 pointer-events-none" />
+    </button>
+  );
+}`;
+    }
+
+    return `// Live Announcement Aria Region Patch (WCAG 4.1.3)
+export function LiveStatusAnnouncer({ message }: { message: string }) {
+  return (
+    <div 
+      role="status" 
+      aria-live="polite" 
+      aria-atomic="true"
+      className="sr-only"
+    >
+      {message}
+    </div>
+  );
+}`;
+  };
+
+  const patchCode = getSnippetForFormat();
 
   const handleCopy = () => {
     navigator.clipboard.writeText(patchCode);
     setCopiedPatch(true);
     setTimeout(() => setCopiedPatch(false), 2000);
+  };
+
+  const handleDownloadPatch = () => {
+    const generator = new GitPatchGenerator();
+    const bundle = generator.createPatchBundle(findings);
+    const blob = new Blob([bundle], { type: 'text/x-diff;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `barrierlens-remediation-${Date.now()}.patch`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   // Keyboard-First Navigation Contract (Linear / Apple Standard)
@@ -136,15 +248,28 @@ export function RemedyFixesView({
           </p>
         </div>
 
-        <button
-          type="button"
-          disabled={findings.length === 0}
-          onClick={() => setIsPRModalOpen(true)}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black hover:bg-white/90 text-xs font-semibold shadow-lg transition-all active:scale-[0.98] disabled:opacity-40 shrink-0"
-        >
-          <GitPullRequest className="w-3.5 h-3.5" />
-          <span>Dispatch Remediation PR</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            type="button"
+            disabled={findings.length === 0}
+            onClick={handleDownloadPatch}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white text-xs font-semibold border border-white/15 shadow-sm transition-all active:scale-[0.98] disabled:opacity-40 shrink-0"
+            title="Download unified .patch file for local terminal 'git apply'"
+          >
+            <Download className="w-3.5 h-3.5 text-blue-400" />
+            <span>Download .patch</span>
+          </button>
+
+          <button
+            type="button"
+            disabled={findings.length === 0}
+            onClick={() => setIsPRModalOpen(true)}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black hover:bg-white/90 text-xs font-semibold shadow-lg transition-all active:scale-[0.98] disabled:opacity-40 shrink-0"
+          >
+            <GitPullRequest className="w-3.5 h-3.5" />
+            <span>Dispatch Remediation PR</span>
+          </button>
+        </div>
       </div>
 
       {/* Grid: Findings Selector vs Surgical Diff */}
@@ -243,11 +368,49 @@ export function RemedyFixesView({
                 </div>
               </div>
 
-              {/* Code Diff Display with High-Contrast Lines */}
+              {/* Code Diff Display with High-Contrast Lines & Framework Selector */}
               <div className="rounded-2xl bg-black/60 border border-white/[0.08] overflow-hidden text-xs font-mono">
-                <div className="px-4 py-2.5 bg-white/[0.03] border-b border-white/[0.08] flex items-center justify-between text-white/40 text-[11px]">
-                  <span>Proposed Patch Diff</span>
-                  <span className="text-emerald-400 font-mono">Verified Zero-Regression AST</span>
+                <div className="px-4 py-2.5 bg-white/[0.03] border-b border-white/[0.08] flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                  <div className="flex items-center gap-1.5 p-0.5 rounded-lg bg-white/[0.05] border border-white/[0.08]">
+                    <button
+                      type="button"
+                      onClick={() => setPatchFormat('tsx')}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                        patchFormat === 'tsx'
+                          ? 'bg-blue-600 text-white shadow-sm'
+                          : 'text-white/60 hover:text-white'
+                      }`}
+                    >
+                      React (TSX)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPatchFormat('tailwind')}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                        patchFormat === 'tailwind'
+                          ? 'bg-blue-600 text-white shadow-sm'
+                          : 'text-white/60 hover:text-white'
+                      }`}
+                    >
+                      Tailwind CSS
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPatchFormat('patch')}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                        patchFormat === 'patch'
+                          ? 'bg-blue-600 text-white shadow-sm'
+                          : 'text-white/60 hover:text-white'
+                      }`}
+                    >
+                      Unified Diff (.patch)
+                    </button>
+                  </div>
+
+                  <span className="text-emerald-400 font-mono flex items-center gap-1.5">
+                    <Terminal className="w-3.5 h-3.5" />
+                    <span>git apply compatible</span>
+                  </span>
                 </div>
                 <pre className="p-5 text-emerald-300 overflow-x-auto leading-relaxed text-[12px] selection:bg-emerald-500/30">
                   {patchCode}

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { STSClient, GetCallerIdentityCommand } from '@aws-sdk/client-sts';
 import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { AWSBudgetSentinel } from '@/lib/barrierlens/aws/budget-sentinel';
+import { distributedCache } from '@/lib/barrierlens/aws/aws-cache';
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 
@@ -113,6 +114,8 @@ export async function GET() {
       modelCascade: 'Amazon Nova Micro ($0.000035/1K) -> Amazon Nova Pro ($0.0008/1K)'
     };
   } catch {}
+
+  result.cache = distributedCache.getStatus();
 
   return NextResponse.json({
     success: true,

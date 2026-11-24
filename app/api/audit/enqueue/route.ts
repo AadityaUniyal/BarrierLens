@@ -27,11 +27,14 @@ export async function POST(req: Request) {
     const runId = crypto.randomUUID();
 
     // 1. Enqueue job into Postgres SKIP LOCKED jobs table
+    const sessionHeaders = body.sessionHeaders || undefined;
+    const sessionCookies = body.sessionCookies || undefined;
+
     const result = await sql`
       INSERT INTO jobs (type, payload, status, run_after)
       VALUES (
         'audit_run',
-        ${JSON.stringify({ targetUrl, goal, persona, maxSteps, runId })}::jsonb,
+        ${JSON.stringify({ targetUrl, goal, persona, maxSteps, runId, sessionHeaders, sessionCookies })}::jsonb,
         'pending',
         NOW()
       )

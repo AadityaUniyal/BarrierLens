@@ -24,11 +24,17 @@ mkdir -p /opt/barrierlens
 cd /opt/barrierlens
 git clone https://github.com/AadityaUniyal/BarrierLens.git .
 
-# 4. Write Production .env.local (Configured via IAM Role and AWS SSM / env)
+# 4. Write Production .env.local (Populated via AWS SSM Parameter Store / Secrets Manager)
 cat << 'EOF' > /opt/barrierlens/.env.local
-DATABASE_URL=postgresql://neondb_owner:PASSWORD@ep-ancient-dew-b4x5v2sp-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
-NEON_DATABASE_URL=postgresql://neondb_owner:PASSWORD@ep-ancient-dew-b4x5v2sp-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
-BETTER_AUTH_SECRET=barrierlens_master_production_secret_32_chars
+DATABASE_URL=${DATABASE_URL:-"postgresql://postgres.myowihtgpdncqelxgjwh:${DATABASE_PASSWORD}@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"}
+DIRECT_URL=${DIRECT_URL:-"postgresql://postgres.myowihtgpdncqelxgjwh:${DATABASE_PASSWORD}@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres"}
+NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-"https://myowihtgpdncqelxgjwh.supabase.co"}
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:-"sb_publishable_8b-ZqFaWTX7LOBhka0m8yQ_6cZOaSbr"}
+SUPABASE_URL=${SUPABASE_URL:-"https://myowihtgpdncqelxgjwh.supabase.co"}
+SUPABASE_PUBLISHABLE_KEY=${SUPABASE_PUBLISHABLE_KEY:-"sb_publishable_8b-ZqFaWTX7LOBhka0m8yQ_6cZOaSbr"}
+SUPABASE_SECRET_KEY=${SUPABASE_SECRET_KEY}
+SUPABASE_JWKS_URL=https://myowihtgpdncqelxgjwh.supabase.co/auth/v1/.well-known/jwks.json
+BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-"barrierlens_master_production_secret_32_chars"}
 BETTER_AUTH_URL=http://localhost:3000
 AUTH_RP_ID=localhost
 AWS_REGION=ap-south-1

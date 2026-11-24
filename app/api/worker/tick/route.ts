@@ -48,14 +48,20 @@ export async function POST(req: Request) {
 
     if (job.type === 'audit_run') {
       const payload = job.payload && typeof job.payload === 'object' ? job.payload : {};
-      const { targetUrl, goal, persona, maxSteps } = payload;
+      const { targetUrl, goal, persona, maxSteps, sessionHeaders, sessionCookies } = payload;
 
       const auditor = new AuditorCore();
       const result = await auditor.runAudit(
         targetUrl,
         goal,
         persona || 'keyboard',
-        maxSteps || 12
+        maxSteps || 12,
+        undefined,
+        {
+          extraHeaders: sessionHeaders,
+          cookies: sessionCookies,
+          bypassConsent: true,
+        }
       );
 
       // Update job to completed

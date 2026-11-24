@@ -116,6 +116,16 @@ export function ExecutiveReportModal({
           </div>
 
           <div className="flex items-center gap-2">
+            <a
+              href={`/api/audit/${runId}/export`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600/10 hover:bg-blue-600/20 text-xs font-mono text-blue-400 hover:text-blue-300 border border-blue-500/20 transition-colors"
+              title="Open full formal VPAT 2.5 conformance table in a clean tab"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Official VPAT 2.5</span>
+            </a>
             <button
               onClick={handleDownloadJSON}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#181a1d] hover:bg-[#1f2226] text-xs font-mono text-[#9ba1a6] hover:text-[#f4f5f6] border border-[#282c32] transition-colors"

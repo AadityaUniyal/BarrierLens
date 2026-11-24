@@ -28,6 +28,9 @@ export type PublicAuditBody = {
   goal?: string;
   persona?: PersonaType;
   maxSteps?: number;
+  sessionHeaders?: Record<string, string>;
+  sessionCookies?: Array<{ name: string; value: string; domain?: string; path?: string }>;
+  bypassConsent?: boolean;
 };
 
 // In-memory key rate limiter bucket for authenticated clients
@@ -141,7 +144,18 @@ export async function runGuardedAudit(
   const release = beginAudit(keyInfo ? `key_${keyInfo.keyId}` : ip);
   try {
     const auditor = new AuditorCore();
-    const result = await auditor.runAudit(targetUrl, goal, persona, maxSteps, onProgress);
+    const result = await auditor.runAudit(
+      targetUrl,
+      goal,
+      persona,
+      maxSteps,
+      onProgress,
+      {
+        extraHeaders: body.sessionHeaders,
+        cookies: body.sessionCookies,
+        bypassConsent: body.bypassConsent ?? true,
+      }
+    );
     if (isBenchmarkFixture && result) {
       benchmarkCache.set(cacheKey, { timestamp: Date.now(), run: result });
     }

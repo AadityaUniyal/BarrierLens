@@ -43,6 +43,13 @@ function computeGoalOverlap(goal: string, name: string): number {
   return matches.length / goalWords.length;
 }
 
+export interface AuditSessionOptions {
+  extraHeaders?: Record<string, string>;
+  cookies?: Array<{ name: string; value: string; domain?: string; path?: string }>;
+  storageState?: any;
+  bypassConsent?: boolean;
+}
+
 export class AuditorCore {
   private router = new LLMRouter();
   private focusGraph = new FocusGraphEngine();
@@ -74,7 +81,8 @@ export class AuditorCore {
     goal: string,
     persona: PersonaType = 'keyboard',
     maxSteps: number = 15,
-    onProgress?: (event: { type: 'step' | 'finding' | 'complete' | 'status'; data: any }) => void
+    onProgress?: (event: { type: 'step' | 'finding' | 'complete' | 'status'; data: any }) => void,
+    sessionOptions?: AuditSessionOptions
   ): Promise<AuditRun> {
     const runId = crypto.randomUUID();
     const startedAt = new Date().toISOString();
@@ -103,8 +111,17 @@ export class AuditorCore {
       context = await browser.newContext({
         viewport: { width: 1280, height: 800 },
         userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 BarrierLens-Auditor/1.0',
-        locale: 'en-US'
+        locale: 'en-US',
+        extraHTTPHeaders: sessionOptions?.extraHeaders || undefined
       });
+
+      if (sessionOptions?.cookies && sessionOptions.cookies.length > 0) {
+        try {
+          await context.addCookies(sessionOptions.cookies);
+        } catch (cookieErr: any) {
+          console.warn('[AuditorCore] Cookie injection note:', cookieErr.message);
+        }
+      }
 
       page = await context.newPage();
 
@@ -122,6 +139,12 @@ export class AuditorCore {
       }
       await page.evaluate(INJECTED_OBSERVER_SCRIPT).catch(() => {});
       await page.waitForTimeout(1000);
+
+      // 🛡️ Auto-bypass cookie consent banners & promotional overlays
+      if (sessionOptions?.bypassConsent !== false) {
+        await this.autoBypassConsentBanners(page, onProgress);
+      }
+
       // Flush initial page load & hydration mutations so they are not falsely attributed to Step 1
       await page.evaluate(() => {
         const obs = (window as any).__barrierLensObserver;
@@ -1000,5 +1023,56 @@ export class AuditorCore {
 
     onProgress?.({ type: 'complete', data: auditRunResult });
     return auditRunResult;
+  }
+
+  /**
+   * Automatically identifies and dismisses standard cookie consent banners,
+   * GDPR overlays (OneTrust, Cookiebot, TrustArc, etc.) and promotional popups
+   * so they do not artificially obstruct assistive keyboard and screen reader traversal.
+   */
+  private async autoBypassConsentBanners(
+    page: Page,
+    onProgress?: (event: { type: 'step' | 'finding' | 'complete' | 'status'; data: any }) => void
+  ): Promise<boolean> {
+    const consentSelectors = [
+      '#onetrust-accept-btn-handler',
+      '#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll',
+      '#CybotCookiebotDialogBodyButtonAccept',
+      '#accept-recommended-btn-handler',
+      'button#accept-cookies',
+      'button#accept-all',
+      'button[data-testid*="cookie-accept"]',
+      'button[data-testid*="accept-all"]',
+      'button[data-testid*="accept-btn"]',
+      'button:has-text("Accept all cookies")',
+      'button:has-text("Accept all")',
+      'button:has-text("Accept All")',
+      'button:has-text("Allow all cookies")',
+      'button:has-text("Allow all")',
+      'button:has-text("Accept Cookies")',
+      'button:has-text("I agree")',
+      'button:has-text("Got it")',
+      'button:has-text("Consent")',
+      '[aria-label*="Accept all cookies"]',
+      '[aria-label*="Accept cookies"]',
+      '.cc-btn.cc-allow',
+      '.cookie-banner button.accept'
+    ];
+
+    for (const sel of consentSelectors) {
+      try {
+        const btn = page.locator(sel).first();
+        if (await btn.isVisible({ timeout: 350 })) {
+          await btn.click({ timeout: 800, force: true });
+          await page.waitForTimeout(400);
+          onProgress?.({
+            type: 'status',
+            data: { message: `🛡️ Auto-dismissed detected consent overlay (${sel}) to allow unobstructed assistive traversal.` }
+          });
+          return true;
+        }
+      } catch {}
+    }
+    return false;
   }
 }
