@@ -141,8 +141,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#091124] text-[#f8fafc] font-sans flex flex-col justify-between antialiased selection:bg-[#3b82f6]/30 selection:text-white relative overflow-hidden">
-      {/* Ambient Cosmic Oceanic Radial Lighting */}
+    <div className="min-h-screen bg-[#0b0f19] text-[#f8fafc] font-sans flex flex-col justify-between antialiased selection:bg-blue-600/30 selection:text-white relative overflow-hidden">
+      {/* Ambient Radial Lighting */}
       <div className="ambient-mesh pointer-events-none" />
       <div className="ambient-cinematic pointer-events-none" />
 
@@ -153,26 +153,26 @@ export default function LoginPage() {
         </Link>
         <Link 
           href="/" 
-          className="flex items-center gap-1.5 text-xs font-mono text-slate-300 hover:text-white px-3 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-blue-500/20 transition-all"
+          className="flex items-center gap-1.5 text-xs font-mono text-slate-300 hover:text-white px-3 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 transition-all"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Landing</span>
         </Link>
       </header>
 
-      {/* Centered Luxury Authentication Card */}
+      {/* High-Craft Authentication Card */}
       <main className="flex-1 flex items-center justify-center p-4 relative z-10">
-        <div className="w-full max-w-md bg-[#0f1b38]/95 border border-blue-500/30 rounded-3xl p-6 sm:p-8 shadow-[0_0_60px_rgba(59,130,246,0.35)] backdrop-blur-2xl space-y-6 animate-in fade-in zoom-in-95 duration-300">
+        <div className="w-full max-w-md bg-[#0f1422] border border-white/[0.08] rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-2xl space-y-6">
           
           <div className="text-center space-y-2">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600/30 to-cyan-500/20 text-cyan-300 mx-auto flex items-center justify-center border border-blue-500/40 shadow-[0_0_30px_rgba(59,130,246,0.4)]">
-              <User className="w-7 h-7 text-cyan-300" />
+            <div className="w-12 h-12 rounded-xl bg-blue-600/20 text-blue-400 mx-auto flex items-center justify-center border border-blue-500/30">
+              <User className="w-6 h-6 text-blue-400" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
               Sign In to BarrierLens
             </h1>
-            <p className="text-xs text-slate-300 max-w-xs mx-auto leading-relaxed">
-              Autonomous Accessibility Verification &amp; Causal AST Remediation Fleet
+            <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
+              Autonomous Accessibility Verification &amp; Causal AST Remediation
             </p>
           </div>
 

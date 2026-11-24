@@ -645,7 +645,7 @@ export default function Home() {
   const currentFindings = auditResult?.findings?.length ? auditResult.findings : historicalFindings;
 
   return (
-    <div className="min-h-screen bg-[#091124] text-[#f8fafc] flex flex-col font-sans selection:bg-[#3b82f6]/30 selection:text-white antialiased relative">
+    <div className="min-h-screen bg-[#0b0f19] text-[#f8fafc] flex flex-col font-sans selection:bg-blue-600/30 selection:text-white antialiased relative">
       <div className="ambient-mesh" />
       {/* 1. Master Hub Navigation Bar */}
       <Navbar

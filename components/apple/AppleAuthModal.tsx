@@ -260,19 +260,19 @@ export function AppleAuthModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Liquid Glass Oceanic Backdrop */}
+      {/* High-Craft Backdrop */}
       <div 
-        className="absolute inset-0 bg-[#091124]/85 backdrop-blur-2xl animate-in fade-in duration-200"
+        className="absolute inset-0 bg-[#0b0f19]/80 backdrop-blur-xl animate-in fade-in duration-200"
         onClick={onClose}
       />
 
-      {/* Modal Dialog with Cosmic Sapphire Glass */}
+      {/* Modal Dialog */}
       <div 
         ref={modalRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="auth-modal-title"
-        className="relative w-full max-w-md bg-[#0f1b38]/95 border border-blue-500/30 rounded-3xl p-6 sm:p-8 z-10 space-y-6 shadow-[0_0_60px_rgba(59,130,246,0.3)] animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-md bg-[#0f1422] border border-white/[0.08] rounded-2xl p-6 sm:p-8 z-10 space-y-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
       >
         {/* Close Button */}
         <button

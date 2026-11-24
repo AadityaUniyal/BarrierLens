@@ -8,7 +8,7 @@ import {
   Globe,
   FileText,
   Settings,
-  Sparkles,
+  GitPullRequest,
   Cpu,
   Flame,
   Sun,
@@ -101,12 +101,12 @@ export function Navbar({
     }
   };
 
-  // Pure 5-Workspace Apple / Linear HIG Navigation
+  // Pure 5-Workspace HIG Navigation
   const dashboardTabs = [
     { id: 'overview' as ScreenId, label: 'Overview', icon: Activity, keyNumber: '1' },
     { id: 'studio' as ScreenId, label: 'Studio', icon: Compass, keyNumber: '2' },
     { id: 'issues' as ScreenId, label: 'Findings', icon: CheckCircle2, keyNumber: '3' },
-    { id: 'remedy' as ScreenId, label: 'Remedy', icon: Sparkles, keyNumber: '4' },
+    { id: 'remedy' as ScreenId, label: 'Remedy', icon: GitPullRequest, keyNumber: '4' },
     { id: 'reports' as ScreenId, label: 'Ledger', icon: ShieldCheck, keyNumber: '5' },
   ];
 
@@ -287,9 +287,9 @@ export function Navbar({
             <button
               type="button"
               onClick={() => setActiveScreen('studio')}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-semibold shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all hover:scale-105"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-slate-950 hover:bg-slate-100 text-xs font-semibold shadow-sm transition-all"
             >
-              <Sparkles className="w-3.5 h-3.5 text-cyan-200" />
+              <Compass className="w-3.5 h-3.5 text-blue-600" />
               <span>Studio</span>
               <ArrowRight className="w-3 h-3 ml-0.5" />
             </button>
