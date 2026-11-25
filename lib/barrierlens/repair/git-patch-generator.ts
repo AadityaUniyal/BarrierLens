@@ -129,7 +129,7 @@ export class GitPatchGenerator {
     }
 
     const oldLen = endHunk - startHunk + 1;
-    const newLen = oldLen + 1; // 1 removal + 1 addition = same count, but if lines match:
+    const newLen = oldLen; // 1 removal + 1 addition preserves hunk line count
     const diffHeader = [
       `diff --git a/${filePath} b/${filePath}`,
       `index 100644..100644 100644`,
@@ -191,15 +191,20 @@ export class GitPatchGenerator {
         break;
     }
 
+    const beforeLines = beforeSnippet.split('\n');
+    const afterLines = afterSnippet.split('\n');
+    const oldCount = beforeLines.length + 2;
+    const newCount = afterLines.length + 2;
+
     const diffLines = [
       `diff --git a/${filePath} b/${filePath}`,
-      `index a1b2c3d..e5f6g7h 100644`,
+      `index 100644..100644 100644`,
       `--- a/${filePath}`,
       `+++ b/${filePath}`,
-      `@@ -15,7 +15,7 @@`,
+      `@@ -15,${oldCount} +15,${newCount} @@`,
       `   // Accessibility remediation for ${kind} (${selector})`,
-      ...beforeSnippet.split('\n').map(l => `-${l}`),
-      ...afterSnippet.split('\n').map(l => `+${l}`),
+      ...beforeLines.map(l => `-${l}`),
+      ...afterLines.map(l => `+${l}`),
       `   // End barrier remediation`
     ];
 

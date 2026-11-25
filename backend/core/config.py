@@ -28,8 +28,9 @@ class CoreConfig:
     MODEL_PLANNING: str = "amazon.nova-pro-v1:0"
     MODEL_ROUTINE: str = "amazon.nova-micro-v1:0"
 
-    # Neon PostgreSQL
-    DATABASE_URL: Optional[str] = os.environ.get("DATABASE_URL")
+    # PostgreSQL (Prefer DIRECT_URL for psycopg2 compatibility, stripping ?pgbouncer=true)
+    _raw_db_url: Optional[str] = os.environ.get("DIRECT_URL") or os.environ.get("DATABASE_URL")
+    DATABASE_URL: Optional[str] = _raw_db_url.split("?")[0] + "?sslmode=require" if _raw_db_url else None
 
     # API Server
     HOST: str = os.environ.get("HOST", "127.0.0.1")

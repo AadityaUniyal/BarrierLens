@@ -143,7 +143,8 @@ describe('Tier 1 Part A - UI Navigation & Shell Feature Coverage', () => {
     });
 
     it('F2.2: should align scroll target to #proofs when clicking Proof Engine in header nav', async () => {
-      await navigateTo(page, '/?tab=story');
+      await navigateTo(page, '/?tab=story', { waitUntil: 'load' });
+      await page.locator('#proofs').waitFor({ state: 'visible' });
       const proofNavBtn = page.locator('header nav button:has-text("Proof Engine"), button:has-text("Proof Engine")').first();
       assert.ok(await proofNavBtn.isVisible(), 'Proof Engine header nav button missing');
 
@@ -187,7 +188,8 @@ describe('Tier 1 Part A - UI Navigation & Shell Feature Coverage', () => {
 
     it('F2.5: should navigate to #proofs correctly under mobile viewport sizing', async () => {
       await page.setViewportSize(VIEWPORTS.mobile);
-      await navigateTo(page, '/?tab=story');
+      await navigateTo(page, '/?tab=story', { waitUntil: 'load' });
+      await page.locator('#proofs').waitFor({ state: 'visible' });
 
       await page.evaluate(() => {
         const el = document.getElementById('proofs');

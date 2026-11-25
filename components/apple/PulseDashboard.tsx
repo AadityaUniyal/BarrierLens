@@ -280,7 +280,7 @@ export function PulseDashboard({
                     >
                       <td className="py-3 font-medium text-white flex items-center gap-2">
                         <Globe className="w-3.5 h-3.5 text-white/40" />
-                        <span className="truncate max-w-[220px]">{run.targetUrl || run.url || '/benchmark'}</span>
+                        <span className="truncate max-w-[220px]">{run.targetUrl || run.target_url || run.url || '/benchmark'}</span>
                       </td>
                       <td className="py-3 font-mono text-[#9c9aa8] capitalize">
                         {run.persona || 'Keyboard Only'}
@@ -296,13 +296,14 @@ export function PulseDashboard({
                         </span>
                       </td>
                       <td className="py-3 font-mono text-[#9c9aa8]">
-                        {run.findings?.length || 0} issues
+                        {run.findingsCount ?? run.findings?.length ?? 0} issues
                       </td>
                       <td className="py-3 text-right">
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
+                            onSelectRun?.(run);
                             onOpenInspector();
                           }}
                           className="px-2.5 py-1 rounded-lg bg-white/[0.04] group-hover:bg-white/[0.10] text-[#9c9aa8] group-hover:text-white transition-all text-[11px]"

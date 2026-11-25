@@ -170,7 +170,19 @@ This patch was dynamically injected into a headless Playwright Chromium sandbox 
       );
     }
 
-    // Step 3: Commit Remediation Patch File
+    // Step 3: Commit Remediation Patch File (fetch existing sha if file exists)
+    let existingSha: string | undefined;
+    try {
+      const existingFileRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/${targetFilePath}?ref=${encodeURIComponent(effectiveBaseBranch)}`,
+        { headers: ghHeaders }
+      );
+      if (existingFileRes.ok) {
+        const existingData = await existingFileRes.json();
+        if (existingData?.sha) existingSha = existingData.sha;
+      }
+    } catch {}
+
     const fileContentBase64 = Buffer.from(patch, 'utf-8').toString('base64');
     const commitFileRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${targetFilePath}`, {
       method: 'PUT',
@@ -178,13 +190,17 @@ This patch was dynamically injected into a headless Playwright Chromium sandbox 
       body: JSON.stringify({
         message: `fix(a11y): surgical patch for ${finding.kind}`,
         content: fileContentBase64,
-        branch: branchName
+        branch: branchName,
+        ...(existingSha ? { sha: existingSha } : {})
       })
     });
 
     if (!commitFileRes.ok) {
       const errData = await commitFileRes.json().catch(() => ({}));
-      console.warn(`[GitHub API] Note on commit file: ${errData.message}`);
+      return NextResponse.json(
+        { error: `Failed to commit patch file '${targetFilePath}': ${errData.message || commitFileRes.statusText}` },
+        { status: commitFileRes.status }
+      );
     }
 
     // Step 4: Open Pull Request

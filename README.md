@@ -78,7 +78,8 @@ flowchart LR
 
 ### Prerequisites
 - Node.js 22.x or higher
-- npm or pnpm
+- Python 3.11+ (optional, for the FastAPI ML/Replay/Adversarial backend)
+- Supabase PostgreSQL database with `pgvector` enabled
 
 ### 1. Clone & Install
 ```bash
@@ -88,17 +89,36 @@ npm install
 ```
 
 ### 2. Configure Environment
-Create a `.env.local` file in the root directory:
+Create a `.env.local` file in the root directory (with `DATABASE_URL`, `DIRECT_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `BETTER_AUTH_SECRET`):
 ```bash
 cp .env.example .env.local
 ```
 
-### 3. Run Development Server
+### 3. Database Schema & Storage
+Apply the ordered SQL migrations in `migrations/` (`001_supabase_schema.sql` and `002_sync_missing_tables.sql`) to provision tables, `pgvector` `match_barrier_genomes` RPC, BetterAuth tables, and the `poa_ledger_blocks` Merkle DAG ledger.
+
+### 4. Run Development Servers
 ```bash
+# Next.js frontend + API routes
 npm run dev
+
+# FastAPI Python ML / Replay / Adversarial Arena backend (optional)
+npm run backend
+
+# Or start both concurrently
+npm run dev:all
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to view the Mission Control workspace.
+
+---
+
+## 🧠 Architecture Highlights
+
+- **Supabase Postgres + `pgvector` & BetterAuth:** Direct Postgres Pool authentication with FIDO2/WebAuthn passkey support, tenant-scoped journeys/runs/findings, and `audit-artifacts` object storage.
+- **768-Dimensional Barrier Genome:** Hybrid structural, semantic (`all-MiniLM-L6-v2`), behavioral, and contextual embeddings stored in `pgvector` for cross-site barrier transfer insights.
+- **Cryptographic PoA DAG Ledger & VPAT® 2.5:** PostgreSQL-persisted Merkle blocks (`poa_ledger_blocks`) with `O(log N)` inclusion proofs, ADA Title III / EAA 2025 signatures, and longitudinal CUSUM drift detection.
+- **Fail-Closed Verification & Causal Diffs:** Playwright CDP focus-graph & Tarjan SCC trap detection, verified replay checks, and standard unified diff generation for 1-click GitHub PRs.
 
 ---
 
@@ -110,6 +130,12 @@ npx tsc --noEmit
 
 # Compile production build
 npm run build
+
+# Verify live Supabase Postgres, Storage, Auth, and pgvector health
+npm run test:services
+
+# Run end-to-end Playwright & contract test suites
+npm run test:e2e
 
 # Start production server
 npm start

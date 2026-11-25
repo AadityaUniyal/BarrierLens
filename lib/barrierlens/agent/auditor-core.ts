@@ -109,7 +109,7 @@ export class AuditorCore {
     try {
       browser = await BrowserProvider.getBrowser({ headless: true });
       context = await browser.newContext({
-        viewport: { width: 1280, height: 800 },
+        viewport: persona === 'low_vision' ? { width: 320, height: 568 } : { width: 1280, height: 800 },
         userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 BarrierLens-Auditor/1.0',
         locale: 'en-US',
         extraHTTPHeaders: sessionOptions?.extraHeaders || undefined
@@ -126,6 +126,8 @@ export class AuditorCore {
       page = await context.newPage();
 
       this.reflexionEngine.clear();
+      this.focusGraph = new FocusGraphEngine();
+      this.explorationGraph = new ExplorationStateGraph();
 
       // Register observer script before navigation so it attaches at document creation
       await page.addInitScript({ content: INJECTED_OBSERVER_SCRIPT });
@@ -264,10 +266,11 @@ export class AuditorCore {
 
       if (!kendallTauResult.isAcceptable) {
         const impact = this.impactModel.scoreFinding('low_kendall_tau', persona, false, 0);
-        findings.push({
+        const tauFinding: BarrierFinding = {
           id: crypto.randomUUID(),
           runId,
           stepIdx: 0,
+          persona,
           kind: 'low_kendall_tau',
           trustTier: 'proven',
           wcagRules: ['WCAG 1.3.2 Meaningful Sequence', 'WCAG 2.4.3 Focus Order'],
@@ -282,7 +285,9 @@ export class AuditorCore {
             focusOrder: kendallTauResult.focusOrder.slice(0, 8),
             visualOrder: kendallTauResult.visualOrder.slice(0, 8)
           }
-        });
+        };
+        findings.push(tauFinding);
+        onProgress?.({ type: 'finding', data: tauFinding });
       }
 
       // Baseline in-session axe-core execution in live CDP browser context
@@ -836,6 +841,10 @@ export class AuditorCore {
       steps,
       findings,
       kendallTau: kendallTauResult,
+      focusGraph: {
+        nodes: this.focusGraph.getNodes(),
+        edges: this.focusGraph.getEdges()
+      },
       tierMix
     };
 

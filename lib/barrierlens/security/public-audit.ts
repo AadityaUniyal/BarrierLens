@@ -57,9 +57,9 @@ export async function verifyApiKey(req: Request): Promise<{ keyId: string; userI
 
   try {
     const keys = await sql`
-      SELECT id, user_id, rate_limit_per_min, scopes
+      SELECT id, user_id, COALESCE(rate_limit_per_min, 120) as rate_limit_per_min, scopes
       FROM api_keys
-      WHERE key_hash = ${keyHash}
+      WHERE key_hash = ${keyHash} AND revoked_at IS NULL
       LIMIT 1;
     `;
 
@@ -85,8 +85,8 @@ export async function verifyApiKey(req: Request): Promise<{ keyId: string; userI
     return { keyId: key.id, userId: key.user_id, rateLimit: limit };
   } catch (err: any) {
     if (err instanceof RateLimitError || err instanceof AuthError) throw err;
-    console.warn('[Public Audit] API key check failed, falling back to IP quota:', err.message);
-    return null;
+    console.error('[Public Audit] API key verification error:', err.message);
+    throw new AuthError('API key verification service unavailable.');
   }
 }
 

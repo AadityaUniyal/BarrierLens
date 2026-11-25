@@ -198,7 +198,7 @@ export function ComposeView({
 
       {/* Primary Action Button */}
       <button
-        onClick={onRunAudit}
+        onClick={() => onRunAudit()}
         disabled={isAuditing}
         className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#0071e3] to-[#0a84ff] hover:from-[#0077ed] hover:to-[#1e90ff] text-white font-semibold text-sm shadow-xl shadow-blue-500/20 disabled:opacity-50 active:scale-[0.98] transition-all duration-150 ease-spring flex items-center justify-center gap-2.5"
       >

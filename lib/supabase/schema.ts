@@ -40,12 +40,15 @@ export async function initializeDatabaseSchema() {
       console.log('[Supabase DB] pgvector notice:', e.message);
     }
 
-    // 2. Read full schema file if available
-    const migrationPath = path.resolve(process.cwd(), 'migrations', '001_supabase_schema.sql');
-    if (fs.existsSync(migrationPath)) {
-      const sqlContent = fs.readFileSync(migrationPath, 'utf8');
-      await sql.unsafe(sqlContent);
-      console.log('[Supabase DB] Executed migrations/001_supabase_schema.sql successfully.');
+    // 2. Read and execute ordered migration files
+    const migrationsDir = path.resolve(process.cwd(), 'migrations');
+    if (fs.existsSync(migrationsDir)) {
+      const files = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();
+      for (const file of files) {
+        const sqlContent = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
+        await sql.unsafe(sqlContent);
+        console.log(`[Supabase DB] Executed migrations/${file} successfully.`);
+      }
     }
 
     return { success: true };

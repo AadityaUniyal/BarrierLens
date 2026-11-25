@@ -1,5 +1,5 @@
 import { WebhookDispatcher } from '../lib/barrierlens/integrations/webhook-dispatcher.ts';
-import { sql } from '../lib/neon/db.ts';
+import { sql } from '../lib/supabase/db.ts';
 import crypto from 'node:crypto';
 
 async function main() {

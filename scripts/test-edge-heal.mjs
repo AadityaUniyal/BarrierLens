@@ -1,5 +1,5 @@
 import vm from 'node:vm';
-import { sql } from '../lib/neon/db.ts';
+import { sql } from '../lib/supabase/db.ts';
 
 async function main() {
   console.log('[Test] Testing Live Edge Self-Healing Engine...');

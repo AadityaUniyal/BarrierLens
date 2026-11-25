@@ -123,7 +123,7 @@ export function inspectSchemaStatements(schemaFilePath?: string): {
   statements: string[];
   rawContent: string;
 } {
-  const targetPath = schemaFilePath || path.resolve(process.cwd(), 'lib/neon/schema.ts');
+  const targetPath = schemaFilePath || path.resolve(process.cwd(), 'migrations/001_supabase_schema.sql');
   if (!fs.existsSync(targetPath)) {
     return {
       hasUniqueFindingIdIndex: false,

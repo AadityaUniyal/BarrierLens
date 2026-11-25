@@ -421,12 +421,23 @@ export function LiveStatusAnnouncer({ message }: { message: string }) {
               <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                   <span className="font-semibold text-white">Differential Replay Certification</span>
-                  <span className="font-mono text-[11px] text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-                    SSIM = 0.9998 (&ge; 0.999) &bull; Layout Shift = 0.00px
-                  </span>
+                  {activeVerification?.verified ? (
+                    <span className="font-mono text-[11px] text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                      Verified &bull; {activeVerification.regressionCount ?? 0} Regressions
+                    </span>
+                  ) : activeVerification ? (
+                    <span className="font-mono text-[11px] text-rose-400 bg-rose-500/10 px-2.5 py-0.5 rounded-full border border-rose-500/20">
+                      Verification Failed
+                    </span>
+                  ) : (
+                    <span className="font-mono text-[11px] text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                      Pending Sandbox Replay
+                    </span>
+                  )}
                 </div>
                 <p className="text-[12px] text-white/60 leading-relaxed">
-                  Headless browser execution re-ran the full action sequence with the AST patch injected into the DOM tree. No regressions detected in adjacent focus nodes or visual layout.
+                  {activeVerification?.diffSummary ||
+                    'Click "Verify Fix" above to inject this patch into headless Chromium and verify barrier elimination without regressions.'}
                 </p>
               </div>
 

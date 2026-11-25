@@ -85,17 +85,7 @@ export default function LoginPage() {
         }
       }
 
-      // Fallback session
-      try {
-        sessionStorage.setItem('barrierlens_user', JSON.stringify({
-          id: `user_${Date.now().toString(36)}`,
-          name: name || email.split('@')[0],
-          email: email,
-          role: 'Auditor',
-          organization: 'Verified Engineering Org'
-        }));
-      } catch {}
-      router.push('/?tab=overview');
+      throw new Error('Authentication failed. Please verify your credentials.');
     } catch (err: any) {
       setIsAuthenticating(false);
       setErrorMessage(err?.message || 'Authentication failed. Please verify credentials.');
@@ -113,11 +103,7 @@ export default function LoginPage() {
         router.push('/?tab=overview');
         return;
       }
-      if (typeof window !== 'undefined' && window.PublicKeyCredential) {
-        router.push('/?tab=overview');
-      } else {
-        throw new Error('WebAuthn is not supported in this browser.');
-      }
+      throw new Error(res?.error?.message || 'Passkey authentication was cancelled or could not be verified.');
     } catch (err: any) {
       setIsAuthenticating(false);
       setStatusMessage('');

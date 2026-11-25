@@ -94,12 +94,9 @@ export class AdversarialStressAgent {
       await page.evaluate(INJECTED_OBSERVER_SCRIPT).catch(() => {});
       await page.waitForTimeout(800);
 
-      // Initial interactive element count
+      // Initial interactive element count (do NOT pre-seed reachedSelectors before key traversal)
       const initialCdp = await extractCDPAXTree(page);
       totalElementsDiscovered = Math.max(initialCdp.interactiveNodes.length, 1);
-      initialCdp.interactiveNodes.forEach(n => {
-        if (n.selector) reachedSelectors.add(n.selector);
-      });
 
       // Register initial root state
       const rootFp = await this.fingerprintEngine.captureFromPage(page);
@@ -127,7 +124,7 @@ export class AdversarialStressAgent {
 
         // 3. Dispatch Key Action (optionally with motor tremor)
         if (config.enableMotorTremor) {
-          await this.tremorSimulator.pressKeyWithTremor(page, chosenKey, chaosLevel === 'extreme' ? 'severe' : 'moderate');
+          await this.tremorSimulator.pressKeyWithTremor(page, chosenKey, chaosLevel === 'extreme' ? 'severe' : chaosLevel);
         } else {
           await page.keyboard.press(chosenKey);
         }

@@ -10,11 +10,12 @@ export async function GET(req: NextRequest) {
     const runId = searchParams.get('runId');
     const leafHash = searchParams.get('leafHash');
 
-    const ledger = poaDAGLedger.getLedger();
+    const ledger = await poaDAGLedger.getPersistedLedger(runId || undefined);
 
     if (leafHash) {
+      const fullLedger = runId ? await poaDAGLedger.getPersistedLedger() : ledger;
       // Find block containing leafHash and return cryptographic proof
-      for (const block of ledger) {
+      for (const block of fullLedger) {
         const found = block.leaves.find(l => l.leafHash === leafHash);
         if (found) {
           const proof = poaDAGLedger.generateMerkleProof(block, leafHash);
@@ -30,7 +31,9 @@ export async function GET(req: NextRequest) {
     }
 
     if (runId) {
-      const matchingBlock = ledger.find(b => b.targetUrl.includes(runId) || b.blockHash.includes(runId));
+      const matchingBlock = ledger.find(
+        b => b.runId === runId || b.targetUrl.includes(runId) || b.blockHash.includes(runId)
+      );
       if (matchingBlock) {
         return NextResponse.json({ block: matchingBlock });
       }
@@ -57,7 +60,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required parameters: targetUrl, findings' }, { status: 400 });
     }
 
-    const block = poaDAGLedger.mintBlock(
+    const block = await poaDAGLedger.mintBlockPersisted(
       runId || `run-${Date.now().toString(36)}`,
       targetUrl,
       persona || 'keyboard',

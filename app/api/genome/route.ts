@@ -85,13 +85,15 @@ export async function GET(req: NextRequest) {
       }
     }));
 
-    // Compute genuine transfer insights from stored vectors
+    // Compute genuine cross-site transfer insights from stored vectors
     const insights: any[] = [];
     if (genomes.length > 0) {
       const topGenome = genomes[0];
+      const topDomain = rows[0]?.domain || '';
       try {
-        const similar = await store.findSimilar(topGenome, 4, 0.60);
+        const similar = await store.findSimilar(topGenome, 6, 0.60);
         for (const s of similar) {
+          if (topDomain && s.domain === topDomain) continue;
           insights.push({
             matchedFindingId: s.genome.findingId,
             sourceDomain: s.domain,

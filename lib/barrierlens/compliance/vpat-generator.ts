@@ -187,6 +187,10 @@ export class VPATGenerator {
         targetClause = '1.4.3';
       } else if (f.kind === 'target_size_violation') {
         targetClause = '2.5.8';
+      } else if (f.kind === 'focus_loss') {
+        targetClause = '2.4.3';
+      } else if (f.kind === 'axe_violation') {
+        targetClause = '4.1.2';
       }
 
       if (targetClause) {
@@ -200,6 +204,18 @@ export class VPATGenerator {
             confidenceInterval: f.severityInterval
           });
         }
+      }
+    }
+
+    // Factor in Kendall's Tau reading order BEFORE tallying conformance summary counts
+    if (run.kendallTau && !run.kendallTau.isAcceptable) {
+      const focusOrderEntry = entries.find(e => e.clauseId.startsWith('2.4.3'));
+      if (focusOrderEntry && focusOrderEntry.violations.length === 0) {
+        focusOrderEntry.violations.push({
+          id: 'kendall-tau-divergence',
+          title: `Reading order divergence (τ=${run.kendallTau.tau.toFixed(2)}, ${run.kendallTau.inversionCount} inversions)`,
+          severity: 'high'
+        });
       }
     }
 
@@ -226,15 +242,6 @@ export class VPATGenerator {
         entry.remarks = entry.violations
           .map(v => `[${v.severity.toUpperCase()}] ${v.title}${v.selector ? ` on ${v.selector}` : ''}${v.confidenceInterval ? ` (CI: [${v.confidenceInterval[0].toFixed(1)}, ${v.confidenceInterval[1].toFixed(1)}])` : ''}`)
           .join('; ');
-      }
-    }
-
-    // Factor in Kendall's Tau reading order if available
-    if (run.kendallTau && !run.kendallTau.isAcceptable) {
-      const focusOrderEntry = entries.find(e => e.clauseId.startsWith('2.4.3'));
-      if (focusOrderEntry) {
-        focusOrderEntry.conformance = 'Partially Supports';
-        focusOrderEntry.remarks += ` Kendall's Tau correlation τ=${run.kendallTau.tau.toFixed(2)} indicates significant reading order divergence (${run.kendallTau.inversionCount} inversions).`;
       }
     }
 

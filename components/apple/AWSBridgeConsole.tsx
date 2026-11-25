@@ -124,7 +124,7 @@ export function AWSBridgeConsole() {
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-semibold text-[#f4f5f6]">Cloud Replay Sandbox Bridge</h2>
                 <span className="px-2 py-0.5 text-[10px] font-mono rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                  CLI Runtime v2.37
+                  {awsStatus.version}
                 </span>
               </div>
               <p className="text-[12px] text-[#9ba1a6]">
@@ -153,8 +153,12 @@ export function AWSBridgeConsole() {
             <span className="text-[10px] font-mono uppercase text-[#9ba1a6] tracking-wider block">
               CLI Environment
             </span>
-            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-              INSTALLED
+            <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
+              awsStatus.installed
+                ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                : 'text-amber-400 bg-amber-500/10 border-amber-500/20'
+            }`}>
+              {awsStatus.installed ? 'INSTALLED' : 'SDK ONLY'}
             </span>
           </div>
 
@@ -180,8 +184,13 @@ export function AWSBridgeConsole() {
             <span className="text-[10px] font-mono uppercase text-[#9ba1a6] tracking-wider block">
               Authentication
             </span>
-            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3" /> ACTIVE
+            <span className={`text-[10px] font-mono px-2 py-0.5 rounded border flex items-center gap-1 ${
+              awsStatus.authenticated
+                ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                : 'text-amber-400 bg-amber-500/10 border-amber-500/20'
+            }`}>
+              {awsStatus.authenticated ? <CheckCircle2 className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
+              {awsStatus.authenticated ? 'ACTIVE' : 'INACTIVE'}
             </span>
           </div>
 
@@ -189,8 +198,10 @@ export function AWSBridgeConsole() {
             {awsStatus.authNote}
           </p>
 
-          <div className="p-2 rounded bg-[#0c0d0e] border border-[#23262a] text-[10px] font-mono text-emerald-400 truncate">
-            iam::credentials:active-session
+          <div className={`p-2 rounded bg-[#0c0d0e] border border-[#23262a] text-[10px] font-mono truncate ${
+            awsStatus.authenticated ? 'text-emerald-400' : 'text-amber-400'
+          }`}>
+            {awsStatus.authenticated ? `iam::${awsStatus.account}:active-session` : 'iam::credentials:unauthenticated'}
           </div>
         </div>
 

@@ -30,10 +30,17 @@ class MetamorphicFuzzer:
 
                 try:
                     page.goto(target_url, wait_until="domcontentloaded", timeout=12000)
-                except Exception:
-                    page.close()
-                    page = browser.new_page(viewport={"width": 1280, "height": 800})
-                    page.set_content("<!DOCTYPE html><html><body><main><button id='b1'>Start</button><input id='i1'/><a id='a1' href='#'>Link</a></main></body></html>")
+                except Exception as nav_err:
+                    browser.close()
+                    return {
+                        "targetUrl": target_url,
+                        "resilienceScore": 0,
+                        "status": "unreachable",
+                        "testsExecuted": 0,
+                        "results": [{"testIndex": 1, "mutation": "Target Navigation", "passed": False, "latencyMs": 0, "error": str(nav_err)}],
+                        "durationSec": round(time.time() - started_all, 2),
+                        "timestamp": time.time()
+                    }
 
                 for idx, m in enumerate(mutations[:iterations]):
                     t0 = time.time()

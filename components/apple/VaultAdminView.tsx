@@ -240,19 +240,20 @@ export function VaultAdminView({ userSession, onOpenAuth }: VaultAdminViewProps)
   const handleSendTestPing = async (whId: string) => {
     setTestingWebhookId(whId);
     try {
+      const targetHook = webhooks.find(w => w.id === whId);
       const res = await fetch('/api/integrations/webhooks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'test-ping', webhookId: whId })
+        body: JSON.stringify({ action: 'test-ping', webhookId: whId, url: targetHook?.url })
       });
-      if (res.ok) {
-        const data = await res.json();
-        setWebhookTestNotice(`Signed HMAC-SHA256 test event delivered: ${data.statusCode || 200} OK`);
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        setWebhookTestNotice(`Signed HMAC-SHA256 test event delivered: ${data.status || 200} OK`);
       } else {
-        setWebhookTestNotice(`Webhook dispatch returned status ${res.status}`);
+        setWebhookTestNotice(data?.error || data?.message || `Webhook dispatch returned status ${res.status}`);
       }
-    } catch {
-      setWebhookTestNotice(`Signed HMAC-SHA256 test event verified locally: 200 OK`);
+    } catch (err: any) {
+      setWebhookTestNotice(`Webhook ping failed: ${err?.message || 'Network error'}`);
     } finally {
       setTestingWebhookId(null);
       setTimeout(() => setWebhookTestNotice(null), 3500);

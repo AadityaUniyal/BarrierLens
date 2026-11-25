@@ -143,7 +143,15 @@ export function TimeTravelReplayPlayer({
             Cinematic Time-Travel Studio
           </span>
           <span className="text-xs px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 font-mono">
-            {targetUrl ? new URL(targetUrl.startsWith('file:') ? 'http://localhost/fixture' : targetUrl).pathname : '/'}
+            {(() => {
+              if (!targetUrl) return '/';
+              try {
+                if (targetUrl.startsWith('/')) return targetUrl;
+                return new URL(targetUrl.startsWith('file:') ? 'http://localhost/fixture' : targetUrl).pathname;
+              } catch {
+                return targetUrl;
+              }
+            })()}
           </span>
         </div>
 

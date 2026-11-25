@@ -24,7 +24,8 @@ export async function POST(req: Request) {
           payload.auditRun = rawData?.auditRun || rawData;
           payload.shareUrl = rawData?.shareUrl || (payload.auditRun?.id ? `/scorecard/${payload.auditRun.id}` : '');
         } else if (event === 'status') {
-          payload.message = rawData?.message || (typeof rawData === 'string' ? rawData : 'Processing...');
+          payload.message = rawData?.message || rawData?.warning || rawData?.error || (typeof rawData === 'string' ? rawData : 'Processing...');
+          if (rawData?.status) payload.status = rawData.status;
         } else if (event === 'error') {
           payload.error = rawData?.error || rawData?.message || 'Audit encountered an issue';
         } else if (typeof rawData === 'object' && rawData !== null) {

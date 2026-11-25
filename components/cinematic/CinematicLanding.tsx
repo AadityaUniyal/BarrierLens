@@ -38,25 +38,6 @@ export function CinematicLanding({
   onSelectBenchmark,
   onOpenAuth 
 }: CinematicLandingProps) {
-  // Smooth scroll
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-    });
-
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-
-    return () => {
-      lenis.destroy();
-    };
-  }, []);
-
   // Quick Trial Input State
   const [trialUrl, setTrialUrl] = useState<string>('/benchmark');
   const [trialGoal, setTrialGoal] = useState<string>('Test modal keyboard focus escape and trap loops');
@@ -82,6 +63,7 @@ export function CinematicLanding({
   const [inquiryUrl, setInquiryUrl] = useState<string>('');
   const [inquiryCookies, setInquiryCookies] = useState<string>('');
   const [inquiryGoal, setInquiryGoal] = useState<string>('');
+  const [inquirySubmitted, setInquirySubmitted] = useState<boolean>(false);
 
   // Keyboard simulator handler
   const handleSimTab = () => {
@@ -922,36 +904,64 @@ export function CinematicLanding({
           </div>
         </div>
 
-        <div className="divide-y divide-black/[0.06] dark:divide-white/[0.06] rounded-2xl bg-white dark:bg-[#121212] border border-black/[0.08] dark:border-white/[0.08] overflow-hidden shadow-sm">
-          {testbeds.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => onLaunchStudio(item.url, item.goal, 'keyboard')}
-              className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-all cursor-pointer group"
-            >
-              <div className="space-y-1.5 max-w-2xl">
-                <div className="flex items-center gap-2.5">
+        {/* Responsive Grid or List Layout */}
+        {indexView === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {testbeds.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => onLaunchStudio(item.url, item.goal, 'keyboard')}
+                className="p-6 rounded-2xl bg-white dark:bg-[#121212] border border-black/[0.08] dark:border-white/[0.08] hover:border-[#0055FF]/40 hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-all cursor-pointer group space-y-3 shadow-sm"
+              >
+                <div className="flex items-center justify-between">
                   <span className="text-xs font-mono font-semibold text-emerald-600 dark:text-emerald-400">{item.category}</span>
-                  <span className="text-black/20 dark:text-white/20">&bull;</span>
-                  <span className="text-xs font-mono text-[#6E6E6E] dark:text-slate-400">{item.severity}</span>
+                  <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/5 text-[#6E6E6E] dark:text-slate-400">{item.severity}</span>
                 </div>
                 <h3 className="text-base font-semibold text-[#121212] dark:text-white group-hover:text-[#0055FF] transition-colors">
                   {item.title}
                 </h3>
-                <p className="text-xs text-[#6E6E6E] dark:text-slate-400 leading-relaxed">
+                <p className="text-xs text-[#6E6E6E] dark:text-slate-400 leading-relaxed line-clamp-2">
                   {item.desc}
                 </p>
+                <div className="pt-2 flex items-center justify-between text-xs font-mono text-[#0055FF]">
+                  <span>Launch Benchmark &rarr;</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
               </div>
+            ))}
+          </div>
+        ) : (
+          <div className="divide-y divide-black/[0.06] dark:divide-white/[0.06] rounded-2xl bg-white dark:bg-[#121212] border border-black/[0.08] dark:border-white/[0.08] overflow-hidden shadow-sm">
+            {testbeds.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => onLaunchStudio(item.url, item.goal, 'keyboard')}
+                className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-all cursor-pointer group"
+              >
+                <div className="space-y-1.5 max-w-2xl">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xs font-mono font-semibold text-emerald-600 dark:text-emerald-400">{item.category}</span>
+                    <span className="text-black/20 dark:text-white/20">&bull;</span>
+                    <span className="text-xs font-mono text-[#6E6E6E] dark:text-slate-400">{item.severity}</span>
+                  </div>
+                  <h3 className="text-base font-semibold text-[#121212] dark:text-white group-hover:text-[#0055FF] transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-[#6E6E6E] dark:text-slate-400 leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
 
-              <div className="flex items-center gap-3 shrink-0">
-                <span className="text-xs font-mono text-[#6E6E6E] dark:text-slate-400 group-hover:text-[#121212] dark:group-hover:text-white transition-colors">
-                  Launch Testbed
-                </span>
-                <ArrowRight className="w-4 h-4 text-[#8A8A8A] group-hover:translate-x-1 group-hover:text-[#0055FF] transition-all" />
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-xs font-mono text-[#6E6E6E] dark:text-slate-400 group-hover:text-[#121212] dark:group-hover:text-white transition-colors">
+                    Launch Testbed
+                  </span>
+                  <ArrowRight className="w-4 h-4 text-[#8A8A8A] group-hover:translate-x-1 group-hover:text-[#0055FF] transition-all" />
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* 5. PRICING SECTION (#pricing) */}
@@ -1137,20 +1147,31 @@ export function CinematicLanding({
 
           {/* Submission Trigger */}
           <div className="pt-2 space-y-3">
-            <KineticButton
-              text="REQUEST CUSTOM CUJ AUDIT"
-              variant="primary"
-              onClick={() => {
-                if (onOpenAuth) onOpenAuth();
-                else onLaunchStudio(inquiryUrl || trialUrl, inquiryGoal || trialGoal, trialPersona);
-              }}
-              className="w-full justify-center text-xs bg-[#121212] text-white hover:bg-black"
-            />
+            {inquirySubmitted ? (
+              <div className="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-mono flex items-center justify-between">
+                <span>✓ Custom verification scheduled. Redirecting to studio...</span>
+                <div className="w-3.5 h-3.5 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
+              </div>
+            ) : (
+              <KineticButton
+                text="LAUNCH CUSTOM CUJ VERIFICATION"
+                variant="primary"
+                onClick={() => {
+                  const target = inquiryUrl || trialUrl;
+                  const goal = inquiryGoal || trialGoal;
+                  setInquirySubmitted(true);
+                  setTimeout(() => {
+                    onLaunchStudio(target, goal, trialPersona, true);
+                  }, 600);
+                }}
+                className="w-full justify-center text-xs bg-[#121212] text-white hover:bg-black"
+              />
+            )}
 
             <div className="flex items-center justify-center gap-3 pt-1">
               <button
                 type="button"
-                onClick={() => onLaunchStudio('/benchmark', 'Test modal keyboard focus escape', 'keyboard')}
+                onClick={() => onLaunchStudio('/benchmark', 'Test modal keyboard focus escape', 'keyboard', true)}
                 className="text-[11px] font-mono text-[#6E6E6E] dark:text-slate-400 hover:text-[#121212] dark:hover:text-white transition-colors underline underline-offset-4"
               >
                 Or launch with standard ground-truth benchmarks &rarr;

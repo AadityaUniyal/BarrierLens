@@ -42,7 +42,7 @@ export async function GET(
 
     const job = jobs[0];
     const payload = job.payload && typeof job.payload === 'object' ? job.payload : {};
-    const runId = payload.runId || payload.result_id;
+    const runId = payload.result_id || payload.runId;
 
     // 2. If running or completed, fetch latest steps & findings
     let steps: any[] = [];

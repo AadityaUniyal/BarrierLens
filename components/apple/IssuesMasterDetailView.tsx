@@ -30,6 +30,7 @@ import { BarrierGenomeViz } from './BarrierGenomeViz';
 import { CausalDiffView } from './CausalDiffView';
 import { GitHubPRModal } from './GitHubPRModal';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { transcriptItemsFromRun } from '@/lib/barrierlens/engines/transcript-from-run';
 
 interface IssuesMasterDetailViewProps {
   findings: BarrierFinding[];
@@ -123,9 +124,23 @@ export function IssuesMasterDetailView({
   // Keyboard navigation shortcuts: j/k, x, Shift+A, e, v, Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore if user is inside an input/textarea
+      // Ignore if PR modal or another dialog is open
+      if (isPRModalOpen) {
+        if (e.key === 'Escape') setIsPRModalOpen(false);
+        return;
+      }
       const target = e.target as HTMLElement;
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable ||
+          target.closest('[role="dialog"], [aria-modal="true"]'))
+      ) {
+        return;
+      }
+      if ((e.key === ' ' || e.code === 'Space' || e.key === 'Enter') && target && (target.tagName === 'BUTTON' || target.tagName === 'A')) {
         return;
       }
 
@@ -437,6 +452,8 @@ export function IssuesMasterDetailView({
               <div className="pt-2">
                 {inspectionTab === 'focus-map' && (
                   <FocusMapView
+                    nodes={auditResult?.focusGraph?.nodes}
+                    edges={auditResult?.focusGraph?.edges}
                     kendallTau={auditResult?.kendallTau}
                     trapCertificate={activeFinding.certificate}
                     trapCertificates={activeFinding.certificate ? [activeFinding.certificate] : []}
@@ -612,7 +629,7 @@ export function IssuesMasterDetailView({
                 )}
 
                 {inspectionTab === 'speech' && (
-                  <ScreenReaderTranscript />
+                  <ScreenReaderTranscript items={auditResult ? transcriptItemsFromRun(auditResult) : undefined} />
                 )}
 
                 {inspectionTab === 'genome' && (
@@ -623,8 +640,8 @@ export function IssuesMasterDetailView({
                   <CausalDiffView
                     finding={activeFinding}
                     allFindings={findings}
+                    targetUrl={auditResult?.targetUrl}
                     onSelectFinding={onSelectFinding}
-                    onFixVerified={(id, res) => onVerifyRepair(activeFinding)}
                   />
                 )}
               </div>

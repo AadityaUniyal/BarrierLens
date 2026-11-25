@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Navbar, ScreenId } from '@/components/apple/Navbar';
 import { CommandPalette } from '@/components/apple/CommandPalette';
+import { transcriptItemsFromRun } from '@/lib/barrierlens/engines/transcript-from-run';
 import { PulseDashboard } from '@/components/apple/PulseDashboard';
 import { WebsitesManagerView } from '@/components/apple/WebsitesManagerView';
 import { AuditStudioView } from '@/components/apple/AuditStudioView';
@@ -464,13 +465,17 @@ export default function Home() {
 
   // Run Task-Conditioned Audit with Server-Sent Events (SSE)
   const handleRunAudit = async (overrideTarget?: string, overrideGoal?: string, overridePersona?: PersonaType) => {
-    const activeTarget = overrideTarget || targetUrl;
-    const activeGoal = overrideGoal || goal;
-    const activePersona = overridePersona || persona;
+    const cleanTarget = typeof overrideTarget === 'string' ? overrideTarget : undefined;
+    const cleanGoal = typeof overrideGoal === 'string' ? overrideGoal : undefined;
+    const cleanPersona = typeof overridePersona === 'string' ? overridePersona : undefined;
 
-    if (overrideTarget) setTargetUrl(overrideTarget);
-    if (overrideGoal) setGoal(overrideGoal);
-    if (overridePersona) setPersona(overridePersona);
+    const activeTarget = cleanTarget || targetUrl;
+    const activeGoal = cleanGoal || goal;
+    const activePersona = cleanPersona || persona;
+
+    if (cleanTarget) setTargetUrl(cleanTarget);
+    if (cleanGoal) setGoal(cleanGoal);
+    if (cleanPersona) setPersona(cleanPersona);
 
     setIsAuditing(true);
     setStreamingStatus('Initializing Chromium CDP session and Accessibility domain...');
@@ -530,9 +535,9 @@ export default function Home() {
               accumulatedSteps.push(st);
               setAuditResult(prev => ({
                 id: prev?.id || `run_live_${Date.now()}`,
-                targetUrl,
-                goal,
-                persona,
+                targetUrl: activeTarget,
+                goal: activeGoal,
+                persona: activePersona,
                 status: 'running',
                 startedAt: prev?.startedAt || new Date().toISOString(),
                 taskSuccess: false,
@@ -572,7 +577,7 @@ export default function Home() {
       const errMsg = err?.message || 'Audit execution stream failure';
       setStreamingStatus(`Audit Notice: ${errMsg}`);
       // If user specifically requested benchmark fixture and server cannot spawn browser, provide the reference ground truth
-      if (targetUrl.includes('benchmark') || targetUrl.includes('localhost')) {
+      if (activeTarget.includes('benchmark') || activeTarget.includes('localhost')) {
         handleLoadBenchmarkFindings();
       }
     } finally {
@@ -589,10 +594,12 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          targetUrl,
+          targetUrl: auditResult?.targetUrl || targetUrl,
           findingId: finding.id,
           findingKind: finding.kind,
-          patch: 'aria-modal="true" role="dialog" onkeydown="handleEsc()"'
+          selector: finding.evidence?.selector || finding.selector,
+          traceKeySequence: finding.certificate?.reproducingKeySequence,
+          patch: finding.patchProposal || 'aria-modal="true" role="dialog" onkeydown="handleEsc()"'
         })
       });
 
@@ -643,12 +650,17 @@ export default function Home() {
       setSelectedFinding(prev => prev ? { ...prev, status: label } as any : null);
     }
     try {
-      await fetch('/api/findings/triage', {
+      const res = await fetch('/api/findings/triage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ findingId, label })
       });
-    } catch (err) {}
+      if (!res.ok) {
+        console.warn('[Triage] Server rejected triage update:', res.status);
+      }
+    } catch (err) {
+      console.warn('[Triage] Network error saving triage:', err);
+    }
   };
 
   const currentFindings = auditResult?.findings?.length ? auditResult.findings : historicalFindings;
@@ -954,6 +966,8 @@ export default function Home() {
 
             {issuesSubTab === 'focus-map' && (
               <FocusMapView
+                nodes={auditResult?.focusGraph?.nodes}
+                edges={auditResult?.focusGraph?.edges}
                 kendallTau={auditResult?.kendallTau}
                 trapCertificate={selectedFinding?.certificate}
                 trapCertificates={selectedFinding?.certificate ? [selectedFinding.certificate] : []}
@@ -961,7 +975,7 @@ export default function Home() {
             )}
 
             {issuesSubTab === 'screen-reader' && (
-              <ScreenReaderTranscript />
+              <ScreenReaderTranscript items={auditResult ? transcriptItemsFromRun(auditResult) : undefined} />
             )}
           </div>
         )}
@@ -1036,10 +1050,22 @@ export default function Home() {
                   onOpenGenome={() => { setActiveScreen('overview'); setMonitoringSubTab('genome'); }}
                   onOpenVault={() => { setActiveScreen('overview'); setMonitoringSubTab('vault'); }}
                   onRunQuickAudit={handleRunAudit}
-                  onSelectRun={(run) => {
-                    if (run.findings) {
+                  onSelectRun={async (run: any) => {
+                    if (run?.findings) {
                       setAuditResult(run);
                       setSelectedFinding(run.findings[0] || null);
+                    } else if (run?.id) {
+                      try {
+                        const res = await fetch(`/api/runs/${encodeURIComponent(run.id)}`);
+                        if (res.ok) {
+                          const data = await res.json();
+                          const loaded = data?.run || data;
+                          if (loaded) {
+                            setAuditResult(loaded);
+                            setSelectedFinding(loaded.findings?.[0] || null);
+                          }
+                        }
+                      } catch {}
                     }
                     setActiveScreen('audits');
                   }}

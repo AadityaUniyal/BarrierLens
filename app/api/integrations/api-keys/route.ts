@@ -24,9 +24,9 @@ export async function GET(req: NextRequest) {
     let keys: any[] = [];
     try {
       keys = await sql`
-        SELECT id, name, key_prefix, scopes, rate_limit_per_min, last_used_at, created_at
+        SELECT id, name, COALESCE(key_prefix, prefix) as key_prefix, scopes, COALESCE(rate_limit_per_min, 120) as rate_limit_per_min, last_used_at, created_at
         FROM api_keys
-        WHERE user_id = ${userId}
+        WHERE user_id = ${userId} AND revoked_at IS NULL
         ORDER BY created_at DESC;
       `;
     } catch {
@@ -57,8 +57,8 @@ export async function POST(req: NextRequest) {
 
     try {
       await sql`
-        INSERT INTO api_keys (id, user_id, name, key_prefix, key_hash, scopes, rate_limit_per_min, created_at)
-        VALUES (${keyId}, ${userId}, ${name}, ${keyPrefix}, ${keyHash}, ${scopes}, 120, ${createdAt});
+        INSERT INTO api_keys (id, user_id, name, prefix, key_prefix, key_hash, scopes, rate_limit_per_min, created_at)
+        VALUES (${keyId}, ${userId}, ${name}, ${keyPrefix}, ${keyPrefix}, ${keyHash}, ${scopes}, 120, ${createdAt});
       `;
     } catch (e: any) {
       console.error('[API Keys] Neon insert failure:', e.message);
@@ -87,8 +87,8 @@ export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
-    if (!id) {
-      return NextResponse.json({ success: false, error: 'Missing key id' }, { status: 400 });
+    if (!id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      return NextResponse.json({ success: false, error: 'Valid UUID key id required' }, { status: 400 });
     }
 
     const userId = await getUserId(req);

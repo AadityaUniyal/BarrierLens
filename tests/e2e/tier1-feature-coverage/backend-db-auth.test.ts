@@ -726,7 +726,7 @@ describe('Tier 1 Part B - Backend, Database & Authentication', () => {
     });
 
     it('F32.4: fixes table schema establishes foreign key relation to findings(id)', () => {
-      const schemaPath = path.resolve(process.cwd(), 'lib/neon/schema.ts');
+      const schemaPath = path.resolve(process.cwd(), 'migrations/001_supabase_schema.sql');
       const content = fs.readFileSync(schemaPath, 'utf8');
       assert.ok(
         content.includes('REFERENCES findings(id) ON DELETE CASCADE'),

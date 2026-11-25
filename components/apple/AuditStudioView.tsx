@@ -303,7 +303,7 @@ export function AuditStudioView({
             <button
               type="button"
               disabled={isAuditing || isSwarmRunning}
-              onClick={onRunAudit}
+              onClick={() => onRunAudit()}
               className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-semibold transition-all shadow-lg ${
                 isAuditing 
                   ? 'bg-white/[0.08] text-slate-400 cursor-wait border border-white/[0.08]' 

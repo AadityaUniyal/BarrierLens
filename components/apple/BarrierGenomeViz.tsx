@@ -124,10 +124,12 @@ export function BarrierGenomeViz({
             </div>
 
             <div className="overflow-x-auto pb-1">
-              <div className="min-w-[480px] grid grid-cols-[repeat(48,minmax(0,1fr))] gap-1 h-24 rounded">
-                {activeGenome.vector.slice(0, 384).map((val, idx) => {
+              <div className="min-w-[640px] grid grid-cols-[repeat(64,minmax(0,1fr))] gap-0.5 h-24 rounded">
+                {activeGenome.vector.slice(0, 768).map((val, idx) => {
                   let colorClass = 'bg-blue-500';
-                  if (idx >= 192) colorClass = 'bg-purple-500';
+                  if (idx >= 576) colorClass = 'bg-emerald-500';
+                  else if (idx >= 384) colorClass = 'bg-amber-500';
+                  else if (idx >= 192) colorClass = 'bg-purple-500';
 
                   const opacity = Math.min(1.0, Math.max(0.12, Math.abs(val)));
                   return (

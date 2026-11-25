@@ -36,124 +36,106 @@ export class VerifiedRepairEngine {
       const context = await browser.newContext();
       const page = await context.newPage();
 
-      // Universal Declarative DOM Patch Injector
+      // Universal Declarative DOM Patch Injector (Pure JS — no TypeScript casts!)
       await page.addInitScript({
         content: `
-          window.addEventListener('DOMContentLoaded', () => {
-            console.log('[BarrierLens Repair] Injecting declarative AST patch...');
+          (function() {
+            function applyBarrierLensPatch() {
+              const targetSelector = ${JSON.stringify(targetSelector || customRule?.targetSelector || '')};
+              const customRule = ${JSON.stringify(customRule || null)};
+              const patchText = ${JSON.stringify(patch || '')};
 
-            const targetSelector = ${JSON.stringify(targetSelector || customRule?.targetSelector || '')};
-            const customRule = ${JSON.stringify(customRule || null)};
-            const patchText = ${JSON.stringify(patch || '')};
-
-            // Helper to parse key-value attributes from patch string (e.g. aria-modal="true" role="dialog")
-            const attrMatches = patchText.matchAll(/([a-zA-Z0-9_-]+)=["']([^"']+)["']/g);
-            const parsedAttrs = {};
-            for (const m of attrMatches) {
-              parsedAttrs[m[1]] = m[2];
-            }
-
-            // 1. Apply to specific targetSelector if provided
-            if (targetSelector) {
-              try {
-                const els = document.querySelectorAll(targetSelector);
-                els.forEach(el => {
-                  for (const [k, v] of Object.entries(parsedAttrs)) {
-                    el.setAttribute(k, v);
-                  }
-                });
-              } catch (e) {
-                console.warn('[BarrierLens Repair] Selector error:', e);
+              const attrMatches = patchText.matchAll(/([a-zA-Z0-9_-]+)=["']([^"']+)["']/g);
+              const parsedAttrs = {};
+              for (const m of attrMatches) {
+                parsedAttrs[m[1]] = m[2];
               }
-            }
 
-            // 2. Apply custom declarative rule if supplied
-            if (customRule && customRule.targetSelector) {
-              try {
-                const targets = document.querySelectorAll(customRule.targetSelector);
-                targets.forEach(el => {
-                  if (customRule.setAttributes) {
-                    for (const [k, v] of Object.entries(customRule.setAttributes)) {
+              if (targetSelector) {
+                try {
+                  const els = document.querySelectorAll(targetSelector);
+                  els.forEach(el => {
+                    for (const [k, v] of Object.entries(parsedAttrs)) {
                       el.setAttribute(k, v);
                     }
-                  }
-                  if (customRule.removeAttributes) {
-                    for (const k of customRule.removeAttributes) {
-                      el.removeAttribute(k);
+                  });
+                } catch (e) {}
+              }
+
+              if (customRule && customRule.targetSelector) {
+                try {
+                  const targets = document.querySelectorAll(customRule.targetSelector);
+                  targets.forEach(el => {
+                    if (customRule.setAttributes) {
+                      for (const [k, v] of Object.entries(customRule.setAttributes)) {
+                        el.setAttribute(k, v);
+                      }
                     }
-                  }
-                  if (customRule.addKeydownHandlers) {
-                    window.addEventListener('keydown', (e) => {
-                      for (const h of customRule.addKeydownHandlers) {
-                        if (e.key === h.key) {
-                          if (h.action === 'hide') (el as HTMLElement).style.display = 'none';
-                          if (h.action === 'restoreFocus' && h.focusSelector) {
-                            const target = document.querySelector(h.focusSelector) as HTMLElement;
-                            if (target) target.focus();
+                    if (customRule.removeAttributes) {
+                      for (const k of customRule.removeAttributes) {
+                        el.removeAttribute(k);
+                      }
+                    }
+                    if (customRule.addKeydownHandlers) {
+                      window.addEventListener('keydown', (e) => {
+                        for (const h of customRule.addKeydownHandlers) {
+                          if (e.key === h.key) {
+                            if (h.action === 'hide') el.style.display = 'none';
+                            if (h.action === 'restoreFocus' && h.focusSelector) {
+                              const target = document.querySelector(h.focusSelector);
+                              if (target && typeof target.focus === 'function') target.focus();
+                            }
                           }
                         }
-                      }
-                    });
-                  }
-                });
-              } catch (e) {
-                console.warn('[BarrierLens Repair] Custom rule error:', e);
-              }
-            }
-
-            // 3. Dynamic repair based on finding kind
-            const kind = ${JSON.stringify(findingKind)};
-
-            if (kind === 'keyboard_trap') {
-              // Ensure any open dialog or modal container responds to Escape key
-              const dialogSelectors = targetSelector || '[role="dialog"], [aria-modal], dialog, .modal';
-              const dialogs = document.querySelectorAll(dialogSelectors);
-              dialogs.forEach(dlg => {
-                if (!dlg.getAttribute('aria-modal')) dlg.setAttribute('aria-modal', 'true');
-                if (!dlg.getAttribute('role')) dlg.setAttribute('role', 'dialog');
-              });
-
-              window.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                  dialogs.forEach(dlg => {
-                    (dlg as HTMLElement).style.display = 'none';
-                    if (dlg.hasAttribute('open')) dlg.removeAttribute('open');
-                  });
-                }
-              });
-            } else if (kind === 'silent_state_change') {
-              // Ensure dynamic notification / toast / error containers announce via aria-live
-              const alertSelectors = targetSelector || '[role="alert"], [role="status"], .toast, .alert, .error, .notification';
-              const alerts = document.querySelectorAll(alertSelectors);
-              alerts.forEach(el => {
-                if (!el.getAttribute('aria-live')) el.setAttribute('aria-live', 'polite');
-                if (!el.getAttribute('role')) el.setAttribute('role', 'status');
-              });
-
-              // Mutation observer for dynamically appended alerts
-              const observer = new MutationObserver((mutations) => {
-                mutations.forEach(m => {
-                  m.addedNodes.forEach(node => {
-                    if (node.nodeType === 1) {
-                      const el = node as HTMLElement;
-                      if (!el.getAttribute('aria-live')) {
-                        el.setAttribute('aria-live', 'polite');
-                      }
+                      });
                     }
                   });
+                } catch (e) {}
+              }
+
+              const kind = ${JSON.stringify(findingKind)};
+              if (kind === 'keyboard_trap') {
+                const dialogSelectors = targetSelector || '[role="dialog"], [aria-modal], dialog, .modal';
+                const dialogs = document.querySelectorAll(dialogSelectors);
+                dialogs.forEach(dlg => {
+                  if (!dlg.getAttribute('aria-modal')) dlg.setAttribute('aria-modal', 'true');
+                  if (!dlg.getAttribute('role')) dlg.setAttribute('role', 'dialog');
                 });
-              });
-              observer.observe(document.body, { childList: true, subtree: true });
-            } else if (kind === 'empty_accessible_name' || kind === 'misleading_accessible_name') {
-              if (targetSelector) {
-                const target = document.querySelector(targetSelector);
-                if (target && !target.getAttribute('aria-label')) {
-                  const labelValue = parsedAttrs['aria-label'] || 'Action';
-                  target.setAttribute('aria-label', labelValue);
+                if (!window.__blEscHooked) {
+                  window.__blEscHooked = true;
+                  window.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                      document.querySelectorAll(dialogSelectors).forEach(dlg => {
+                        dlg.style.display = 'none';
+                        if (dlg.hasAttribute('open')) dlg.removeAttribute('open');
+                      });
+                    }
+                  });
+                }
+              } else if (kind === 'silent_state_change') {
+                const alertSelectors = targetSelector || '[role="alert"], [role="status"], .toast, .alert, .error, .notification';
+                document.querySelectorAll(alertSelectors).forEach(el => {
+                  if (!el.getAttribute('aria-live')) el.setAttribute('aria-live', 'polite');
+                  if (!el.getAttribute('role')) el.setAttribute('role', 'status');
+                });
+              } else if (kind === 'empty_accessible_name' || kind === 'misleading_accessible_name') {
+                if (targetSelector) {
+                  const target = document.querySelector(targetSelector);
+                  if (target && !target.getAttribute('aria-label')) {
+                    const labelValue = parsedAttrs['aria-label'] || 'Action';
+                    target.setAttribute('aria-label', labelValue);
+                  }
                 }
               }
             }
-          });
+
+            if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', applyBarrierLensPatch);
+            } else {
+              applyBarrierLensPatch();
+            }
+            window.addEventListener('load', applyBarrierLensPatch);
+          })();
         `
       });
 

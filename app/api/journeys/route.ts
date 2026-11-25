@@ -35,7 +35,7 @@ export async function GET(req: Request) {
                w.name as website_name, w.origin as website_origin
         FROM journeys j
         LEFT JOIN websites w ON j.website_id = w.id
-        WHERE j.website_id = ${websiteId} AND (j.user_id = ${userId} OR ${userId} = 'sample_user')
+        WHERE j.website_id = ${websiteId} AND j.user_id = ${userId}
         ORDER BY j.created_at DESC
       `;
     } else {
@@ -44,7 +44,7 @@ export async function GET(req: Request) {
                w.name as website_name, w.origin as website_origin
         FROM journeys j
         LEFT JOIN websites w ON j.website_id = w.id
-        WHERE j.user_id = ${userId} OR ${userId} = 'sample_user'
+        WHERE j.user_id = ${userId}
         ORDER BY j.created_at DESC
       `;
     }

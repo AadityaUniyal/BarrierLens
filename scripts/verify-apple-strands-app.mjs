@@ -101,14 +101,14 @@ async function runVerification() {
     assert.ok(result.certificateSummary.sha256.length === 64, 'SHA-256 certificate should be 64 hex chars');
   });
 
-  // 4. Neon Database Service Methods
-  await testAsync('Neon services certificate & trace persistence', async () => {
-    const { neonServices } = await import('../lib/neon/services.ts');
-    assert.strictEqual(typeof neonServices.saveCausalCertificate, 'function');
-    assert.strictEqual(typeof neonServices.recordAgentTrace, 'function');
-    assert.strictEqual(typeof neonServices.getAgentTraces, 'function');
+  // 4. Supabase Database Service Methods
+  await testAsync('Supabase services certificate & trace persistence', async () => {
+    const { supabaseServices } = await import('../lib/supabase/services.ts');
+    assert.strictEqual(typeof supabaseServices.saveCausalCertificate, 'function');
+    assert.strictEqual(typeof supabaseServices.recordAgentTrace, 'function');
+    assert.strictEqual(typeof supabaseServices.getAgentTraces, 'function');
 
-    const certRes = await neonServices.saveCausalCertificate({
+    const certRes = await supabaseServices.saveCausalCertificate({
       findingId: 'verify-test-' + Date.now(),
       sha256Hash: 'a'.repeat(64),
       targetUrl: 'https://apple.com',

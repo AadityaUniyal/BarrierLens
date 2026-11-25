@@ -292,16 +292,28 @@ export class BarrierGenomeEncoder {
     const isOnline = await backendBreaker.checkAvailability();
     if (isOnline) {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/genome/embed', {
+        const response = await fetch(`${backendBreaker.getUrl()}/api/genome/embed`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: description }),
-          signal: AbortSignal.timeout(2000),
+          signal: AbortSignal.timeout(3000),
         });
         if (response.ok) {
           const { vector } = await response.json();
           backendBreaker.markOnline();
-          return vector as number[];
+          if (Array.isArray(vector) && vector.length === 768) {
+            return vector as number[];
+          }
+          if (Array.isArray(vector) && vector.length === 384) {
+            // Embed 384-dim MiniLM semantic vector into 768-dim hybrid genome layout and L2-normalize
+            const fallbackGenome = this.encode(finding, context);
+            const hybrid = [...fallbackGenome.vector];
+            for (let i = 0; i < 384; i++) {
+              hybrid[192 + i] = vector[i];
+            }
+            const mag = Math.sqrt(hybrid.reduce((acc, v) => acc + v * v, 0)) || 1;
+            return hybrid.map(v => Math.round((v / mag) * 1e6) / 1e6);
+          }
         }
       } catch {
         backendBreaker.markOffline();

@@ -158,9 +158,6 @@ export class ChaosInjector {
           break;
         case 'forced_colors':
           await page.emulateMedia({ forcedColors: 'active' });
-          await page.addStyleTag({
-            content: '* { forced-color-adjust: none !important; }'
-          });
           break;
         case 'reduced_motion':
           await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -192,6 +189,55 @@ export class ChaosInjector {
           await page.addStyleTag({
             content: '* { pointer-events: none !important; }'
           });
+          break;
+        case 'slow_transitions':
+          await page.addStyleTag({
+            content: '* { transition-duration: 2000ms !important; animation-duration: 2000ms !important; }'
+          });
+          break;
+        case 'rapid_reflow':
+          await page.evaluate(() => {
+            document.documentElement.style.setProperty('--bl-chaos-reflow', String(Date.now()));
+            void document.body.offsetHeight;
+          });
+          break;
+        case 'offline_transient':
+          try {
+            const client = await page.context().newCDPSession(page);
+            await client.send('Network.emulateNetworkConditions', {
+              offline: true,
+              downloadThroughput: 0,
+              uploadThroughput: 0,
+              latency: 0
+            });
+            setTimeout(() => {
+              client.send('Network.emulateNetworkConditions', {
+                offline: false,
+                downloadThroughput: -1,
+                uploadThroughput: -1,
+                latency: 0
+              }).catch(() => {});
+            }, 600);
+          } catch {}
+          break;
+        case 'focus_loss_on_click':
+          await page.evaluate(() => {
+            if (!(window as any).__blFocusBlurChaos) {
+              (window as any).__blFocusBlurChaos = true;
+              document.addEventListener('focusin', () => {
+                setTimeout(() => {
+                  const active = document.activeElement as HTMLElement | null;
+                  if (active && active !== document.body && typeof active.blur === 'function') {
+                    active.blur();
+                  }
+                }, 40);
+              }, { once: true });
+            }
+          });
+          break;
+        case 'double_tab_speed':
+          await page.keyboard.press('Tab');
+          await page.keyboard.press('Tab');
           break;
       }
     } catch (err: any) {

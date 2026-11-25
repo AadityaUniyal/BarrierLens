@@ -322,6 +322,7 @@ export interface BarrierFinding {
   cmsdCertificate?: CrossModalDivergenceCertificate;
   patchProposal?: string;
   verifiedFix?: boolean;
+  status?: 'accepted' | 'rejected' | 'needs_review';
 }
 
 export interface AuditRun {
@@ -337,6 +338,10 @@ export interface AuditRun {
   steps: ActionStep[];
   findings: BarrierFinding[];
   kendallTau?: KendallTauMetric;
+  focusGraph?: {
+    nodes: FocusNode[];
+    edges: FocusEdge[];
+  };
   tierMix: {
     tier0Rules: number;
     tier1Ranker: number;

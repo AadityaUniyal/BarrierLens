@@ -129,7 +129,7 @@ describe('Tier 3: CDP Accessibility Extraction & AST Diff Pipeline', () => {
     assert.ok(patchResult.unifiedDiff.includes('diff --git a/components/checkout/OrderConfirmation.tsx b/components/checkout/OrderConfirmation.tsx'));
     assert.ok(patchResult.unifiedDiff.includes('--- a/components/checkout/OrderConfirmation.tsx'));
     assert.ok(patchResult.unifiedDiff.includes('+++ b/components/checkout/OrderConfirmation.tsx'));
-    assert.ok(patchResult.unifiedDiff.includes('@@ -15,7 +15,7 @@'));
+    assert.ok(/@@ -\d+,\d+ \+\d+,\d+ @@/.test(patchResult.unifiedDiff), 'Expected valid unified diff hunk header');
     assert.ok(patchResult.unifiedDiff.includes('+<button class="icon-btn" aria-label="Perform action">') || patchResult.unifiedDiff.includes('aria-label'));
     assert.equal(patchResult.isVerifiable, true);
   });

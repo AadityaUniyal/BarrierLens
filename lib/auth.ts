@@ -1,23 +1,61 @@
 import { betterAuth } from 'better-auth';
 import { passkey } from '@better-auth/passkey';
 import { organization } from 'better-auth/plugins/organization';
-const databaseUrl = process.env.DATABASE_URL || '';
-const isValidUrl = databaseUrl && !databaseUrl.includes('[SENSITIVE]') && !databaseUrl.includes('[YOUR-PASSWORD]') && (databaseUrl.startsWith('postgres://') || databaseUrl.startsWith('postgresql://'));
+import postgres from 'postgres';
 
-// Safe mock pool for build time and unconfigured environments to prevent ECONNREFUSED schema errors
+const databaseUrl = (process.env.DIRECT_URL || process.env.DATABASE_URL || '').trim();
+const isValidUrl =
+  Boolean(databaseUrl) &&
+  !databaseUrl.includes('[SENSITIVE]') &&
+  !databaseUrl.includes('[YOUR-PASSWORD]') &&
+  (databaseUrl.startsWith('postgres://') || databaseUrl.startsWith('postgresql://'));
+
+// Safe mock pool for build time when no DB URL is configured
 const dummyPool: any = {
   connect: async () => ({
-    query: async () => ({ rows: [] }),
+    query: async () => ({ rows: [], rowCount: 0 }),
     release: () => {},
   }),
-  query: async () => ({ rows: [] }),
+  query: async () => ({ rows: [], rowCount: 0 }),
   on: () => {},
   end: async () => {},
 };
 
-const dbPool = dummyPool;
+/**
+ * Adapts `postgres` (postgres.js) into a pg-Pool compatible interface for BetterAuth's Kysely PostgresDialect.
+ */
+function createPostgresPool(url: string): any {
+  const client = postgres(url, {
+    ssl: 'require',
+    max: 10,
+    idle_timeout: 20,
+    connect_timeout: 10,
+    prepare: false,
+  });
 
-// Fail closed in production if security secrets are missing
+  const runQuery = async (text: string, params?: any[]) => {
+    const rows = await client.unsafe(text, params || []);
+    return {
+      rows: Array.from(rows),
+      rowCount: typeof (rows as any).count === 'number' ? (rows as any).count : rows.length,
+    };
+  };
+
+  return {
+    connect: async () => ({
+      query: runQuery,
+      release: () => {},
+    }),
+    query: runQuery,
+    on: () => {},
+    end: async () => {
+      await client.end();
+    },
+  };
+}
+
+const dbPool = isValidUrl ? createPostgresPool(databaseUrl) : dummyPool;
+
 const isProduction = process.env.NODE_ENV === 'production';
 const authSecret = process.env.BETTER_AUTH_SECRET;
 
@@ -43,7 +81,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 }
 
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'),
+  baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
   secret: authSecret || 'dev_secret_only_local_fallback_min_32_characters_long',
   database: dbPool,
   emailAndPassword: {

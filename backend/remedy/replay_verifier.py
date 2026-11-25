@@ -58,20 +58,17 @@ class ReplayVerifier:
                     page.wait_for_timeout(400)
                     page.evaluate(patch_apply_script)
                 except Exception as e:
-                    logs.append(f"Target unreachable ({str(e)}). Testing patch in isolated benchmark sandbox...")
-                    try:
-                        page.goto("about:blank", timeout=5000)
-                    except Exception:
-                        pass
-                    page.set_content("""<!DOCTYPE html>
-                    <html><body>
-                        <div id="trap-modal" role="dialog" tabindex="-1">
-                            <button id="btn-1">Option 1</button>
-                            <button id="btn-2">Option 2</button>
-                        </div>
-                    </body></html>""")
-                    page.wait_for_timeout(300)
-                    page.evaluate(patch_apply_script)
+                    logs.append(f"Target unreachable ({str(e)}). Failing closed without dummy fallback.")
+                    browser.close()
+                    return {
+                        "findingKind": finding_kind,
+                        "patchSnippet": patch_snippet,
+                        "verified": False,
+                        "traceReplayed": [],
+                        "sandbox": "Headless Chromium CDP Isolated Container",
+                        "logs": logs,
+                        "timestamp": time.time()
+                    }
 
                 # Replay recorded key sequence
                 logs.append(f"Replaying trace key sequence: {keys}...")

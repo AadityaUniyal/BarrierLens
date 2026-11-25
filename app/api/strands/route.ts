@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { strandsAgentMesh } from '@/lib/barrierlens/agent/strands-agent-core';
 import { backendBreaker } from '@/lib/barrierlens/agent/backend-circuit-breaker';
+import { resolvePublicTargetUrl, requestOriginFrom, TargetPolicyError } from '@/lib/barrierlens/security/target-policy';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
-    const targetUrl = body.targetUrl || body.url || 'http://localhost:3000/benchmark';
+    const rawTargetUrl = body.targetUrl || body.url || '/benchmark';
+    const targetUrl = await resolvePublicTargetUrl(rawTargetUrl, requestOriginFrom(req));
 
     // 1. Explicit Python Engine Execution (if requested by caller and backend is online)
     if (body.engine === 'python' || body.preferBackend === 'python') {

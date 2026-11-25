@@ -13,17 +13,18 @@ interface ScorecardPageProps {
 
 export default async function ScorecardPage({ params }: ScorecardPageProps) {
   const { id } = await params;
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
   let auditRun: AuditRun | null = null;
 
   try {
-    const runs = await sql`
+    const runs = isUuid ? await sql`
       SELECT id, persona, status, task_success, effort_ratio, started_at, finished_at,
              tier_mix, target_url, goal_text, payload
       FROM runs
       WHERE id = ${id}
       LIMIT 1;
-    `;
+    ` : [];
 
     if (runs.length > 0) {
       const row = runs[0];
@@ -57,12 +58,13 @@ export default async function ScorecardPage({ params }: ScorecardPageProps) {
         persona: row.persona || 'keyboard',
         status: row.status || 'completed',
         taskSuccess: Boolean(row.task_success),
-        effortRatio: parseFloat(row.effort_ratio) || 4.2,
+        effortRatio: parseFloat(row.effort_ratio) || 1.0,
         startedAt: row.started_at,
         finishedAt: row.finished_at,
         tierMix: row.tier_mix || { tier0Rules: 2, tier1Ranker: 3, tier2Groq: 2, tier3Gemini: 1 },
+        kendallTau: row.payload?.kendallTau,
         findings: mappedFindings,
-        steps: [],
+        steps: row.payload?.steps || [],
       };
     }
   } catch (err) {

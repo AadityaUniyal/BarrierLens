@@ -99,7 +99,7 @@ export class ParetoConflictResolver {
           sr = 0.8;
           lv = 0.4;
           cog = 0.7; // Esc works intuitively, modal escape is standard
-        } else if (patchDetails.addsEscKeyListener) {
+        } else if (patchDetails.addsEscKeyListener || patchDetails.hasCompensatoryHelp) {
           key = 0.9;
           sr = 0.6;
           lv = 0.3;
@@ -113,6 +113,7 @@ export class ParetoConflictResolver {
         break;
 
       case 'silent_state_change':
+      case 'silent_dynamic_mutation' as any:
         if (patchDetails.addsAriaLiveAssertive && patchDetails.addsVerboseText) {
           key = 0.0;
           sr = 0.5;
@@ -142,7 +143,8 @@ export class ParetoConflictResolver {
 
       case 'empty_accessible_name':
       case 'misleading_accessible_name':
-        if (patchDetails.setsCompactAriaLabel) {
+      case 'missing_accessible_name' as any:
+        if (patchDetails.setsCompactAriaLabel || patchDetails.preservesVisualDesign) {
           key = 0.2;
           sr = 0.9;
           lv = 0.1;
@@ -153,6 +155,14 @@ export class ParetoConflictResolver {
           lv = -0.1;
           cog = -0.5; // Excessive descriptive text slows down cognition
         }
+        break;
+
+      case 'unreachable_control':
+      case 'unreachable_interactive' as any:
+        key = 0.95;
+        sr = 0.85;
+        lv = 0.4;
+        cog = 0.7;
         break;
 
       case 'target_size_violation':

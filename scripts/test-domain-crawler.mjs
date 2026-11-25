@@ -1,6 +1,6 @@
 import { DomainCrawler } from '../lib/barrierlens/crawler/domain-crawler.ts';
 import { CUJSynthesizer } from '../lib/barrierlens/crawler/cuj-synthesizer.ts';
-import { sql } from '../lib/neon/db.ts';
+import { sql } from '../lib/supabase/db.ts';
 
 async function main() {
   console.log('[Test] Starting Domain Crawler & CUJ Synthesizer test suite...');

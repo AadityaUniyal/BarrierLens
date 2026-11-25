@@ -100,14 +100,26 @@ export function CausalDiffView({
         })
       });
 
-      const data: VerifiedFixResult = await res.json();
-      setVerificationResult(data);
+      const data: any = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.error || `Verification failed (HTTP ${res.status})`);
+      }
+      setVerificationResult(data as VerifiedFixResult);
       if (data.verified) {
         setResolved(true);
         onFixVerified?.(current.id, data);
       }
     } catch (err: any) {
-      alert(err.message || 'Verification replay failed.');
+      setVerificationResult({
+        findingId: current.id,
+        originalFindingKind: current.kind,
+        patch: patchedHTML,
+        verified: false,
+        replayTaskSuccess: false,
+        regressionCount: 0,
+        diffSummary: err?.message || 'Verification replay failed.',
+        timestamp: new Date().toISOString()
+      });
     } finally {
       setIsVerifying(false);
     }
@@ -235,21 +247,35 @@ export function CausalDiffView({
 
       {/* 4. Cryptographic Proof Certificate Box */}
       {verificationResult && (
-        <div className="apple-vibrancy-regular rounded-3xl p-6 border-hairline border-emerald-500/20 bg-emerald-500/[0.02] space-y-4 animate-in fade-in duration-300">
+        <div className={`apple-vibrancy-regular rounded-3xl p-6 border-hairline space-y-4 animate-in fade-in duration-300 ${
+          verificationResult.verified
+            ? 'border-emerald-500/20 bg-emerald-500/[0.02]'
+            : 'border-rose-500/30 bg-rose-500/[0.04]'
+        }`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <ShieldCheck className="w-5 h-5 text-[#30d158]" />
-              <h3 className="text-sm font-semibold text-[#f5f5f7]">Cryptographic Replay Certificate</h3>
+              <ShieldCheck className={`w-5 h-5 ${verificationResult.verified ? 'text-[#30d158]' : 'text-rose-400'}`} />
+              <h3 className="text-sm font-semibold text-[#f5f5f7]">
+                {verificationResult.verified ? 'Cryptographic Replay Certificate' : 'Verification Replay Failed'}
+              </h3>
             </div>
-            <span className="text-[11px] font-mono text-[#30d158] bg-emerald-500/10 px-2.5 py-0.5 rounded-full border-hairline border-emerald-500/20 font-semibold">
-              0 Regressions Detected
+            <span className={`text-[11px] font-mono px-2.5 py-0.5 rounded-full border-hairline font-semibold ${
+              verificationResult.verified
+                ? 'text-[#30d158] bg-emerald-500/10 border-emerald-500/20'
+                : 'text-rose-400 bg-rose-500/10 border-rose-500/20'
+            }`}>
+              {verificationResult.verified
+                ? `${verificationResult.regressionCount ?? 0} Regressions Detected`
+                : 'Barrier Persisted'}
             </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
             <div className="p-3 rounded-xl bg-white/[0.02] border-hairline">
               <span className="text-[#86868b] block text-[10px] uppercase">Replay Verification</span>
-              <span className="font-semibold text-[#30d158]">Barrier Fully Eliminated</span>
+              <span className={`font-semibold ${verificationResult.verified ? 'text-[#30d158]' : 'text-rose-400'}`}>
+                {verificationResult.verified ? 'Barrier Fully Eliminated' : 'Verification Failed'}
+              </span>
             </div>
             <div className="p-3 rounded-xl bg-white/[0.02] border-hairline">
               <span className="text-[#86868b] block text-[10px] uppercase">SSIM Visual Invariance</span>

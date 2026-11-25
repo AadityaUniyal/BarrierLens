@@ -98,7 +98,7 @@ export function ExecutiveReport({
     const axes = [
       { key: 'perceivable', label: 'Perceivable', score: perceivable },
       { key: 'operable', label: 'Operable', score: operable },
-      { key: 'understandable', label: 'Understandable', score: operable },
+      { key: 'understandable', label: 'Understandable', score: understandable },
       { key: 'robust', label: 'Robust', score: robust },
       { key: 'traversability', label: 'Traversability', score: traversability },
     ];

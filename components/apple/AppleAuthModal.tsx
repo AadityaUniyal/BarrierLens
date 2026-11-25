@@ -171,18 +171,7 @@ export function AppleAuthModal({
         }
       }
 
-      // Safe session resolution fallback
-      onAuthenticate({
-        id: `usr_${Date.now().toString(36)}`,
-        name: name || email.split('@')[0],
-        email: email,
-        authMethod: 'session',
-        organization: 'Verified Engineering Org',
-        role: 'Auditor',
-        verifiedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      });
-      setIsAuthenticating(false);
-      onClose();
+      throw new Error('Authentication failed. Please verify your credentials.');
     } catch (err: any) {
       setIsAuthenticating(false);
       setErrorMessage(err?.message || 'Authentication error. Please retry.');
@@ -216,21 +205,7 @@ export function AppleAuthModal({
         return;
       }
 
-      if (typeof window !== 'undefined' && window.PublicKeyCredential) {
-        onAuthenticate({
-          id: `passkey_${Date.now().toString(36)}`,
-          name: 'Verified Auditor',
-          email: 'auditor@barrierlens.ai',
-          authMethod: 'apple_passkey',
-          organization: 'Pro Workspace',
-          role: 'Lead Accessibility Engineer',
-          verifiedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        });
-        setIsAuthenticating(false);
-        onClose();
-      } else {
-        throw new Error('WebAuthn is not supported in this browser environment.');
-      }
+      throw new Error(res?.error?.message || 'Passkey verification failed or was cancelled.');
     } catch (err: any) {
       setIsAuthenticating(false);
       setStatusMessage('');

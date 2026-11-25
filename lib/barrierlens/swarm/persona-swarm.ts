@@ -154,30 +154,30 @@ export class ParallelPersonaSwarm {
 
     await Promise.all(workers);
 
-    // Correlate findings across personas
-    const selectorOccurrences = new Map<string, Set<PersonaType>>();
+    // Correlate findings across personas by (kind, selector)
+    const signatureOccurrences = new Map<string, Set<PersonaType>>();
     for (const finding of allFindings) {
       const sel = finding.selector || (finding.evidence?.selector as string) || 'window';
+      const sig = `${finding.kind}:${sel}`;
       const p = finding.persona || 'keyboard';
-      if (!selectorOccurrences.has(sel)) {
-        selectorOccurrences.set(sel, new Set());
+      if (!signatureOccurrences.has(sig)) {
+        signatureOccurrences.set(sig, new Set());
       }
-      selectorOccurrences.get(sel)!.add(p);
+      signatureOccurrences.get(sig)!.add(p);
     }
 
     let crossPersonaCount = 0;
-    for (const [_, personaSet] of selectorOccurrences) {
+    for (const [_, personaSet] of signatureOccurrences) {
       if (personaSet.size > 1) {
         crossPersonaCount++;
       }
     }
 
-    // Deduplicate findings by signature
+    // Deduplicate findings across personas by signature (kind + selector)
     const uniqueFindingsMap = new Map<string, BarrierFinding>();
     for (const f of allFindings) {
       const sel = f.selector || (f.evidence?.selector as string) || 'root';
-      const p = f.persona || 'keyboard';
-      const key = `${f.kind}:${sel}:${p}`;
+      const key = `${f.kind}:${sel}`;
       if (!uniqueFindingsMap.has(key)) {
         uniqueFindingsMap.set(key, f);
       }

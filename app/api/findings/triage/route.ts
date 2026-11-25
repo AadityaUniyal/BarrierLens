@@ -35,10 +35,22 @@ export async function POST(req: Request) {
 
     // Server-derived reviewer identity from verified session
     const reviewerId = session.user.id || session.user.email;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(findingId);
+
+    if (!isUuid) {
+      // Sample/benchmark findings have non-UUID IDs; acknowledge locally without failing FK constraint
+      return NextResponse.json({
+        success: true,
+        guest: true,
+        findingId,
+        label,
+        message: 'Sample finding triage recorded in current session.'
+      });
+    }
 
     const result = await sql`
       INSERT INTO reviews (finding_id, reviewer_id, label)
-      VALUES (${findingId}, ${reviewerId}, ${label})
+      VALUES (${findingId}::uuid, ${reviewerId}, ${label})
       RETURNING id, finding_id, label, created_at;
     `;
 

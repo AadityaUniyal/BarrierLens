@@ -20,7 +20,7 @@ export async function GET(req: Request) {
     let findings = [];
 
     if (session?.user) {
-      // Scoped query for authenticated user's organization or account
+      // Scoped query for authenticated user's runs (plus shared public benchmark runs)
       runs = await sql`
         SELECT 
           id, 
@@ -34,29 +34,36 @@ export async function GET(req: Request) {
           target_url,
           goal_text
         FROM runs
+        WHERE user_id = ${session.user.id} OR user_id IS NULL
         ORDER BY COALESCE(started_at, created_at) DESC
         LIMIT ${limit} OFFSET ${offset};
       `;
 
-      findings = await sql`
+      const runIds = runs.map((r: any) => r.id);
+      findings = runIds.length > 0 ? await sql`
         SELECT 
-          id, 
-          run_id, 
-          kind, 
-          trust_tier, 
-          severity, 
-          severity_lo,
-          severity_hi,
-          wcag, 
-          evidence, 
-          certificate,
-          created_at
-        FROM findings
-        ORDER BY created_at DESC
+          f.id, 
+          f.run_id, 
+          f.kind, 
+          f.trust_tier, 
+          f.severity, 
+          f.severity_lo,
+          f.severity_hi,
+          f.wcag, 
+          f.evidence, 
+          f.certificate,
+          f.created_at,
+          r_rev.label as status
+        FROM findings f
+        LEFT JOIN LATERAL (
+          SELECT label FROM reviews WHERE finding_id = f.id ORDER BY created_at DESC LIMIT 1
+        ) r_rev ON true
+        WHERE f.run_id = ANY(${runIds}::uuid[])
+        ORDER BY f.created_at DESC
         LIMIT 50;
-      `;
+      ` : [];
     } else {
-      // For unauthenticated visitors, expose public benchmark evaluation runs and verified findings
+      // For unauthenticated visitors, expose public evaluation runs (user_id IS NULL)
       runs = await sql`
         SELECT 
           id, 
@@ -70,12 +77,13 @@ export async function GET(req: Request) {
           target_url,
           goal_text
         FROM runs
-        WHERE status = 'completed'
+        WHERE status = 'completed' AND user_id IS NULL
         ORDER BY COALESCE(started_at, created_at) DESC
         LIMIT 10;
       `;
 
-      findings = await sql`
+      const runIds = runs.map((r: any) => r.id);
+      findings = runIds.length > 0 ? await sql`
         SELECT 
           id, 
           run_id, 
@@ -89,9 +97,10 @@ export async function GET(req: Request) {
           certificate,
           created_at
         FROM findings
+        WHERE run_id = ANY(${runIds}::uuid[])
         ORDER BY created_at DESC
         LIMIT 20;
-      `;
+      ` : [];
     }
 
     return NextResponse.json({
