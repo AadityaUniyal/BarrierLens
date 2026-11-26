@@ -8,11 +8,7 @@ export default function FocusLossFixturePage() {
 
   // Section 2: Composite Tablist Widget
   const [activeTabIdx, setActiveTabIdx] = useState(0);
-  const tabRefs = [
-    useRef<HTMLButtonElement>(null),
-    useRef<HTMLButtonElement>(null),
-    useRef<HTMLButtonElement>(null)
-  ];
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([null, null, null]);
 
   // Section 3: Compliant Accessible Modal
   const [modalOpen, setModalOpen] = useState(false);
@@ -25,22 +21,22 @@ export default function FocusLossFixturePage() {
     let nextIdx = index;
     if (e.key === 'ArrowRight') {
       e.preventDefault();
-      nextIdx = (index + 1) % tabRefs.length;
+      nextIdx = (index + 1) % 3;
     } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
-      nextIdx = (index - 1 + tabRefs.length) % tabRefs.length;
+      nextIdx = (index - 1 + 3) % 3;
     } else if (e.key === 'Home') {
       e.preventDefault();
       nextIdx = 0;
     } else if (e.key === 'End') {
       e.preventDefault();
-      nextIdx = tabRefs.length - 1;
+      nextIdx = 2;
     } else {
       return;
     }
 
     setActiveTabIdx(nextIdx);
-    tabRefs[nextIdx].current?.focus();
+    tabRefs.current[nextIdx]?.focus();
   };
 
   // Accessible Modal Escape Key and Focus Trap Handler
@@ -147,7 +143,7 @@ export default function FocusLossFixturePage() {
           <div className="inline-flex gap-1.5 p-1 bg-black/40 border border-white/10 rounded-xl mb-4" role="tablist" aria-label="Account Settings Tabs">
             <button
               id="tab-1"
-              ref={tabRefs[0]}
+              ref={(el) => { tabRefs.current[0] = el; }}
               role="tab"
               aria-selected={activeTabIdx === 0}
               aria-controls="panel-1"
@@ -162,7 +158,7 @@ export default function FocusLossFixturePage() {
             </button>
             <button
               id="tab-2"
-              ref={tabRefs[1]}
+              ref={(el) => { tabRefs.current[1] = el; }}
               role="tab"
               aria-selected={activeTabIdx === 1}
               aria-controls="panel-2"
@@ -177,7 +173,7 @@ export default function FocusLossFixturePage() {
             </button>
             <button
               id="tab-3"
-              ref={tabRefs[2]}
+              ref={(el) => { tabRefs.current[2] = el; }}
               role="tab"
               aria-selected={activeTabIdx === 2}
               aria-controls="panel-3"

@@ -41,13 +41,13 @@ export async function initializeDatabaseSchema() {
     }
 
     // 2. Read and execute ordered migration files
-    const migrationsDir = path.resolve(process.cwd(), 'migrations');
+    const migrationsDir = path.resolve(process.cwd(), 'supabase', 'migrations');
     if (fs.existsSync(migrationsDir)) {
       const files = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();
       for (const file of files) {
         const sqlContent = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
         await sql.unsafe(sqlContent);
-        console.log(`[Supabase DB] Executed migrations/${file} successfully.`);
+        console.log(`[Supabase DB] Executed supabase/migrations/${file} successfully.`);
       }
     }
 

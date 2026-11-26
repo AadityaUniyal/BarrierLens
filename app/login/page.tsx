@@ -49,7 +49,7 @@ export default function LoginPage() {
           organization: 'Monorepo Fleet Workspace'
         }));
       } catch {}
-      router.push('/?tab=overview');
+      router.push('/dashboard');
     }, 400);
   };
 
@@ -71,7 +71,7 @@ export default function LoginPage() {
           name: name || email.split('@')[0],
         });
         if (res?.data?.user) {
-          router.push('/?tab=overview');
+          router.push('/dashboard');
           return;
         }
       } else {
@@ -80,7 +80,7 @@ export default function LoginPage() {
           password,
         });
         if (res?.data?.user) {
-          router.push('/?tab=overview');
+          router.push('/dashboard');
           return;
         }
       }
@@ -100,7 +100,7 @@ export default function LoginPage() {
     try {
       const res = await (authClient as any).signIn.passkey({ autoFill: false });
       if (res?.data?.user) {
-        router.push('/?tab=overview');
+        router.push('/dashboard');
         return;
       }
       throw new Error(res?.error?.message || 'Passkey authentication was cancelled or could not be verified.');

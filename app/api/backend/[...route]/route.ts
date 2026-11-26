@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedContext, unauthorizedResponse } from '@/lib/barrierlens/security/auth-guard';
 
 const PYTHON_BACKEND = process.env.PYTHON_BACKEND_URL ?? 'http://127.0.0.1:8000';
 
 async function proxy(request: NextRequest, segments: string[]) {
   const path = '/' + (segments || []).join('/');
+  const isHealthCheck = request.method === 'GET' && (path === '/health' || path === '/');
+  if (!isHealthCheck) {
+    const authCtx = await getAuthenticatedContext(request);
+    if (!authCtx) {
+      return unauthorizedResponse('Authentication required to invoke Python compute backend');
+    }
+  }
   const search = request.nextUrl.search || '';
   const targetUrl = `${PYTHON_BACKEND}${path}${search}`;
 
@@ -17,12 +25,17 @@ async function proxy(request: NextRequest, segments: string[]) {
   }
 
   try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'X-Forwarded-From': 'barrierlens-nextjs',
+    };
+    if (process.env.WORKER_SECRET) {
+      headers['Authorization'] = `Bearer ${process.env.WORKER_SECRET}`;
+    }
+
     const upstream = await fetch(targetUrl, {
       method: request.method,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Forwarded-From': 'barrierlens-nextjs'
-      },
+      headers,
       body,
       signal: AbortSignal.timeout(60_000),
     });

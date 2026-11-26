@@ -1,4 +1,4 @@
-import { chromium } from 'playwright';
+import { chromium, Browser, BrowserContext } from 'playwright';
 import { BrowserProvider } from '../agent/browser-provider';
 import { VerifiedFixResult, FindingKind } from '../types';
 import { sql } from '../../supabase/db';
@@ -26,14 +26,15 @@ export class VerifiedRepairEngine {
     customRule?: DeclarativePatchRule,
     targetSelector?: string
   ): Promise<VerifiedFixResult> {
-    let browser = null;
+    let browser: Browser | null = null;
+    let context: BrowserContext | null = null;
     let verified = false;
     let regressionCount = 0;
     let replayTaskSuccess = true;
 
     try {
       browser = await BrowserProvider.getBrowser({ headless: true });
-      const context = await browser.newContext();
+      context = await browser.newContext();
       const page = await context.newPage();
 
       // Universal Declarative DOM Patch Injector (Pure JS — no TypeScript casts!)
@@ -169,19 +170,23 @@ export class VerifiedRepairEngine {
           if (!alert) return false;
           return !alert.getAttribute('aria-live') && !alert.getAttribute('role');
         }
-        if (kind === 'empty_accessible_name') {
+        if (kind === 'empty_accessible_name' || kind === 'missing_accessible_name') {
           if (!targetSelector) return false;
           const el = document.querySelector(targetSelector);
           if (!el) return false;
           const name = el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || (el as HTMLElement).innerText?.trim();
           return !name;
         }
+        if (kind === 'focus_loss') {
+          const active = document.activeElement;
+          return !active || active === document.body;
+        }
         return false;
       }, { kind: findingKind, targetSelector });
 
       verified = !barrierStillExists;
 
-      // Persist verified fix to Neon Postgres if available
+      // Persist verified fix to Supabase Postgres if available
       try {
         await sql`
           INSERT INTO fixes (finding_id, patch, verified)
@@ -191,15 +196,15 @@ export class VerifiedRepairEngine {
             verified = EXCLUDED.verified;
         `;
       } catch (e: any) {
-        console.warn('[Neon DB] Could not save fix:', e.message);
+        console.warn('[Supabase DB] Could not save fix:', e.message);
       }
-
-      await context.close();
-      await browser.close();
     } catch (err: any) {
       console.error('[Verified Repair Engine] Replay failed:', err);
       verified = false;
       replayTaskSuccess = false;
+    } finally {
+      try { await context?.close(); } catch {}
+      try { await browser?.close(); } catch {}
     }
 
     return {

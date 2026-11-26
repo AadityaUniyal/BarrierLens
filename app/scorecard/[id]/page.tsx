@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { sql } from '@/lib/supabase/db';
-import { PublicScorecardView } from '@/components/apple/PublicScorecardView';
+import { PublicScorecardClient } from '@/components/antigravity/PublicScorecardClient';
 import { AuditRun, BarrierFinding } from '@/lib/barrierlens/types';
 import { Zap, ArrowLeft, ShieldCheck, Terminal, AlertTriangle, ExternalLink } from 'lucide-react';
 
@@ -92,8 +92,8 @@ export default async function ScorecardPage({ params }: ScorecardPageProps) {
         isAcceptable: false,
         explanation: 'Visual reading flow sequence diverges from DOM traversal order.'
       },
-      startedAt: new Date(Date.now() - 3600000).toISOString(),
-      finishedAt: new Date().toISOString(),
+      startedAt: '2026-01-01T00:00:00.000Z',
+      finishedAt: '2026-01-01T01:00:00.000Z',
       tierMix: { tier0Rules: 3, tier1Ranker: 4, tier2Groq: 2, tier3Gemini: 1 },
       findings: [
         {
@@ -157,7 +157,7 @@ export default async function ScorecardPage({ params }: ScorecardPageProps) {
 
       {/* Main Content */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-10 space-y-10">
-        <PublicScorecardView auditRun={auditRun} />
+        <PublicScorecardClient auditRun={auditRun} />
 
         {/* Detailed Findings & Certificates */}
         {auditRun.findings && auditRun.findings.length > 0 && (

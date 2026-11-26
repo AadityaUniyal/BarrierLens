@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import { VerifiedRepairEngine } from '@/lib/barrierlens/repair/verified-replay';
 import { resolvePublicTargetUrl, requestOriginFrom, TargetPolicyError } from '@/lib/barrierlens/security/target-policy';
+import { assertAuditQuota, beginAudit, clientIp, RateLimitError } from '@/lib/barrierlens/security/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
+  let release: (() => void) | null = null;
   try {
+    const ip = clientIp(req);
+    assertAuditQuota(ip);
+    release = beginAudit(ip);
     const body = await req.json().catch(() => ({}));
     const rawTargetUrl = body.targetUrl || '/benchmark';
     const findingId = body.findingId || crypto.randomUUID();
@@ -32,6 +37,12 @@ export async function POST(req: Request) {
 
     return NextResponse.json(result);
   } catch (err: any) {
+    if (err instanceof RateLimitError) {
+      return NextResponse.json(
+        { error: err.message, retryAfterSec: err.retryAfterSec },
+        { status: 429, headers: { 'Retry-After': String(err.retryAfterSec) } }
+      );
+    }
     if (err instanceof TargetPolicyError) {
       return NextResponse.json({ error: err.message, code: err.code }, { status: 400 });
     }
@@ -39,5 +50,7 @@ export async function POST(req: Request) {
       { error: err.message || 'Repair verification failed' },
       { status: 500 }
     );
+  } finally {
+    release?.();
   }
 }

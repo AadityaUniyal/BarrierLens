@@ -45,13 +45,29 @@ app = FastAPI(
 )
 
 # CORS configuration for Next.js frontend
+_allowed_origins = [
+    o.strip()
+    for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
+    if o.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def verify_worker_secret(request: Request, call_next):
+    worker_secret = os.getenv("WORKER_SECRET", "").strip()
+    if worker_secret and request.url.path not in ("/health", "/"):
+        auth_header = request.headers.get("authorization", "")
+        if auth_header != f"Bearer {worker_secret}":
+            from fastapi.responses import JSONResponse
+            return JSONResponse({"error": "Unauthorized backend request"}, status_code=401)
+    return await call_next(request)
 
 gpu_engine = GPUInferenceEngine()
 action_ranker = LightGBMActionRanker()
@@ -166,7 +182,7 @@ async def health_check():
 @app.post("/api/inspector/run")
 async def run_inspector(req: AuditRunRequest):
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         agent = InspectorAgent()
         result = await loop.run_in_executor(
             None,
@@ -186,7 +202,7 @@ async def run_inspector(req: AuditRunRequest):
 @app.post("/api/remedy/verify")
 async def run_repair_verify(req: ReplayVerifyRequest):
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         verifier = ReplayVerifier()
         result = await loop.run_in_executor(
             None,
@@ -206,7 +222,7 @@ async def run_repair_verify(req: ReplayVerifyRequest):
 @app.post("/api/stress/run")
 async def run_stress_suite(req: StressRunRequest):
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         fuzzer = MetamorphicFuzzer()
         result = await loop.run_in_executor(
             None,
@@ -239,7 +255,7 @@ async def generate_api_key(req: ApiKeyGenerateRequest):
 @app.post("/api/genome/embed")
 async def embed_genome_text(req: GenomeEmbedRequest):
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         vector = await loop.run_in_executor(None, lambda: gpu_engine.encode_text(req.text))
         return {
             "vector": vector,
@@ -253,7 +269,7 @@ async def embed_genome_text(req: GenomeEmbedRequest):
 @app.post("/api/ml/label-quality")
 async def evaluate_label_quality(req: LabelQualityRequest):
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         res = await loop.run_in_executor(
             None,
             lambda: gpu_engine.classify_label_quality(
@@ -270,7 +286,7 @@ async def evaluate_label_quality(req: LabelQualityRequest):
 @app.post("/api/ml/visual-affordance")
 async def evaluate_visual_affordance(req: VisualAffordanceRequest):
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         res = await loop.run_in_executor(
             None,
             lambda: gpu_engine.classify_visual_affordance(
@@ -287,7 +303,7 @@ async def evaluate_visual_affordance(req: VisualAffordanceRequest):
 @app.post("/api/impact/calibrate")
 async def calibrate_impact(req: ConformalCalibrateRequest):
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         res = await loop.run_in_executor(
             None,
             lambda: gpu_engine.calibrate_conformal_impact(
@@ -307,7 +323,7 @@ async def calibrate_impact(req: ConformalCalibrateRequest):
 @app.post("/api/ml/rank-action")
 async def rank_action_candidates(req: ActionRankRequest):
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         res = await loop.run_in_executor(
             None,
             lambda: action_ranker.rank_candidates(
@@ -340,7 +356,7 @@ async def dispatch_webhook_event(req: WebhookDispatchRequest):
 @app.post("/api/ml/slm-reason")
 async def slm_reason_step(req: SLMReasonRequest):
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         res = await loop.run_in_executor(
             None,
             lambda: slm_engine.reason_next_action(
@@ -360,7 +376,7 @@ async def slm_reason_step(req: SLMReasonRequest):
 @app.post("/api/ml/slm-remediate")
 async def slm_remediate_code(req: SLMRemediateRequest):
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         res = await loop.run_in_executor(
             None,
             lambda: slm_engine.synthesize_remediation_code(
@@ -378,7 +394,7 @@ async def slm_remediate_code(req: SLMRemediateRequest):
 @app.post("/api/ml/visual-text-recovery")
 async def analyze_visual_text(req: VisualTextRequest):
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         res = await loop.run_in_executor(
             None,
             lambda: ocr_engine.analyze_element_visual_text(

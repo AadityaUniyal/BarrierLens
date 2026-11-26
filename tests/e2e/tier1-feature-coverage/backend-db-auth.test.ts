@@ -674,8 +674,8 @@ describe('Tier 1 Part B - Backend, Database & Authentication', () => {
   // =========================================================================
   describe('Feature 32: Fixes Schema Unique Constraint', () => {
     it('F32.1: schema migration defines CREATE UNIQUE INDEX IF NOT EXISTS idx_fixes_finding_id', () => {
-      const migrationPath = path.resolve(process.cwd(), 'scripts/migrate-fixes-index.mjs');
-      assert.ok(fs.existsSync(migrationPath), 'migrate-fixes-index.mjs must exist in scripts');
+      const migrationPath = path.resolve(process.cwd(), 'supabase/migrations/20261124000001_initial_schema.sql');
+      assert.ok(fs.existsSync(migrationPath), '20261124000001_initial_schema.sql must exist in supabase/migrations');
 
       const content = fs.readFileSync(migrationPath, 'utf8');
       assert.ok(
@@ -719,14 +719,14 @@ describe('Tier 1 Part B - Backend, Database & Authentication', () => {
     });
 
     it('F32.3: inspectSchemaStatements correctly parses and confirms unique index declaration', () => {
-      const migrationPath = path.resolve(process.cwd(), 'scripts/migrate-fixes-index.mjs');
+      const migrationPath = path.resolve(process.cwd(), 'supabase/migrations/20261124000001_initial_schema.sql');
       const { hasUniqueFindingIdIndex, rawContent } = inspectSchemaStatements(migrationPath);
       assert.equal(hasUniqueFindingIdIndex, true, 'inspectSchemaStatements must confirm unique finding_id index');
       assert.ok(rawContent.length > 0);
     });
 
     it('F32.4: fixes table schema establishes foreign key relation to findings(id)', () => {
-      const schemaPath = path.resolve(process.cwd(), 'migrations/001_supabase_schema.sql');
+      const schemaPath = path.resolve(process.cwd(), 'supabase/migrations/20261124000001_initial_schema.sql');
       const content = fs.readFileSync(schemaPath, 'utf8');
       assert.ok(
         content.includes('REFERENCES findings(id) ON DELETE CASCADE'),

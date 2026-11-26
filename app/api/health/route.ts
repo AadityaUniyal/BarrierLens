@@ -18,7 +18,7 @@ export async function GET() {
         timestamp: report.timestamp,
         allPassed: report.allPassed,
       },
-      { status: allHealthy ? 200 : 200 }
+      { status: allHealthy ? 200 : 503 }
     );
   } catch (err: any) {
     return NextResponse.json(

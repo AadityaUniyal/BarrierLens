@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { sql } from '@/lib/supabase/db';
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
+import { getAuthenticatedContext, unauthorizedResponse } from '@/lib/barrierlens/security/auth-guard';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -18,25 +17,14 @@ function verifySignature(payload: string, signatureHeader: string | null, secret
 }
 
 /**
- * Helper to get authenticated user ID
- */
-async function getUserId(req: NextRequest): Promise<string> {
-  try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    }).catch(() => null);
-    if (session?.user?.id) return session.user.id;
-  } catch {}
-  return 'sample_user';
-}
-
-/**
  * GET /api/integrations/webhooks
- * Lists registered webhooks for the current user.
+ * Lists registered webhooks for the authenticated user.
  */
 export async function GET(req: NextRequest) {
   try {
-    const userId = await getUserId(req);
+    const authCtx = await getAuthenticatedContext(req);
+    if (!authCtx) return unauthorizedResponse('Sign in to view webhooks');
+    const userId = authCtx.userId;
 
     let webhooks: any[] = [];
     try {
@@ -74,7 +62,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
     }
 
-    const userId = await getUserId(req);
+    const authCtx = await getAuthenticatedContext(req);
+    if (!authCtx) return unauthorizedResponse('Sign in to manage or dispatch webhooks');
+    const userId = authCtx.userId;
     const { action, webhookUrl, url, secret, eventType, data, name, events } = body;
     const targetUrl = url || webhookUrl;
 
@@ -270,7 +260,9 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Missing webhook id' }, { status: 400 });
     }
 
-    const userId = await getUserId(req);
+    const authCtx = await getAuthenticatedContext(req);
+    if (!authCtx) return unauthorizedResponse('Sign in to manage or dispatch webhooks');
+    const userId = authCtx.userId;
 
     try {
       await sql`

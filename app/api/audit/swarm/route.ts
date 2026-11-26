@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ParallelPersonaSwarm } from '@/lib/barrierlens/swarm/persona-swarm';
 import { PersonaType } from '@/lib/barrierlens/types';
 import { resolvePublicTargetUrl, requestOriginFrom } from '@/lib/barrierlens/security/target-policy';
+import { assertAuditQuota, beginAudit, clientIp, RateLimitError } from '@/lib/barrierlens/security/rate-limit';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300; // 5 minute max runtime for multi-persona swarm
 
 export async function POST(req: NextRequest) {
+  let release: (() => void) | null = null;
   try {
+    const ip = clientIp(req);
+    assertAuditQuota(ip);
+    release = beginAudit(ip);
     const body = await req.json().catch(() => ({}));
     const { targetUrl, goal, personas, maxStepsPerPersona, concurrency, synthesizePatches } = body;
 
@@ -69,6 +74,12 @@ export async function POST(req: NextRequest) {
       findings: result.allFindings
     });
   } catch (error: any) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json(
+        { error: error.message, retryAfterSec: error.retryAfterSec },
+        { status: 429, headers: { 'Retry-After': String(error.retryAfterSec) } }
+      );
+    }
     console.error('[API /api/audit/swarm] Error executing swarm:', error);
     return NextResponse.json(
       {
@@ -77,5 +88,7 @@ export async function POST(req: NextRequest) {
       },
       { status: 500 }
     );
+  } finally {
+    release?.();
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { sql } from '@/lib/supabase/db';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { getAuthenticatedContext, unauthorizedResponse } from '@/lib/barrierlens/security/auth-guard';
 import { resolvePublicTargetUrl, requestOriginFrom } from '@/lib/barrierlens/security/target-policy';
 
 export const dynamic = 'force-dynamic';
@@ -150,11 +151,9 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    }).catch(() => null);
-
-    const userId = session?.user?.id || 'sample_user';
+    const authCtx = await getAuthenticatedContext(req);
+    if (!authCtx) return unauthorizedResponse('Sign in to create journeys');
+    const userId = authCtx.userId;
     const body = await req.json().catch(() => ({}));
     const { website_id, name, description, starting_url, steps = [], criticality = 'high' } = body;
 

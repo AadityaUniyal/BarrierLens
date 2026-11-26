@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AdversarialStressAgent } from '@/lib/barrierlens/adversarial/stress-agent';
 import { resolvePublicTargetUrl, requestOriginFrom } from '@/lib/barrierlens/security/target-policy';
+import { assertAuditQuota, beginAudit, clientIp, RateLimitError } from '@/lib/barrierlens/security/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
+  let release: (() => void) | null = null;
   try {
+    const ip = clientIp(req);
+    assertAuditQuota(ip);
+    release = beginAudit(ip);
     const body = await req.json().catch(() => ({}));
     const rawTarget = body.targetUrl || body.url || 'http://localhost:3000/benchmark';
     const reqOrigin = requestOriginFrom(req);
@@ -30,10 +35,18 @@ export async function POST(req: NextRequest) {
       result
     });
   } catch (err: any) {
+    if (err instanceof RateLimitError) {
+      return NextResponse.json(
+        { success: false, error: err.message, retryAfterSec: err.retryAfterSec },
+        { status: 429, headers: { 'Retry-After': String(err.retryAfterSec) } }
+      );
+    }
     console.error('[Adversarial API Error]:', err.message);
     return NextResponse.json(
       { success: false, error: err.message || 'Adversarial stress test execution failed' },
       { status: 500 }
     );
+  } finally {
+    release?.();
   }
 }

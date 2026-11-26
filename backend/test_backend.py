@@ -71,37 +71,65 @@ def test_suite():
     reply = coordinator.invoke_nova("Summarize accessibility in 6 words.", model_type="micro", max_tokens=20)
     print(f"   [OK] Bedrock Nova response: '{reply}'")
 
-    # 4. Test Remedy Headless Replay Verifier
+    # 4. Test Remedy Headless Replay Verifier against ephemeral local fixture server
     print("\nTEST 4: Remedy Headless Replay Verifier...")
-    verifier = ReplayVerifier()
-    v_res = verifier.verify_patch(
-        target_url="http://localhost:3000/benchmark",
-        finding_kind="keyboard_trap",
-        patch_snippet='aria-modal="true" role="dialog"'
-    )
-    assert v_res["verified"] is True
-    print("   [OK] Headless Playwright differential replay certified fix successfully!")
+    import threading
+    from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 
-    # 5. Test Genome 768-dim Vectorizer
-    print("\nTEST 5: Genome 768-dim Normalized Vectorizer...")
-    vectorizer = GenomeVectorizer()
-    vec = vectorizer.encode_barrier(
-        finding_kind="keyboard_trap",
-        wcag_rules=["WCAG 2.1.2"],
-        severity_score=9.8,
-        target_url="https://barrierlens-seven.vercel.app"
-    )
-    assert len(vec) == 768
-    magnitude = round(sum(x * x for x in vec), 2)
-    assert magnitude == 1.0, f"Expected unit magnitude 1.0, got {magnitude}"
-    print(f"   [OK] 768-dim normalized genome vector synthesized (L2 magnitude = {magnitude})")
+    class _FixtureHandler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            html = (
+                b'<!DOCTYPE html><html><body>'
+                b'<div id="trap-modal" role="dialog"><button id="ok">OK</button></div>'
+                b'</body></html>'
+            )
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html")
+            self.send_header("Content-Length", str(len(html)))
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.wfile.write(html)
 
-    # 6. Test Arena Metamorphic Red-Team Fuzzer
-    print("\nTEST 6: Arena Metamorphic Red-Team Fuzzer...")
-    fuzzer = MetamorphicFuzzer()
-    stress_res = fuzzer.run_stress_suite("http://localhost:3000/benchmark", iterations=4)
-    assert stress_res["testsExecuted"] == 4
-    print(f"   [OK] Arena executed 4 adversarial mutations. Resilience score: {stress_res['resilienceScore']}%")
+        def log_message(self, format, *args):
+            pass
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), _FixtureHandler)
+    port = server.server_address[1]
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        verifier = ReplayVerifier()
+        v_res = verifier.verify_patch(
+            target_url=f"http://127.0.0.1:{port}/benchmark",
+            finding_kind="keyboard_trap",
+            patch_snippet='aria-modal="true" role="dialog"'
+        )
+        assert v_res["verified"] is True, f"Replay verification failed: {v_res}"
+        print("   [OK] Headless Playwright differential replay certified fix successfully!")
+
+        # 5. Test Genome 768-dim Vectorizer
+        print("\nTEST 5: Genome 768-dim Normalized Vectorizer...")
+        vectorizer = GenomeVectorizer()
+        vec = vectorizer.encode_barrier(
+            finding_kind="keyboard_trap",
+            wcag_rules=["WCAG 2.1.2"],
+            severity_score=9.8,
+            target_url="https://barrierlens-seven.vercel.app"
+        )
+        assert len(vec) == 768
+        magnitude = round(sum(x * x for x in vec), 2)
+        assert magnitude == 1.0, f"Expected unit magnitude 1.0, got {magnitude}"
+        print(f"   [OK] 768-dim normalized genome vector synthesized (L2 magnitude = {magnitude})")
+
+        # 6. Test Arena Metamorphic Red-Team Fuzzer
+        print("\nTEST 6: Arena Metamorphic Red-Team Fuzzer...")
+        fuzzer = MetamorphicFuzzer()
+        stress_res = fuzzer.run_stress_suite(f"http://127.0.0.1:{port}/benchmark", iterations=4)
+        assert stress_res["testsExecuted"] == 4, f"Expected 4 testsExecuted, got {stress_res}"
+        print(f"   [OK] Arena executed 4 adversarial mutations. Resilience score: {stress_res['resilienceScore']}%")
+    finally:
+        server.shutdown()
+        server.server_close()
 
     # 7. Test Vault API Keys & Webhook Signatures
     print("\nTEST 7: Vault API Keys & Cryptographic Webhooks...")

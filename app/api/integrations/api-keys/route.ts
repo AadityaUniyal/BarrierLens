@@ -1,37 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { sql } from '@/lib/supabase/db';
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
+import { getAuthenticatedContext, unauthorizedResponse } from '@/lib/barrierlens/security/auth-guard';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-async function getUserId(req: NextRequest): Promise<string> {
-  try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    }).catch(() => null);
-    if (session?.user?.id) return session.user.id;
-  } catch {}
-  return 'sample_user';
-}
-
 export async function GET(req: NextRequest) {
   try {
-    const userId = await getUserId(req);
+    const authCtx = await getAuthenticatedContext(req);
+    if (!authCtx) return unauthorizedResponse('Sign in to view API keys');
+    const userId = authCtx.userId;
 
-    let keys: any[] = [];
-    try {
-      keys = await sql`
-        SELECT id, name, COALESCE(key_prefix, prefix) as key_prefix, scopes, COALESCE(rate_limit_per_min, 120) as rate_limit_per_min, last_used_at, created_at
-        FROM api_keys
-        WHERE user_id = ${userId} AND revoked_at IS NULL
-        ORDER BY created_at DESC;
-      `;
-    } catch {
-      // Fallback
-    }
+    const keys = await sql`
+      SELECT id, name, COALESCE(key_prefix, prefix) as key_prefix, scopes, COALESCE(rate_limit_per_min, 120) as rate_limit_per_min, last_used_at, created_at
+      FROM api_keys
+      WHERE user_id = ${userId} AND revoked_at IS NULL
+      ORDER BY created_at DESC;
+    `;
 
     return NextResponse.json({ success: true, keys });
   } catch (err: any) {
@@ -41,7 +27,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const userId = await getUserId(req);
+    const authCtx = await getAuthenticatedContext(req);
+    if (!authCtx) return unauthorizedResponse('Sign in to create API keys');
+    const userId = authCtx.userId;
     const body = await req.json().catch(() => ({}));
     const name = body.name || 'Production CI/CD Runner';
     const scopes = body.scopes || ['audits:read', 'audits:write'];
@@ -91,7 +79,9 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Valid UUID key id required' }, { status: 400 });
     }
 
-    const userId = await getUserId(req);
+    const authCtx = await getAuthenticatedContext(req);
+    if (!authCtx) return unauthorizedResponse('Sign in to revoke API keys');
+    const userId = authCtx.userId;
 
     try {
       await sql`DELETE FROM api_keys WHERE id = ${id}::uuid AND user_id = ${userId};`;

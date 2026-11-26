@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { sql } from '@/lib/supabase/db';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { getAuthenticatedContext, unauthorizedResponse } from '@/lib/barrierlens/security/auth-guard';
 import dns from 'node:dns/promises';
 
 export const dynamic = 'force-dynamic';
@@ -11,30 +12,19 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    }).catch(() => null);
-
-    const userId = session?.user?.id || 'sample_user';
-    const isSample = !session?.user || userId === 'sample_user';
+    const authCtx = await getAuthenticatedContext(req);
+    if (!authCtx) return unauthorizedResponse('Sign in to delete websites');
+    const userId = authCtx.userId;
     const { id } = await params;
 
-    // Prevent deletion of sample demonstrator templates
     if (id.startsWith('site_sample_')) {
-      return NextResponse.json({ success: true, id, message: 'Sample reset simulated' });
+      return NextResponse.json({ error: 'Cannot delete read-only showcase website' }, { status: 403 });
     }
 
-    if (isSample) {
-      await sql`
-        DELETE FROM websites
-        WHERE id = ${id} AND user_id = 'sample_user'
-      `;
-    } else {
-      await sql`
-        DELETE FROM websites
-        WHERE id = ${id} AND user_id = ${userId}
-      `;
-    }
+    await sql`
+      DELETE FROM websites
+      WHERE id = ${id} AND user_id = ${userId}
+    `;
 
     return NextResponse.json({ success: true, id });
   } catch (err: any) {
@@ -47,28 +37,19 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    }).catch(() => null);
-
-    const userId = session?.user?.id || 'sample_user';
-    const isSample = !session?.user || userId === 'sample_user';
+    const authCtx = await getAuthenticatedContext(req);
+    if (!authCtx) return unauthorizedResponse('Sign in to verify websites');
+    const userId = authCtx.userId;
     const { id } = await params;
     const body = await req.json().catch(() => ({}));
     const { action } = body;
 
     if (action === 'verify') {
-      const [site] = isSample
-        ? await sql`
-            SELECT id, origin, verification_token, verified_at
-            FROM websites
-            WHERE id = ${id} AND user_id = 'sample_user'
-          `
-        : await sql`
-            SELECT id, origin, verification_token, verified_at
-            FROM websites
-            WHERE id = ${id} AND user_id = ${userId}
-          `;
+      const [site] = await sql`
+        SELECT id, origin, verification_token, verified_at
+        FROM websites
+        WHERE id = ${id} AND user_id = ${userId}
+      `;
 
       if (!site) {
         return NextResponse.json({ error: 'Website not found' }, { status: 404 });

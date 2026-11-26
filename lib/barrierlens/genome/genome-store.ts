@@ -24,35 +24,8 @@ export class GenomeStore {
   private tableInitialized = false;
 
   private async ensureTable(): Promise<void> {
-    if (this.tableInitialized) return;
-    try {
-      await sql`
-        CREATE TABLE IF NOT EXISTS barrier_genomes (
-          id TEXT PRIMARY KEY,
-          finding_id TEXT NOT NULL,
-          finding_kind TEXT NOT NULL,
-          domain TEXT NOT NULL,
-          target_url TEXT NOT NULL,
-          persona TEXT NOT NULL,
-          vector vector(768),
-          embedding vector(768),
-          vector_json JSONB,
-          magnitude FLOAT NOT NULL,
-          severity_score FLOAT NOT NULL,
-          wcag_rules JSONB NOT NULL,
-          context JSONB NOT NULL,
-          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-        );
-      `;
-      try {
-        await sql`ALTER TABLE barrier_genomes ADD COLUMN IF NOT EXISTS embedding vector(768);`;
-        await sql`ALTER TABLE barrier_genomes ADD COLUMN IF NOT EXISTS vector_json JSONB;`;
-      } catch {}
-      this.tableInitialized = true;
-    } catch {
-      // Offline fallback: use in-memory store
-      this.tableInitialized = true;
-    }
+    // Schema is managed via supabase/migrations; no runtime DDL needed.
+    this.tableInitialized = true;
   }
 
   async store(genome: BarrierGenome): Promise<void> {

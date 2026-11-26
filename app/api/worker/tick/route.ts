@@ -5,6 +5,7 @@ import { VPATGenerator } from '@/lib/barrierlens/compliance/vpat-generator';
 import { WebhookDispatcher, WebhookEventType } from '@/lib/barrierlens/integrations/webhook-dispatcher';
 import { AWSS3ArtifactStore } from '@/lib/barrierlens/aws/s3-artifact-store';
 import { DomainCrawler } from '@/lib/barrierlens/crawler/domain-crawler';
+import { getAuthenticatedContext, unauthorizedResponse } from '@/lib/barrierlens/security/auth-guard';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -12,18 +13,23 @@ export const maxDuration = 60;
 /**
  * Worker Tick Processor
  * Atomically claims and executes one pending job from the Postgres queue.
- * Can be triggered via Cron, Docker worker loop, or on-demand background worker.
+ * Recovers stale locks (>5m) and retries transient failures up to 3 attempts.
  */
 export async function POST(req: Request) {
-  // Optional security token check for worker endpoint
-  const authHeader = req.headers.get('authorization');
-  const workerSecret = process.env.WORKER_SECRET;
-  if (workerSecret && authHeader !== `Bearer ${workerSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized worker invocation' }, { status: 401 });
+  const authCtx = await getAuthenticatedContext(req);
+  if (!authCtx) {
+    return unauthorizedResponse('Unauthorized worker invocation');
   }
 
   let currentJobId: string | null = null;
   try {
+    // 0. Requeue stale running jobs locked > 5 minutes ago
+    await sql`
+      UPDATE jobs
+      SET status = 'pending', locked_at = NULL, run_after = NOW()
+      WHERE status = 'running' AND locked_at < NOW() - INTERVAL '5 minutes' AND attempts < 3;
+    `.catch(() => {});
+
     // 1. Claim next pending job atomically
     const claimed = await sql`
       UPDATE jobs
@@ -220,7 +226,15 @@ export async function POST(req: Request) {
       try {
         await sql`
           UPDATE jobs
-          SET status = 'failed', payload = jsonb_set(payload, '{error}', to_jsonb(${String(err.message)}::text))
+          SET
+            status = CASE WHEN attempts < 3 THEN 'pending' ELSE 'failed' END,
+            locked_at = NULL,
+            run_after = CASE WHEN attempts < 3 THEN NOW() + INTERVAL '30 seconds' ELSE run_after END,
+            payload = jsonb_set(
+              CASE WHEN jsonb_typeof(payload) = 'object' THEN payload ELSE '{}'::jsonb END,
+              '{error}',
+              to_jsonb(${String(err.message)}::text)
+            )
           WHERE id = ${currentJobId};
         `;
       } catch (updateErr) {

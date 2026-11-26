@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { parseFragment, serialize, DefaultTreeAdapterTypes } from 'parse5';
 import { BarrierFinding, FindingKind } from '../types';
 import { CounterfactualPatch, CausalIntervention } from './counterfactual-engine';
 
@@ -59,80 +60,87 @@ export class CausalDualObjectiveASTSurgeryEngine {
     let attrName = '';
     let attrValue = '';
 
-    // 1. Synthesize targeted AST surgery based on formal barrier category
+    // 1. Parse rawHTML into a real WHATWG HTML5 AST via parse5 and locate the target element
+    const fragment = parseFragment(rawHTML);
+    const targetElement = this.findTargetElement(fragment, selector);
+    let astMutations = 0;
+
     switch (finding.kind) {
       case 'keyboard_trap': {
-        // Dual-Objective: Add Escape keyboard listener and aria-modal without changing visual box
-        if (rawHTML.includes('<dialog') || rawHTML.includes('role="dialog"') || rawHTML.includes('trap-modal')) {
-          patchedHTML = rawHTML.replace(
-            /(<(?:dialog|div)[^>]*)/i,
-            `$1 onkeydown="if (event.key === 'Escape') { this.dispatchEvent(new CustomEvent('close-modal', { bubbles: true })); }" tabindex="-1" aria-modal="true"`
+        if (targetElement) {
+          astMutations += this.upsertAttr(targetElement, 'role', 'dialog');
+          astMutations += this.upsertAttr(targetElement, 'aria-modal', 'true');
+          astMutations += this.upsertAttr(targetElement, 'tabindex', '-1');
+          astMutations += this.upsertAttr(
+            targetElement,
+            'onkeydown',
+            "if (event.key === 'Escape') { this.dispatchEvent(new CustomEvent('close-modal', { bubbles: true })); }"
           );
-        } else {
-          patchedHTML = rawHTML.replace(
-            /(<[a-zA-Z0-9_-]+)/,
-            `$1 onkeydown="if (event.key === 'Escape') { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); }"`
-          );
+          patchedHTML = serialize(fragment);
         }
         interventionType = 'add_listener';
         invasiveness = 1;
-        explanation = 'Injected Escape key listener & aria-modal="true" while preserving exact 0-pixel layout.';
+        explanation = 'Mutated AST node to inject Escape key listener & aria-modal="true" while preserving exact 0-pixel layout.';
         expectedEffect = 'Eliminates Tarjan strongly-connected trap component and satisfies ATL* liveness.';
         break;
       }
 
       case 'empty_accessible_name':
       case 'missing_accessible_name': {
-        // Extract context or existing icon names
         const labelText = this.deriveContextualName(rawHTML, selector);
-        if (/aria-label=/i.test(rawHTML)) {
-          patchedHTML = rawHTML.replace(/aria-label=["'][^"']*["']/i, `aria-label="${labelText}"`);
-          interventionType = 'change_attribute';
-        } else {
-          patchedHTML = rawHTML.replace(/(<[a-zA-Z0-9_-]+)/, `$1 aria-label="${labelText}"`);
-          interventionType = 'add_attribute';
+        if (targetElement) {
+          const hadAttr = targetElement.attrs.some((a) => a.name.toLowerCase() === 'aria-label');
+          astMutations += this.upsertAttr(targetElement, 'aria-label', labelText);
+          interventionType = hadAttr ? 'change_attribute' : 'add_attribute';
+          patchedHTML = serialize(fragment);
         }
         invasiveness = 1;
         attrName = 'aria-label';
         attrValue = labelText;
-        explanation = `Injected accessible name "${labelText}" on target node without altering visual typography.`;
+        explanation = `Mutated AST node to inject accessible name "${labelText}" without altering visual typography.`;
         expectedEffect = 'AccName computation resolves directly to 100% compliance under W3C AccName 1.2.';
         break;
       }
 
       case 'silent_state_change':
       case 'silent_dynamic_mutation': {
-        // Dual-Objective: Add live region notification
-        if (/aria-live=/i.test(rawHTML)) {
-          patchedHTML = rawHTML.replace(/aria-live=["'][^"']*["']/i, `aria-live="polite"`);
-          interventionType = 'change_attribute';
-        } else {
-          patchedHTML = rawHTML.replace(/(<[a-zA-Z0-9_-]+)/, `$1 aria-live="polite" aria-atomic="true" role="status"`);
-          interventionType = 'add_attribute';
+        if (targetElement) {
+          const hadAttr = targetElement.attrs.some((a) => a.name.toLowerCase() === 'aria-live');
+          astMutations += this.upsertAttr(targetElement, 'aria-live', 'polite');
+          astMutations += this.upsertAttr(targetElement, 'aria-atomic', 'true');
+          astMutations += this.upsertAttr(targetElement, 'role', 'status');
+          interventionType = hadAttr ? 'change_attribute' : 'add_attribute';
+          patchedHTML = serialize(fragment);
         }
         invasiveness = 1;
         attrName = 'aria-live';
         attrValue = 'polite';
-        explanation = 'Injected aria-live="polite" and role="status" to bridge the Cross-Modal Divergence (CMSD) gap.';
+        explanation = 'Mutated AST node to inject aria-live="polite" and role="status" to bridge Cross-Modal Divergence.';
         expectedEffect = 'Acoustic emission energy A(t) matches visual mutation saliency V(t) with 0 speech silence.';
         break;
       }
 
       case 'focus_loss': {
-        patchedHTML = rawHTML.replace(/(<[a-zA-Z0-9_-]+)/, `$1 tabIndex={-1} data-focus-restore="true"`);
+        if (targetElement) {
+          astMutations += this.upsertAttr(targetElement, 'tabindex', '-1');
+          astMutations += this.upsertAttr(targetElement, 'data-focus-restore', 'true');
+          patchedHTML = serialize(fragment);
+        }
         interventionType = 'add_attribute';
         invasiveness = 1;
-        explanation = 'Injected tabIndex={-1} with programmatic focus restore handler.';
+        explanation = 'Mutated AST node to inject tabindex="-1" with programmatic focus restore marker.';
         expectedEffect = 'Maintains focus graph lineage without dumping user focus to document.body.';
         break;
       }
 
       default: {
-        // Fallback: minimal accessible attribute
-        patchedHTML = rawHTML.replace(/(<[a-zA-Z0-9_-]+)/, `$1 aria-label="Interactive Control"`);
+        if (targetElement) {
+          astMutations += this.upsertAttr(targetElement, 'aria-label', 'Interactive Control');
+          patchedHTML = serialize(fragment);
+        }
         interventionType = 'add_attribute';
         invasiveness = 1;
-        explanation = 'Applied minimal surgical attribute intervention.';
+        explanation = 'Applied minimal surgical AST attribute intervention.';
         expectedEffect = 'Restores baseline accessibility compliance.';
       }
     }
@@ -180,7 +188,7 @@ export class CausalDualObjectiveASTSurgeryEngine {
       ssimVisualInvariance: ssimScore,
       layoutMaxDeltaPx,
       causalATE,
-      astNodeMutationsCount: 1,
+      astNodeMutationsCount: Math.max(1, astMutations),
       invasivenessRank: invasiveness,
       zeroRegressionGuaranteed,
       unifiedDiff,
@@ -208,6 +216,48 @@ export class CausalDualObjectiveASTSurgeryEngine {
     };
 
     return { patch, certificate };
+  }
+
+  private findTargetElement(
+    node: DefaultTreeAdapterTypes.Node,
+    selector: string
+  ): DefaultTreeAdapterTypes.Element | null {
+    const idMatch = selector.match(/#([a-zA-Z0-9_-]+)/);
+    const classMatch = selector.match(/\.([a-zA-Z0-9_-]+)/);
+    const tagMatch = selector.match(/^([a-zA-Z0-9_-]+)/);
+    let firstElement: DefaultTreeAdapterTypes.Element | null = null;
+
+    const visit = (cur: DefaultTreeAdapterTypes.Node): DefaultTreeAdapterTypes.Element | null => {
+      if ('tagName' in cur && Array.isArray(cur.attrs)) {
+        const el = cur as DefaultTreeAdapterTypes.Element;
+        if (!firstElement) firstElement = el;
+        const idAttr = el.attrs.find((a) => a.name === 'id')?.value;
+        const classAttr = el.attrs.find((a) => a.name === 'class' || a.name === 'classname')?.value || '';
+        if (idMatch && idAttr === idMatch[1]) return el;
+        if (classMatch && classAttr.split(/\s+/).includes(classMatch[1])) return el;
+        if (!idMatch && !classMatch && tagMatch && el.tagName.toLowerCase() === tagMatch[1].toLowerCase()) return el;
+      }
+      if ('childNodes' in cur && Array.isArray(cur.childNodes)) {
+        for (const child of cur.childNodes) {
+          const hit = visit(child);
+          if (hit) return hit;
+        }
+      }
+      return null;
+    };
+
+    return visit(node) || firstElement;
+  }
+
+  private upsertAttr(el: DefaultTreeAdapterTypes.Element, name: string, value: string): number {
+    const existing = el.attrs.find((a) => a.name.toLowerCase() === name.toLowerCase());
+    if (existing) {
+      if (existing.value === value) return 0;
+      existing.value = value;
+      return 1;
+    }
+    el.attrs.push({ name, value });
+    return 1;
   }
 
   private deriveContextualName(html: string, selector: string): string {
